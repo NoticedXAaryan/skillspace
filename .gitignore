@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+.next/
+out/
+.turbo/
+
+# Environment
+.env
+.env.local
+.env.production
+.env.*.local
+
+# SkillSpace local data
+.skillspace/
+*.skillpkg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Prisma
+prisma/*.db
+prisma/*.db-journal
+
+# Test coverage
+coverage/
+
+# Misc
+*.log
+npm-debug.log*
+
+# AI Artifacts / Project Docs
+prd.md
+implementation_plan.md
+task.md
+walkthrough.md
+graphify-out/
+.system_generated/

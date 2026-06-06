@@ -1,0 +1,35 @@
+{
+  "name": "@skillspace/cli",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SkillSpace CLI — install, run, and publish AI capabilities",
+  "bin": {
+    "skillspace": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "compile": "bun build ./src/index.ts --compile --outfile dist/skillspace",
+    "dev": "tsx src/index.ts",
+    "test": "vitest run",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@skillspace/schema": "workspace:*",
+    "@skillspace/runtime": "workspace:*",
+    "commander": "^13.1.0",
+    "chalk": "^5.4.0",
+    "ora": "^8.1.0",
+    "inquirer": "^12.3.0",
+    "cli-table3": "^0.6.0",
+    "yaml": "^2.6.0",
+    "tar": "^7.4.0",
+    "node-fetch": "^3.3.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "tsx": "^4.19.0",
+    "vitest": "^3.2.0",
+    "rimraf": "^6.0.0",
+    "@types/inquirer": "^9.0.0"
+  }
+}

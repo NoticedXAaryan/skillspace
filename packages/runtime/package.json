@@ -1,0 +1,28 @@
+{
+  "name": "@skillspace/runtime",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SkillSpace Runtime — core execution engine",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@skillspace/schema": "workspace:*",
+    "yaml": "^2.6.0",
+    "semver": "^7.6.0",
+    "tar": "^7.4.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^3.2.0",
+    "rimraf": "^6.0.0",
+    "@types/semver": "^7.5.0",
+    "@types/tar": "^6.1.0"
+  }
+}

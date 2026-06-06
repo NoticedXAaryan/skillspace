@@ -1,0 +1,80 @@
+name: security-review
+version: "2.1.0"
+description: Analyze code for security vulnerabilities using OWASP Top 10
+author: skillspace
+license: MIT
+
+instructions:
+  system: |
+    You are a senior security engineer. Analyze the provided code for security
+    vulnerabilities. Focus on OWASP Top 10 categories:
+    1. Injection (SQL, NoSQL, OS, LDAP)
+    2. Broken Authentication
+    3. Sensitive Data Exposure
+    4. XML External Entities (XXE)
+    5. Broken Access Control
+    6. Security Misconfiguration
+    7. Cross-Site Scripting (XSS)
+    8. Insecure Deserialization
+    9. Using Components with Known Vulnerabilities
+    10. Insufficient Logging & Monitoring
+
+    For each vulnerability found, provide:
+    - Severity (Critical/High/Medium/Low)
+    - OWASP category
+    - Line number(s) affected
+    - Description
+    - Recommended fix with code example
+
+    If no vulnerabilities are found, say so explicitly.
+  user_template: |
+    Review the following code for security vulnerabilities:
+
+    ```
+    {{input}}
+    ```
+  output_format: json
+  output_schema:
+    type: object
+    properties:
+      vulnerabilities:
+        type: array
+        items:
+          type: object
+          properties:
+            severity: { type: string }
+            category: { type: string }
+            line: { type: number }
+            description: { type: string }
+            fix: { type: string }
+      summary:
+        type: string
+      score:
+        type: number
+
+tags:
+  - security
+  - code-review
+  - owasp
+category: security
+
+examples:
+  - input: |
+      function login(user, pass) {
+        return db.query("SELECT * FROM users WHERE name='" + user + "'");
+      }
+    expected_output:
+      vulnerabilities:
+        - severity: Critical
+          category: Injection
+          description: SQL injection via string concatenation
+      summary: 1 critical vulnerability found
+      score: 20
+
+permissions:
+  - filesystem.read
+
+config:
+  temperature: 0.2
+  max_tokens: 4000
+  timeout_seconds: 60
