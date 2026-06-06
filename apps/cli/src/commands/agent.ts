@@ -9,6 +9,7 @@ agentCommand
   .description('Run an agent')
   .option('-i, --input <input>', 'Input text or file path')
   .option('-t, --task <task>', 'Task description (alias for --input)')
+  .option('-s, --session <sessionId>', 'Resume or start a session by ID')
   .action(async (agentName, options) => {
     const input = options.input || options.task;
     if (!input) {
@@ -21,6 +22,7 @@ agentCommand
       const result = await executor.run({
         agent: agentName,
         input: input,
+        session_id: options.session,
       });
 
       console.log(result.output);

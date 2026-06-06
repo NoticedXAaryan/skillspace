@@ -29,6 +29,15 @@ export interface ModelAdapter {
   ): ModelRequest;
 
   /**
+   * Build a model-specific API request from chat history and available tools.
+   */
+  buildChatRequest?(
+    messages: import('@skillspace/schema').ChatMessage[],
+    tools: import('@skillspace/schema').Tool[],
+    config: RuntimeConfig,
+  ): ModelRequest;
+
+  /**
    * Parse the raw model response into a generic ExecutionResult.
    */
   parseResponse(raw: unknown): ExecutionResult;

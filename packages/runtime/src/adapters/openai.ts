@@ -33,15 +33,55 @@ export class OpenAIAdapter implements ModelAdapter {
     };
   }
 
+  buildChatRequest(
+    messages: import('@skillspace/schema').ChatMessage[],
+    tools: import('@skillspace/schema').Tool[],
+    config: RuntimeConfig,
+  ): ModelRequest {
+    return {
+      url: config.baseUrl || 'https://api.openai.com/v1/chat/completions',
+      headers: {
+        Authorization: `Bearer ${config.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: {
+        model: config.modelId,
+        max_tokens: config.maxTokens,
+        temperature: config.temperature,
+        messages: messages,
+        tools: tools.length > 0 ? tools.map(t => ({
+          type: 'function',
+          function: {
+            name: t.name,
+            description: t.description,
+            parameters: {
+              type: 'object',
+              properties: t.parameters || {},
+              required: t.required || []
+            }
+          }
+        })) : undefined
+      },
+      stream: false,
+    };
+  }
+
   parseResponse(raw: unknown): ExecutionResult {
     const response = raw as {
-      choices: Array<{ message: { content: string } }>;
+      choices: Array<{ message: { role: string; content: string | null; tool_calls?: import('@skillspace/schema').ToolCall[] } }>;
       usage: { prompt_tokens: number; completion_tokens: number };
       model: string;
     };
 
+    const msg = response.choices[0]?.message;
+
     return {
-      output: response.choices[0]?.message?.content ?? '',
+      output: msg?.content ?? '',
+      message: msg && msg.role === 'assistant' ? {
+        role: 'assistant',
+        content: msg.content,
+        tool_calls: msg.tool_calls
+      } : undefined,
       usage: {
         promptTokens: response.usage?.prompt_tokens ?? 0,
         completionTokens: response.usage?.completion_tokens ?? 0,

@@ -1,11 +1,12 @@
 import * as fs from 'node:fs';
-import type { ExecutionResult } from '@skillspace/schema';
+import type { ExecutionResult, ChatMessage, Tool, Agent } from '@skillspace/schema';
 import { AgentResolver } from './agent-resolver.js';
 import { PermissionEnforcer } from './permissions.js';
 import { adapterRegistry } from './adapters/registry.js';
 import { loadConfig, getApiKey, getBaseUrl } from './config.js';
-import { ExecutionError } from './executor.js';
-import type { RuntimeConfig } from './adapters/base.js';
+import { ExecutionError, Executor } from './executor.js';
+import type { RuntimeConfig, ModelAdapter } from './adapters/base.js';
+import { SessionManager } from './session.js';
 
 export interface AgentRunOptions {
   agent: string;
@@ -15,9 +16,13 @@ export interface AgentRunOptions {
 
 export class AgentExecutor {
   private resolver: AgentResolver;
+  private sessionManager: SessionManager;
+  private skillExecutor: Executor;
 
-  constructor(resolver?: AgentResolver) {
+  constructor(resolver?: AgentResolver, sessionManager?: SessionManager) {
     this.resolver = resolver ?? new AgentResolver();
+    this.sessionManager = sessionManager ?? new SessionManager();
+    this.skillExecutor = new Executor();
   }
 
   async run(options: AgentRunOptions): Promise<ExecutionResult> {
@@ -26,8 +31,7 @@ export class AgentExecutor {
     // 1. Resolve agent
     const { agent, skills } = this.resolver.resolveWithDependencies(options.agent);
 
-    // 2. Determine permissions and enforce
-    // Agent execution inherits permissions from its definition and its skills
+    // 2. Determine permissions and enforce for input reading
     const combinedPermissions = new Set(agent.permissions);
     for (const skill of skills) {
       for (const p of skill.permissions) {
@@ -41,13 +45,14 @@ export class AgentExecutor {
     const modelId = agent.model.id || loadConfig().default_model || 'ollama/llama3.2';
     const { adapter, modelName } = adapterRegistry.getAdapter(modelId);
 
+    if (!adapter.buildChatRequest) {
+      throw new ExecutionError(`Adapter ${adapter.providerName} does not support Chat/Agent functionality yet.`, 'UNSUPPORTED_ADAPTER');
+    }
+
     const provider = modelId.split('/')[0]!;
     const apiKey = getApiKey(provider) ?? '';
     if (!apiKey && provider !== 'ollama') {
-      throw new ExecutionError(
-        `No API key configured for "${provider}".`,
-        'AUTH_ERROR',
-      );
+      throw new ExecutionError(`No API key configured for "${provider}".`, 'AUTH_ERROR');
     }
 
     const runtimeConfig: RuntimeConfig = {
@@ -61,41 +66,106 @@ export class AgentExecutor {
 
     const input = this.resolveInput(options.input, enforcer);
 
-    // 4. MCP Servers attachment (Placeholder for now)
-    if (agent.mcp_servers.length > 0) {
-      console.log(`Agent declared MCP servers: ${agent.mcp_servers.map((s) => s.name).join(', ')}`);
-      // TODO: initialize MCP clients and inject their tools into the prompt/adapter
+    // 4. Session memory
+    let messages: ChatMessage[] = [];
+    if (options.session_id) {
+      messages = this.sessionManager.loadSession(options.session_id);
+    }
+    
+    if (messages.length === 0) {
+      messages.push({
+        role: 'system',
+        content: `You are an agent named ${agent.name}.\n${agent.description}`
+      });
     }
 
-    // 5. Execute with the agent context (simplified without stateful session history for now)
-    // We mock building a skill request to reuse the adapter layer
-    const pseudoSkill = {
-      name: agent.name,
-      version: agent.version,
-      description: agent.description,
-      author: agent.author,
-      license: agent.license,
-      instructions: {
-        system: `You are an agent named ${agent.name}.\n${agent.description}`,
-        user_template: '{{input}}',
-        output_format: 'text' as const,
+    messages.push({
+      role: 'user',
+      content: input
+    });
+
+    // 5. Generate tools from agent's skill dependencies
+    const tools: Tool[] = skills.map(s => ({
+      name: s.name.replace(/[^a-zA-Z0-9_-]/g, '_'), // ensure valid tool name format
+      description: s.description,
+      parameters: {
+        input: {
+          type: 'string',
+          description: s.instructions.user_template
+        }
       },
-      tags: [],
-      category: 'other' as const,
-      examples: [{ input: 'test', expected_output: 'test', model: 'test' }],
-      permissions: Array.from(combinedPermissions),
-      compatibility: { models: [] },
-      config: { temperature: 0.7, max_tokens: 4000, timeout_seconds: 60 }
-    };
+      required: ['input']
+    }));
 
-    const request = adapter.buildRequest(pseudoSkill, input, runtimeConfig);
+    // Execution loop
+    const MAX_STEPS = 10;
+    let stepCount = 0;
+    let finalResult: ExecutionResult | null = null;
 
-    const rawResponse = await this.callWithRetry(request, runtimeConfig.timeoutSeconds ?? 60);
+    while (stepCount < MAX_STEPS) {
+      stepCount++;
+      const request = adapter.buildChatRequest(messages, tools, runtimeConfig);
+      const rawResponse = await this.callWithRetry(request, runtimeConfig.timeoutSeconds ?? 60);
+      const result = adapter.parseResponse(rawResponse);
+      
+      const assistantMsg = result.message;
+      if (!assistantMsg) {
+        throw new ExecutionError('Adapter returned no assistant message', 'API_ERROR');
+      }
 
-    const result = adapter.parseResponse(rawResponse);
-    result.duration_ms = Date.now() - startTime;
+      messages.push(assistantMsg);
 
-    return result;
+      if (assistantMsg.tool_calls && assistantMsg.tool_calls.length > 0) {
+        // Handle tool calls
+        for (const tc of assistantMsg.tool_calls) {
+          try {
+            const args = JSON.parse(tc.function.arguments);
+            const toolSkill = skills.find(s => s.name.replace(/[^a-zA-Z0-9_-]/g, '_') === tc.function.name);
+            
+            if (!toolSkill) {
+              messages.push({ role: 'tool', tool_call_id: tc.id, content: `Error: Unknown tool ${tc.function.name}` });
+              continue;
+            }
+
+            // Verify permissions inside the executor internally, just run it
+            const toolResult = await this.skillExecutor.run({
+              skill: toolSkill.name,
+              input: typeof args.input === 'string' ? args.input : JSON.stringify(args),
+              model: modelId
+            });
+
+            messages.push({
+              role: 'tool',
+              tool_call_id: tc.id,
+              content: toolResult.output
+            });
+          } catch (err) {
+            messages.push({
+              role: 'tool',
+              tool_call_id: tc.id,
+              content: `Error executing tool: ${err instanceof Error ? err.message : err}`
+            });
+          }
+        }
+        // Loop back and call model again with the tool results
+      } else {
+        // Finished
+        finalResult = result;
+        break;
+      }
+    }
+
+    if (!finalResult) {
+      throw new ExecutionError('Agent execution exceeded max steps (infinite tool loop detected)', 'MAX_STEPS_EXCEEDED');
+    }
+
+    // Save session
+    if (options.session_id) {
+      this.sessionManager.saveSession(options.session_id, messages);
+    }
+
+    finalResult.duration_ms = Date.now() - startTime;
+    return finalResult;
   }
 
   private enforceInputPermissions(enforcer: PermissionEnforcer, options: AgentRunOptions): void {

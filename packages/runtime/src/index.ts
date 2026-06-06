@@ -16,6 +16,7 @@ export { OllamaAdapter } from './adapters/ollama.js';
 export { SkillCache } from './cache.js';
 export { SkillResolver, SkillNotFoundError, VersionNotFoundError } from './resolver.js';
 export { AgentResolver, AgentNotFoundError } from './agent-resolver.js';
+export { SessionManager } from './session.js';
 export { McpManager, type McpServerConfig } from './mcp.js';
 export { WorkflowEngine, type WorkflowRunOptions } from './workflow.js';
 

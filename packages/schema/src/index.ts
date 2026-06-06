@@ -6,6 +6,17 @@ export { AgentSchema } from './agent.schema.js';
 export { LockFileSchema } from './lockfile.schema.js';
 export { ManifestSchema } from './manifest.schema.js';
 export { WorkflowSchema } from './workflow.schema.js';
+export {
+  ToolSchema,
+  ToolParameterSchema,
+  ChatMessageSchema,
+  SystemMessageSchema,
+  UserMessageSchema,
+  AssistantMessageSchema,
+  ToolCallSchema,
+  ToolResultMessageSchema,
+  ChatHistorySchema
+} from './chat.schema.js';
 
 // Validators
 export {

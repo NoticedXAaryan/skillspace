@@ -23,6 +23,17 @@ export type LockFile = z.infer<typeof LockFileSchema>;
 /** A fully validated package manifest */
 export type Manifest = z.infer<typeof ManifestSchema>;
 
+/** Tool definition */
+export type Tool = z.infer<typeof import('./chat.schema.js').ToolSchema>;
+
+/** Chat Messages */
+export type ChatMessage = z.infer<typeof import('./chat.schema.js').ChatMessageSchema>;
+export type SystemMessage = z.infer<typeof import('./chat.schema.js').SystemMessageSchema>;
+export type UserMessage = z.infer<typeof import('./chat.schema.js').UserMessageSchema>;
+export type AssistantMessage = z.infer<typeof import('./chat.schema.js').AssistantMessageSchema>;
+export type ToolCall = z.infer<typeof import('./chat.schema.js').ToolCallSchema>;
+export type ToolResultMessage = z.infer<typeof import('./chat.schema.js').ToolResultMessageSchema>;
+
 /** Valid permission strings */
 export type Permission = z.infer<typeof import('./skill.schema.js').PermissionSchema>;
 
@@ -45,6 +56,7 @@ export type SkillConfig = {
 /** Execution result from SSR */
 export interface ExecutionResult {
   output: string;
+  message?: AssistantMessage; // The raw assistant message containing text and tool_calls
   usage: {
     promptTokens: number;
     completionTokens: number;
