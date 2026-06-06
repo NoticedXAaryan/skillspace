@@ -129,7 +129,7 @@ describe('AgentExecutor', () => {
       expect.any(Array),
       [
         expect.objectContaining({
-          name: 'test-skill',
+          name: 'skill_test-skill',
           description: 'Test skill',
           required: ['input']
         })

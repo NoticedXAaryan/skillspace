@@ -1,12 +1,13 @@
 import * as fs from 'node:fs';
-import type { ExecutionResult, ChatMessage, Tool, Agent } from '@skillspace/schema';
 import { AgentResolver } from './agent-resolver.js';
 import { PermissionEnforcer } from './permissions.js';
 import { adapterRegistry } from './adapters/registry.js';
 import { loadConfig, getApiKey, getBaseUrl } from './config.js';
 import { ExecutionError, Executor } from './executor.js';
-import type { RuntimeConfig, ModelAdapter } from './adapters/base.js';
+import type { RuntimeConfig } from './adapters/base.js';
 import { SessionManager } from './session.js';
+import { McpManager } from './mcp.js';
+import { type Tool, type ChatMessage, type ExecutionResult } from '@skillspace/schema';
 
 export interface AgentRunOptions {
   agent: string;
@@ -18,11 +19,13 @@ export class AgentExecutor {
   private resolver: AgentResolver;
   private sessionManager: SessionManager;
   private skillExecutor: Executor;
+  private mcpManager: McpManager;
 
-  constructor(resolver?: AgentResolver, sessionManager?: SessionManager) {
+  constructor(resolver?: AgentResolver, sessionManager?: SessionManager, mcpManager?: McpManager) {
     this.resolver = resolver ?? new AgentResolver();
     this.sessionManager = sessionManager ?? new SessionManager();
     this.skillExecutor = new Executor();
+    this.mcpManager = mcpManager ?? new McpManager();
   }
 
   async run(options: AgentRunOptions): Promise<ExecutionResult> {
@@ -84,9 +87,18 @@ export class AgentExecutor {
       content: input
     });
 
-    // 5. Generate tools from agent's skill dependencies
+    // 5. Start declared MCP servers
+    for (const srv of agent.mcp_servers || []) {
+      try {
+        await this.mcpManager.startServer(srv.name);
+      } catch (err) {
+        console.warn(`Warning: Failed to start MCP server ${srv.name}: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    }
+
+    // 6. Generate tools from agent's skill dependencies + MCP servers
     const tools: Tool[] = skills.map(s => ({
-      name: s.name.replace(/[^a-zA-Z0-9_-]/g, '_'), // ensure valid tool name format
+      name: `skill_${s.name.replace(/[^a-zA-Z0-9_-]/g, '_')}`, // prefix to avoid collisions
       description: s.description,
       parameters: {
         input: {
@@ -96,6 +108,18 @@ export class AgentExecutor {
       },
       required: ['input']
     }));
+
+    const mcpTools = this.mcpManager.getAttachedTools();
+    for (const { serverName, tool } of mcpTools) {
+      // Create a clean tool name for the LLM
+      const safeToolName = tool.name.replace(/[^a-zA-Z0-9_-]/g, '_');
+      tools.push({
+        name: `mcp_${serverName}_${safeToolName}`,
+        description: tool.description || `Tool from ${serverName}`,
+        parameters: tool.inputSchema?.properties ? tool.inputSchema.properties as any : {},
+        required: tool.inputSchema?.required || []
+      });
+    }
 
     // Execution loop
     const MAX_STEPS = 10;
@@ -120,30 +144,59 @@ export class AgentExecutor {
         for (const tc of assistantMsg.tool_calls) {
           try {
             const args = JSON.parse(tc.function.arguments);
-            const toolSkill = skills.find(s => s.name.replace(/[^a-zA-Z0-9_-]/g, '_') === tc.function.name);
             
-            if (!toolSkill) {
-              messages.push({ role: 'tool', tool_call_id: tc.id, content: `Error: Unknown tool ${tc.function.name}` });
-              continue;
+            if (tc.function.name.startsWith('skill_')) {
+              // It's a Skill
+              const skillName = tc.function.name.substring(6);
+              const toolSkill = skills.find(s => s.name.replace(/[^a-zA-Z0-9_-]/g, '_') === skillName);
+              
+              if (!toolSkill) {
+                messages.push({ role: 'tool', tool_call_id: tc.id, content: `Error: Unknown skill tool ${tc.function.name}` });
+                continue;
+              }
+
+              const toolResult = await this.skillExecutor.run({
+                skill: toolSkill.name,
+                input: typeof args.input === 'string' ? args.input : JSON.stringify(args),
+                model: modelId
+              });
+
+              messages.push({
+                role: 'tool',
+                tool_call_id: tc.id,
+                content: toolResult.output
+              });
+
+            } else if (tc.function.name.startsWith('mcp_')) {
+              // It's an MCP tool
+              // Format is mcp_serverName_toolName
+              const parts = tc.function.name.split('_');
+              const serverName = parts[1];
+              // Reconstruct original tool name by matching against our known MCP tools
+              const originalTool = mcpTools.find(m => m.serverName === serverName && m.tool.name.replace(/[^a-zA-Z0-9_-]/g, '_') === parts.slice(2).join('_'));
+              
+              if (!originalTool) {
+                messages.push({ role: 'tool', tool_call_id: tc.id, content: `Error: Unknown MCP tool ${tc.function.name}` });
+                continue;
+              }
+
+              // Execute via MCP Manager
+              const toolResult = await this.mcpManager.callTool(serverName!, originalTool.tool.name, args);
+              
+              messages.push({
+                role: 'tool',
+                tool_call_id: tc.id,
+                content: toolResult
+              });
+            } else {
+              messages.push({ role: 'tool', tool_call_id: tc.id, content: `Error: Unknown tool type ${tc.function.name}` });
             }
-
-            // Verify permissions inside the executor internally, just run it
-            const toolResult = await this.skillExecutor.run({
-              skill: toolSkill.name,
-              input: typeof args.input === 'string' ? args.input : JSON.stringify(args),
-              model: modelId
-            });
-
-            messages.push({
-              role: 'tool',
-              tool_call_id: tc.id,
-              content: toolResult.output
-            });
+            
           } catch (err) {
             messages.push({
               role: 'tool',
               tool_call_id: tc.id,
-              content: `Error executing tool: ${err instanceof Error ? err.message : err}`
+              content: `Error executing tool: ${err instanceof Error ? err.message : String(err)}`
             });
           }
         }

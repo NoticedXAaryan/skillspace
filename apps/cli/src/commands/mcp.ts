@@ -6,12 +6,18 @@ export const mcpCommand = new Command('mcp')
 
 mcpCommand
   .command('install <server>')
-  .description('Install an MCP server')
-  .action(async (serverName) => {
-    // TODO: Connect to registry to fetch MCP server config
-    // const manager = new McpManager();
-    console.log(`Installing MCP server ${serverName}... (stub)`);
-    // Example: manager.installServer({ name: serverName, version: '1.0.0', transport: 'stdio' })
+  .description('Install an MCP server configuration')
+  .option('--from <path_or_url>', 'Install from a local file path or remote URL')
+  .action(async (serverName, options) => {
+    const manager = new McpManager();
+    console.log(`Installing MCP server "${serverName}"...`);
+    try {
+      await manager.installServer(serverName, options.from);
+      console.log(`✅ Successfully installed MCP server "${serverName}".`);
+    } catch (err) {
+      console.error(`❌ Failed to install MCP server: ${err instanceof Error ? err.message : String(err)}`);
+      process.exit(1);
+    }
   });
 
 mcpCommand

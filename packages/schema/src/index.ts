@@ -48,4 +48,11 @@ export type {
   RunOptions,
   ApiResponse,
   ApiError,
+  Tool,
+  ToolCall,
+  ChatMessage,
+  SystemMessage,
+  UserMessage,
+  AssistantMessage,
+  ToolResultMessage,
 } from './types.js';
