@@ -15,11 +15,13 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@skillspace/schema": "workspace:*",
+    "jexl": "^2.3.0",
     "semver": "^7.6.0",
     "tar": "^7.4.0",
     "yaml": "^2.6.0"
   },
   "devDependencies": {
+    "@types/jexl": "^2.3.4",
     "@types/semver": "^7.5.0",
     "@types/tar": "^6.1.0",
     "rimraf": "^6.0.0",

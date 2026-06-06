@@ -18,6 +18,7 @@ export { SkillResolver, SkillNotFoundError, VersionNotFoundError } from './resol
 export { AgentResolver, AgentNotFoundError } from './agent-resolver.js';
 export { SessionManager } from './session.js';
 export { McpManager, type McpServerConfig } from './mcp.js';
+export { WorkflowResolver } from './workflow-resolver.js';
 export { WorkflowEngine, type WorkflowRunOptions } from './workflow.js';
 
 // Permissions
