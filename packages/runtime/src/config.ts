@@ -19,6 +19,7 @@ const REGISTRY_DIR = path.join(SKILLSPACE_DIR, 'registry');
 export interface SkillSpaceConfig {
   default_model?: string;
   registry_url: string;
+  registries?: string[]; // Ordered list of registry URLs for fallback
   models: Record<
     string,
     {
@@ -30,6 +31,7 @@ export interface SkillSpaceConfig {
 
 const DEFAULT_CONFIG: SkillSpaceConfig = {
   registry_url: 'http://localhost:3000',
+  registries: ['http://localhost:3000', 'https://registry.skillspace.ai'],
   models: {},
 };
 
@@ -135,6 +137,17 @@ export function setDefaultModel(modelId: string): void {
 export function getRegistryUrl(): string {
   const config = loadConfig();
   return config.registry_url;
+}
+
+/**
+ * Get all configured registries for priority-based fallback resolution.
+ */
+export function getRegistries(): string[] {
+  const config = loadConfig();
+  if (config.registries && config.registries.length > 0) {
+    return config.registries;
+  }
+  return [config.registry_url || 'http://localhost:3000', 'https://registry.skillspace.ai'];
 }
 
 /**

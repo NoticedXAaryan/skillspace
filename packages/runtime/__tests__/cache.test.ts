@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
-import * as crypto from 'node:crypto';
 import YAML from 'yaml';
 import { SkillCache } from '../src/cache.js';
 
@@ -57,11 +56,8 @@ describe('SkillCache', () => {
     const files = new Map<string, Buffer>();
     files.set('skill.yaml', Buffer.from(sampleSkillYaml));
 
-    // Calculate actual checksum
-    const hash = crypto.createHash('sha256');
-    hash.update('skill.yaml');
-    hash.update(Buffer.from(sampleSkillYaml));
-    const validChecksum = `sha256:${hash.digest('hex')}`;
+    // Use the cache's own checksum method for consistency
+    const validChecksum = cache.computeChecksum(files);
 
     // Should succeed with valid checksum
     await expect(

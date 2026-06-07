@@ -31,7 +31,35 @@ workflowCommand
 workflowCommand
   .command('list')
   .description('List available workflows')
-  .action(() => {
-    // Basic stub, a real implementation would scan directories
-    console.log(`Listing workflows not fully implemented. Check your local ./workflows/ or ~/.skillspace/workflows/ directory.`);
+  .action(async () => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const { getSkillspacePath } = await import('@skillspace/runtime/dist/config.js');
+
+    const cwd = process.cwd();
+    const dirs = [
+      { name: 'Local Project (workflows/)', path: path.join(cwd, 'workflows') },
+      { name: 'Local Project (.skillspace/workflows/)', path: path.join(cwd, '.skillspace', 'workflows') },
+      { name: 'Global (~/.skillspace/workflows/)', path: path.join(getSkillspacePath(), 'workflows') },
+    ];
+
+    let foundAny = false;
+
+    for (const dir of dirs) {
+      if (fs.existsSync(dir.path)) {
+        const files = fs.readdirSync(dir.path).filter(f => f.endsWith('.yaml') || f.endsWith('.yml'));
+        if (files.length > 0) {
+          console.log(`\n📂 ${dir.name}:`);
+          for (const file of files) {
+            console.log(`  - ${file.replace(/\.yaml$/, '').replace(/\.yml$/, '')}`);
+          }
+          foundAny = true;
+        }
+      }
+    }
+
+    if (!foundAny) {
+      console.log('No workflows found locally or globally.');
+      console.log('Create a workflow file in ./workflows/ or ~/.skillspace/workflows/.');
+    }
   });

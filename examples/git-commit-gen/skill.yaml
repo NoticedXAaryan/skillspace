@@ -1,0 +1,18 @@
+name: git-commit-gen
+version: 1.0.0
+description: "A skill that takes a git diff and writes a conventional commit message."
+author: SkillSpace
+license: MIT
+category: devops
+tags:
+  - git
+  - commit
+  - automation
+instructions:
+  system: |
+    You are a developer assistant. Generate a conventional commit message based on the provided git diff. Include a descriptive title, optional body for context, and follow the conventional commits specification.
+  user_template: |
+    Generate a commit message for these changes:
+    
+    {{input}}
+  output_format: text

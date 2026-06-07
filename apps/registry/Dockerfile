@@ -16,6 +16,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN corepack enable pnpm
 RUN cd apps/registry && pnpm prisma generate
+ENV BUILD_STANDALONE=true
 RUN pnpm --filter @skillspace/registry build
 
 # Production image, copy all the files and run next

@@ -71,6 +71,14 @@ const SkillConfigSchema = z.object({
   timeout_seconds: z.number().int().positive().default(30),
 });
 
+const McpServerRef = z.object({
+  name: z.string(),
+  transport: z.enum(['stdio', 'http']),
+  command: z.string().optional(),
+  url: z.string().url().optional(),
+  requiredScopes: z.array(z.string()),
+});
+
 // ---------------------------------------------------------------------------
 // Kebab-case name validation
 // ---------------------------------------------------------------------------
@@ -111,6 +119,9 @@ export const SkillSchema = z.object({
 
   // Permissions
   permissions: z.array(PermissionSchema).default([]),
+
+  // MCP Servers
+  mcpServers: z.array(McpServerRef).optional().default([]),
 
   // Dependencies
   dependencies: z

@@ -37,5 +37,14 @@ mcpCommand
   .command('update <server>')
   .description('Update an MCP server')
   .action(async (serverName) => {
-    console.log(`Updating MCP server ${serverName}... (stub)`);
+    const manager = new McpManager();
+    console.log(`Updating MCP server "${serverName}"...`);
+    try {
+      // Re-installing from the registry will fetch the latest config
+      await manager.installServer(serverName);
+      console.log(`✅ Successfully updated MCP server "${serverName}".`);
+    } catch (err) {
+      console.error(`❌ Failed to update MCP server: ${err instanceof Error ? err.message : String(err)}`);
+      process.exit(1);
+    }
   });

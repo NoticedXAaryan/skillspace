@@ -1,17 +1,45 @@
 import type { Command } from 'commander';
 import { saveCredentials, loadCredentials, clearCredentials } from '@skillspace/runtime';
 import { RegistryClient } from '../utils/api.js';
+import inquirer from 'inquirer';
 
 export function registerLoginCommand(program: Command): void {
   program
     .command('login')
     .description('Authenticate with the SkillSpace registry')
-    .requiredOption('-e, --email <email>', 'Your email address')
-    .requiredOption('-p, --password <password>', 'Your password')
+    .option('-e, --email <email>', 'Your email address')
+    .option('-p, --password <password>', 'Your password')
     .action(async (opts) => {
+      let email = opts.email;
+      let password = opts.password;
+
+      if (!email || !password) {
+        const answers = await inquirer.prompt([
+          {
+            type: 'input',
+            name: 'email',
+            message: 'Email:',
+            when: !email,
+          },
+          {
+            type: 'password',
+            name: 'password',
+            message: 'Password:',
+            when: !password,
+          }
+        ]);
+        email = email || answers.email;
+        password = password || answers.password;
+      }
+
+      if (!email || !password) {
+        console.error('✗ Email and password are required.');
+        process.exit(1);
+      }
+
       try {
         const client = new RegistryClient();
-        const result = await client.login(opts.email, opts.password);
+        const result = await client.login(email, password);
 
         if (result.error) {
           console.error(`✗ Login failed: ${result.error.message}`);
@@ -19,7 +47,7 @@ export function registerLoginCommand(program: Command): void {
         }
 
         saveCredentials(result.data.token);
-        console.log(`✓ Logged in as ${result.data.user.username}`);
+        console.log(`\n✓ Logged in as ${result.data.user.username}`);
       } catch (err) {
         console.error(`✗ Network error: ${err instanceof Error ? err.message : err}`);
         process.exit(1);
@@ -29,21 +57,56 @@ export function registerLoginCommand(program: Command): void {
   program
     .command('register')
     .description('Create a new SkillSpace account')
-    .requiredOption('-u, --username <username>', 'Username (3-39 chars, alphanumeric)')
-    .requiredOption('-e, --email <email>', 'Your email address')
-    .requiredOption('-p, --password <password>', 'Password (min 8 chars)')
+    .option('-u, --username <username>', 'Username (3-39 chars, alphanumeric)')
+    .option('-e, --email <email>', 'Your email address')
+    .option('-p, --password <password>', 'Password (min 8 chars)')
     .action(async (opts) => {
+      let username = opts.username;
+      let email = opts.email;
+      let password = opts.password;
+
+      if (!username || !email || !password) {
+        const answers = await inquirer.prompt([
+          {
+            type: 'input',
+            name: 'username',
+            message: 'Username:',
+            when: !username,
+          },
+          {
+            type: 'input',
+            name: 'email',
+            message: 'Email:',
+            when: !email,
+          },
+          {
+            type: 'password',
+            name: 'password',
+            message: 'Password:',
+            when: !password,
+          }
+        ]);
+        username = username || answers.username;
+        email = email || answers.email;
+        password = password || answers.password;
+      }
+
+      if (!username || !email || !password) {
+        console.error('✗ Username, email, and password are required.');
+        process.exit(1);
+      }
+
       try {
         const client = new RegistryClient();
-        const result = await client.register(opts.username, opts.email, opts.password);
+        const result = await client.register(username, email, password);
 
         if (result.error) {
-          console.error(`✗ Registration failed: ${JSON.stringify(result.error)}`);
+          console.error(`✗ Registration failed: ${result.error.message || JSON.stringify(result.error)}`);
           process.exit(1);
         }
 
         saveCredentials(result.data.token);
-        console.log(`✓ Account created! Logged in as ${result.data.user.username}`);
+        console.log(`\n✓ Account created! Logged in as ${result.data.user.username}`);
       } catch (err) {
         console.error(`✗ Network error: ${err instanceof Error ? err.message : err}`);
         process.exit(1);

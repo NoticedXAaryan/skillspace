@@ -1,11 +1,12 @@
 import type { Command } from 'commander';
-import { Executor, AgentExecutor, SkillResolver } from '@skillspace/runtime';
+import { Executor, AgentExecutor, AgentResolver } from '@skillspace/runtime';
+import inquirer from 'inquirer';
 
 export function registerRunCommand(program: Command): void {
   program
     .command('run <skill>')
-    .description('Execute a skill against an input')
-    .requiredOption('-i, --input <input>', 'Input text or file path')
+    .description('Execute a skill or agent against an input')
+    .option('-i, --input <input>', 'Input text or file path')
     .option('-m, --model <model>', 'Model to use (e.g., ollama/llama3.2)')
     .option('-o, --output <file>', 'Write output to file')
     .option('-t, --temperature <temp>', 'Override temperature', parseFloat)
@@ -14,47 +15,67 @@ export function registerRunCommand(program: Command): void {
     .action(async (skillName: string, opts) => {
       const executor = new Executor();
 
-      try {
-        const runOptions = {
-          skill: skillName,
-          input: opts.input,
-          model: opts.model,
-          output: opts.output,
-          config: {
-            ...(opts.temperature !== undefined && { temperature: opts.temperature }),
-            ...(opts.maxTokens !== undefined && { max_tokens: opts.maxTokens }),
-          },
-        };
+      let input = opts.input;
+      const isInteractive = !input;
 
-        if (opts.stream) {
-          // Streaming mode
-          process.stdout.write('');
-          for await (const chunk of executor.runStream(runOptions)) {
-            process.stdout.write(chunk);
+      if (isInteractive) {
+        console.log(`Starting interactive session with "${skillName}". Type "exit" or "quit" to stop.\n`);
+      }
+
+      try {
+        do {
+          if (isInteractive) {
+            const answers = await inquirer.prompt([
+              {
+                type: 'input',
+                name: 'input',
+                message: '❯',
+              }
+            ]);
+            input = answers.input.trim();
+            if (input.toLowerCase() === 'exit' || input.toLowerCase() === 'quit') {
+              break;
+            }
+            if (!input) continue;
           }
-          process.stdout.write('\n');
-        } else {
-          // Normal mode
+
+          const runOptions = {
+            skill: skillName,
+            input: input,
+            model: opts.model,
+            output: opts.output,
+            config: {
+              ...(opts.temperature !== undefined && { temperature: opts.temperature }),
+              ...(opts.maxTokens !== undefined && { max_tokens: opts.maxTokens }),
+            },
+          };
+
+          if (opts.stream || isInteractive) {
+            // Streaming mode
+            for await (const chunk of executor.runStream(runOptions)) {
+              process.stdout.write(chunk);
+            }
+            process.stdout.write('\n\n');
+          } else {
+          // Normal mode — determine if this is an agent or a skill
           console.log(`⟳ Running "${skillName}"...`);
-          
-          const resolver = new SkillResolver();
-          const skill = resolver.resolve(skillName);
-          
+
+          let isAgent = false;
+          try {
+            const agentResolver = new AgentResolver();
+            agentResolver.resolve(skillName);
+            isAgent = true;
+          } catch {
+            // Not an agent — will run as skill
+          }
+
           let result;
-          if (skill.type === 'agent') {
+          if (isAgent) {
             const agentExecutor = new AgentExecutor();
             result = await agentExecutor.run({
               agent: skillName,
-              input: opts.input,
+              input: input,
             });
-            // We mock the output shape from AgentExecutor for logging
-            result = {
-              ...result,
-              output: result.message?.content || '',
-              model: skill.agent?.model || 'unknown',
-              usage: { promptTokens: 0, completionTokens: 0 },
-              status: 'success'
-            };
           } else {
             result = await executor.run(runOptions);
           }
@@ -72,6 +93,7 @@ export function registerRunCommand(program: Command): void {
             console.log(`  Output saved to: ${opts.output}`);
           }
         }
+        } while (isInteractive);
       } catch (err) {
         console.error(`✗ Execution failed: ${err instanceof Error ? err.message : err}`);
         process.exit(1);

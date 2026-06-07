@@ -16,20 +16,35 @@ export function registerModelCommand(program: Command): void {
   model
     .command('add <provider>')
     .description('Configure an API key for a model provider (openai, anthropic, gemini, ollama)')
-    .requiredOption('-k, --key <apiKey>', 'API key for the provider')
+    .option('-k, --key <apiKey>', 'API key for the provider')
     .option('-u, --url <baseUrl>', 'Custom base URL for the provider')
-    .action((provider: string, opts) => {
+    .action(async (provider: string, opts) => {
       const providers = adapterRegistry.listProviders();
       if (!providers.includes(provider)) {
         console.error(`✗ Unknown provider "${provider}". Available: ${providers.join(', ')}`);
         process.exit(1);
       }
 
-      setApiKey(provider, opts.key, opts.url);
-      console.log(`✓ API key configured for "${provider}"`);
+      let key = opts.key;
+      let url = opts.url;
 
-      if (opts.url) {
-        console.log(`  Base URL: ${opts.url}`);
+      if (!key && provider !== 'ollama') {
+        const inquirer = (await import('inquirer')).default;
+        const answers = await inquirer.prompt([
+          {
+            type: 'password',
+            name: 'key',
+            message: `API Key for ${provider}:`,
+          }
+        ]);
+        key = answers.key;
+      }
+
+      setApiKey(provider, key || '', url);
+      console.log(`\n✓ Provider configured: "${provider}"`);
+
+      if (url) {
+        console.log(`  Base URL: ${url}`);
       }
     });
 
@@ -108,6 +123,7 @@ export function registerModelCommand(program: Command): void {
           category: 'other' as const,
           examples: [],
           permissions: [],
+          mcpServers: [],
           config: { temperature: 0.3, max_tokens: 100, timeout_seconds: 15 },
         };
 

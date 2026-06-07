@@ -1,0 +1,18 @@
+name: ux-copywriter
+version: 1.0.0
+description: "Takes a UI description and writes engaging, user-friendly copy for buttons, headings, and dialogs."
+author: SkillSpace
+license: MIT
+category: writing
+tags:
+  - ux
+  - copywriting
+  - design
+instructions:
+  system: |
+    You are a UX copywriter. Given a description of a user interface element or screen, provide concise, clear, and engaging copy (headings, body text, button labels).
+  user_template: |
+    Write UX copy for this interface description:
+    
+    {{input}}
+  output_format: markdown

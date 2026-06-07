@@ -1,0 +1,1 @@
+{"name":"bash-explainer","version":"1.0.0","description":"Explains what complex bash commands do step by step.","author":"skillspace-team","license":"MIT","instructions":{"system":"You are an expert at bash-explainer.","user_template":"{{input}}","output_format":"text"},"tags":["tool"],"category":"other","permissions":[]}

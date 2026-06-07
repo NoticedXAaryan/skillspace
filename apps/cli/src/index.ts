@@ -15,6 +15,7 @@ import { mcpCommand } from './commands/mcp.js';
 import { workflowCommand } from './commands/workflow.js';
 import { orgCommand } from './commands/org.js';
 import { envCommand } from './commands/environment.js';
+import { registerBenchmarkCommand } from './commands/benchmark.js';
 
 const program = new Command();
 
@@ -34,6 +35,7 @@ registerPublishCommand(program);
 registerListCommand(program);
 registerUninstallCommand(program);
 registerInfoCommand(program);
+registerBenchmarkCommand(program);
 
 program.addCommand(agentCommand);
 program.addCommand(mcpCommand);

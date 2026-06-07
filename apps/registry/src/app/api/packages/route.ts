@@ -25,10 +25,15 @@ export async function GET(req: NextRequest) {
     prisma.package.count({ where }),
   ]);
 
+  const safeParse = (str: any, fallback: any) => {
+    try { return typeof str === 'string' ? JSON.parse(str) : str || fallback; }
+    catch { return fallback; }
+  };
+
   return success(
     packages.map((p) => ({
       ...p,
-      tags: JSON.parse(p.tags),
+      tags: safeParse(p.tags, []),
       latestVersion: p.versions[0]?.version,
     })),
     { page, limit, total },

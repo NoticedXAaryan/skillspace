@@ -7,6 +7,7 @@ import { ExecutionError, Executor } from './executor.js';
 import type { RuntimeConfig } from './adapters/base.js';
 import { SessionManager } from './session.js';
 import { McpManager } from './mcp.js';
+import { TelemetryClient } from './telemetry.js';
 import { type Tool, type ChatMessage, type ExecutionResult } from '@skillspace/schema';
 
 export interface AgentRunOptions {
@@ -97,7 +98,7 @@ export class AgentExecutor {
       }
     }
 
-    // 6. Generate tools from agent's skill dependencies + MCP servers
+    // 6. Generate tools from agent's skill dependencies + MCP servers + builtins
     const tools: Tool[] = skills.map(s => ({
       name: `skill_${s.name.replace(/[^a-zA-Z0-9_-]/g, '_')}`, // prefix to avoid collisions
       description: s.description,
@@ -119,6 +120,35 @@ export class AgentExecutor {
         description: tool.description || `Tool from ${serverName}`,
         parameters: tool.inputSchema?.properties ? tool.inputSchema.properties as any : {},
         required: tool.inputSchema?.required || []
+      });
+    }
+
+    // Add Builtin Tools based on permissions
+    if (combinedPermissions.has('filesystem.read')) {
+      tools.push({
+        name: 'builtin_filesystem_read',
+        description: 'Read the contents of a local file',
+        parameters: { path: { type: 'string', description: 'Absolute or relative path to the file' } },
+        required: ['path']
+      });
+    }
+    if (combinedPermissions.has('filesystem.write')) {
+      tools.push({
+        name: 'builtin_filesystem_write',
+        description: 'Write content to a local file',
+        parameters: { 
+          path: { type: 'string', description: 'Absolute or relative path to the file' },
+          content: { type: 'string', description: 'Content to write to the file' }
+        },
+        required: ['path', 'content']
+      });
+    }
+    if (combinedPermissions.has('network.fetch')) {
+      tools.push({
+        name: 'builtin_network_fetch',
+        description: 'Fetch content from a URL',
+        parameters: { url: { type: 'string', description: 'The URL to fetch' } },
+        required: ['url']
       });
     }
 
@@ -146,7 +176,25 @@ export class AgentExecutor {
           try {
             const args = JSON.parse(tc.function.arguments);
             
-            if (tc.function.name.startsWith('skill_')) {
+            if (tc.function.name.startsWith('builtin_')) {
+              // Built-in tools
+              if (tc.function.name === 'builtin_filesystem_read') {
+                enforcer.check('filesystem.read');
+                const content = fs.readFileSync(args.path, 'utf-8');
+                messages.push({ role: 'tool', tool_call_id: tc.id, content });
+              } else if (tc.function.name === 'builtin_filesystem_write') {
+                enforcer.check('filesystem.write');
+                fs.writeFileSync(args.path, args.content, 'utf-8');
+                messages.push({ role: 'tool', tool_call_id: tc.id, content: `Successfully wrote to ${args.path}` });
+              } else if (tc.function.name === 'builtin_network_fetch') {
+                enforcer.check('network.fetch');
+                const res = await fetch(args.url);
+                const text = await res.text();
+                messages.push({ role: 'tool', tool_call_id: tc.id, content: text });
+              } else {
+                messages.push({ role: 'tool', tool_call_id: tc.id, content: `Error: Unknown builtin tool ${tc.function.name}` });
+              }
+            } else if (tc.function.name.startsWith('skill_')) {
               // It's a Skill
               const skillName = tc.function.name.substring(6);
               const toolSkill = skills.find(s => s.name.replace(/[^a-zA-Z0-9_-]/g, '_') === skillName);
@@ -219,6 +267,15 @@ export class AgentExecutor {
     }
 
     finalResult.duration_ms = Date.now() - startTime;
+    
+    TelemetryClient.sendEventSafe({
+      packageId: agent.name,
+      version: agent.version,
+      modelId,
+      durationMs: finalResult.duration_ms,
+      status: 'success'
+    });
+
     return finalResult;
   }
 

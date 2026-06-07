@@ -1,6 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import * as tar from 'tar';
 
 const prisma = new PrismaClient();
 
@@ -59,9 +62,21 @@ async function main() {
         output_format: 'text'
       },
       tags: ['tool'],
-      category: 'productivity',
+      category: 'other',
       permissions: []
     });
+
+    const tempDir = path.join(process.cwd(), '.temp_seed_skill');
+    if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+    fs.writeFileSync(path.join(tempDir, 'skill.yaml'), manifestStr);
+    
+    const outPath = path.join(process.cwd(), '.temp_seed_skill.tar.gz');
+    await tar.c({ gzip: true, file: outPath, C: tempDir }, ['.']);
+    const tarBuffer = fs.readFileSync(outPath);
+    
+    const storageDir = path.join(process.cwd(), '.storage');
+    if (!fs.existsSync(storageDir)) fs.mkdirSync(storageDir, { recursive: true });
+    fs.writeFileSync(path.join(storageDir, `${s.name}-1.0.0.skillpkg`), tarBuffer);
 
     await prisma.packageVersion.upsert({
       where: { packageId_version: { packageId: pkg.id, version: '1.0.0' } },
@@ -71,7 +86,7 @@ async function main() {
         version: '1.0.0',
         manifest: manifestStr,
         storagePath: `packages/${s.name}/1.0.0.skillpkg`,
-        checksum: `sha256:${crypto.createHash('sha256').update(manifestStr).digest('hex')}`,
+        checksum: `sha256:${crypto.createHash('sha256').update(tarBuffer).digest('hex')}`,
       },
     });
     console.log(`Seeded package: ${s.name}@1.0.0`);

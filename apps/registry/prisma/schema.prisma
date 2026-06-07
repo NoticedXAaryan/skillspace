@@ -17,6 +17,9 @@ model User {
   createdAt    DateTime  @default(now())
   packages     Package[]
   orgMemberships OrgMember[]
+  executionLogs ExecutionLog[]
+  addedAllowlists PackageAllowlist[]
+  playgroundSessions PlaygroundSession[]
 }
 
 model Organization {
@@ -27,6 +30,8 @@ model Organization {
   createdAt   DateTime    @default(now())
   members     OrgMember[]
   packages    Package[]
+  allowlistedPackages PackageAllowlist[]
+  accessPolicies AccessPolicy[]
 }
 
 model OrgMember {
@@ -57,6 +62,8 @@ model Package {
   isPrivate   Boolean          @default(false)
   createdAt   DateTime         @default(now())
   versions    PackageVersion[]
+  executions  ExecutionLog[]
+  benchmarks  BenchmarkScore[]
 }
 
 model PackageVersion {
@@ -71,4 +78,72 @@ model PackageVersion {
   publishedAt DateTime @default(now())
 
   @@unique([packageId, version])
+}
+
+model ExecutionLog {
+  id          String   @id @default(uuid())
+  packageId   String
+  package     Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  version     String
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  orgId       String?
+  modelId     String
+  durationMs  Int
+  tokensUsed  Int      @default(0)
+  status      String   @default("success") // success, error
+  errorMessage String?
+  createdAt   DateTime @default(now())
+}
+
+model BenchmarkScore {
+  id          String   @id @default(uuid())
+  packageId   String
+  package     Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  version     String
+  suiteName   String
+  score       Float
+  passedCount Int
+  totalCount  Int
+  createdAt   DateTime @default(now())
+
+  @@unique([packageId, version, suiteName])
+}
+
+model PackageAllowlist {
+  id        String   @id @default(uuid())
+  orgId     String
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  package   String   // The name of the allowed package
+  addedById String
+  addedBy   User     @relation(fields: [addedById], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([orgId, package])
+}
+
+model AccessPolicy {
+  id        String   @id @default(uuid())
+  orgId     String
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  role      String   // admin, member, custom
+  resource  String   // 'packages', 'benchmarks', 'analytics', 'settings'
+  action    String   // 'read', 'write', 'delete'
+  effect    String   @default("allow") // 'allow', 'deny'
+  createdAt DateTime @default(now())
+}
+
+model PlaygroundSession {
+  id          String   @id @default(cuid())
+  skillName   String
+  input       String
+  output      String?
+  durationMs  Int?
+  modelUsed   String?
+  status      String   @default("pending") // pending | running | done | error
+  error       String?
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime // sessions auto-expire after 24h
 }

@@ -18,7 +18,7 @@
   --accent: #00d4ff;
   --gradient-start: #667eea;
   --gradient-end: #764ba2;
-  --gradient-accent: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-accent: linear-gradient(135deg, #00d4ff 0%, #764ba2 100%);
   --success: #10b981;
   --warning: #f59e0b;
   --error: #ef4444;
@@ -53,8 +53,8 @@ body::before {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(102, 126, 234, 0.12), transparent),
-    radial-gradient(ellipse 60% 40% at 80% 50%, rgba(118, 75, 162, 0.06), transparent);
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(102, 126, 234, 0.08), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 50%, rgba(118, 75, 162, 0.05), transparent);
   pointer-events: none;
   z-index: -1;
 }
@@ -68,35 +68,44 @@ body::before {
   align-items: center;
   justify-content: space-between;
   padding: 0 2rem;
-  height: 64px;
-  background: rgba(6, 6, 11, 0.8);
+  height: 72px;
+  background: rgba(6, 6, 11, 0.6);
   backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid var(--border);
 }
 
 .navLogo {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 800;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.navLogo span {
   background: var(--gradient-accent);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  letter-spacing: -0.02em;
 }
 
-.navLinks { display: flex; gap: 1.5rem; align-items: center; }
+.navLinks { display: flex; gap: 2rem; align-items: center; }
 .navLinks a {
   color: var(--text-secondary);
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   font-weight: 500;
   transition: color var(--transition);
 }
-.navLinks a:hover { color: var(--text-primary); }
+.navLinks a:hover { color: #fff; }
+.navLinks .active { color: #fff; }
 
 /* ─── Buttons ─── */
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
   border-radius: var(--radius-sm);
@@ -115,18 +124,19 @@ body::before {
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 .btnPrimary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 25px rgba(102, 126, 234, 0.45);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.45);
 }
 
 .btnSecondary {
   background: var(--bg-card);
-  color: var(--text-primary);
+  color: #fff;
   border: 1px solid var(--border);
 }
 .btnSecondary:hover {
   background: var(--bg-card-hover);
   border-color: var(--border-hover);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 /* ─── Cards ─── */
@@ -145,25 +155,6 @@ body::before {
   transform: translateY(-2px);
 }
 
-/* ─── Inputs ─── */
-.input {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
-  font-size: 0.9375rem;
-  font-family: var(--font-sans);
-  outline: none;
-  transition: all var(--transition);
-}
-.input:focus {
-  border-color: var(--gradient-start);
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
-}
-.input::placeholder { color: var(--text-muted); }
-
 /* ─── Tags ─── */
 .tag {
   display: inline-flex;
@@ -173,33 +164,121 @@ body::before {
   border: 1px solid rgba(102, 126, 234, 0.2);
   border-radius: 100px;
   font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--gradient-start);
+  font-weight: 600;
+  color: var(--accent);
 }
 
 /* ─── Code Block ─── */
 .codeBlock {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.6);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 1rem 1.25rem;
   font-family: var(--font-mono);
   font-size: 0.875rem;
-  color: var(--accent);
+  color: #00d4ff;
   overflow-x: auto;
-  position: relative;
 }
-.codeBlock .copyBtn {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
+
+/* ─── Version Picker ─── */
+.versionPickerContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.versionPickerBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  color: var(--text-secondary);
-  padding: 0.25rem 0.5rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
+  color: var(--text-primary);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
   cursor: pointer;
+  transition: all var(--transition);
+}
+
+.versionPickerBtn:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-hover);
+}
+
+.versionPickerMenu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  width: 220px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  z-index: 50;
+  overflow: hidden;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.versionPickerHeader {
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  font-weight: 700;
+}
+
+.versionList {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.versionOption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  text-align: left;
+  font-size: 0.875rem;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.versionOption:hover {
+  background: var(--bg-card-hover);
+}
+
+.versionOption.selected {
+  background: rgba(102, 126, 234, 0.1);
+  color: var(--accent);
+}
+
+.versionText {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.latestBadge {
+  background: var(--success);
+  color: #000;
+  font-size: 0.6rem;
+  font-weight: 800;
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.checkIcon {
+  color: var(--accent);
 }
 
 /* ─── Animations ─── */
@@ -211,28 +290,12 @@ body::before {
   from { opacity: 0; }
   to { opacity: 1; }
 }
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
-}
 
-.fadeInUp { animation: fadeInUp 0.6s ease-out both; }
-.fadeIn { animation: fadeIn 0.4s ease-out both; }
+.fadeInUp { animation: fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 
 /* ─── Container ─── */
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 1.5rem;
-}
-
-/* ─── Responsive ─── */
-@media (max-width: 768px) {
-  .navbar { padding: 0 1rem; }
-  .navLinks { gap: 1rem; }
-  .container { padding: 0 1rem; }
 }

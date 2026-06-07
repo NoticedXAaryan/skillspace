@@ -18,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </a>
           <div className="navLinks">
             <a href="/">Explore</a>
+            <a href="/docs">Docs</a>
             <a href="/login">Sign In</a>
             <a href="/register" className="btn btnPrimary" style={{ padding: '0.5rem 1rem' }}>
               Get Started

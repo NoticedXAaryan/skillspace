@@ -8,6 +8,7 @@ import {
 } from '@skillspace/runtime';
 import { RegistryClient } from '../utils/api.js';
 import { extractSkillPackage } from '../utils/packager.js';
+import { getRegistries } from '@skillspace/runtime';
 
 export function registerInstallCommand(program: Command): void {
   program
@@ -16,16 +17,34 @@ export function registerInstallCommand(program: Command): void {
     .option('-v, --version <version>', 'Specific version to install')
     .action(async (pkgName: string, opts) => {
       const cache = new SkillCache();
-      const client = new RegistryClient();
+      const registries = getRegistries();
       const cwd = process.cwd();
       let lock = readLockFile(cwd) || createEmptyLockFile();
 
       async function installRecursively(name: string, requestedVersion?: string): Promise<void> {
         console.log(`⟳ Resolving ${name}...`);
-        const pkgInfo = await client.getPackage(name);
+        
+        let pkgInfo: any = null;
+        let activeClient: RegistryClient | null = null;
+        let fetchError: Error | null = null;
 
-        if (pkgInfo.error) {
-          throw new Error(pkgInfo.error.message);
+        // Priority-based resolution: loop through registries
+        for (const url of registries) {
+          const client = new RegistryClient(url);
+          try {
+            const info = await client.getPackage(name);
+            if (!info.error) {
+              pkgInfo = info;
+              activeClient = client;
+              break;
+            }
+          } catch (err) {
+            fetchError = err instanceof Error ? err : new Error(String(err));
+          }
+        }
+
+        if (!pkgInfo) {
+          throw fetchError || new Error(`Package "${name}" not found in any configured registry.`);
         }
 
         const version = requestedVersion || pkgInfo.data.latestVersion?.version;
@@ -39,7 +58,7 @@ export function registerInstallCommand(program: Command): void {
         }
 
         console.log(`⟳ Downloading ${name}@${version}...`);
-        const { buffer, checksum } = await client.downloadPackage(name, version);
+        const { buffer, checksum } = await activeClient!.downloadPackage(name, version);
 
         if (checksum) {
           const crypto = await import('node:crypto');
@@ -55,29 +74,33 @@ export function registerInstallCommand(program: Command): void {
 
         lock = addSkillToLockFile(lock, name, {
           version,
-          resolved: `${client['baseUrl']}/api/packages/${name}/${version}/download`,
+          resolved: `${activeClient!['baseUrl']}/api/packages/${name}/${version}/download`,
           checksum: checksum || 'unknown',
         });
 
-        // Check if it's an agent and install dependencies
         const fs = await import('node:fs');
         const path = await import('node:path');
-        if (fs.existsSync(path.join(pkgDir, 'skill.yaml'))) {
+        let manifestPath = path.join(pkgDir, 'agent.yaml');
+        if (!fs.existsSync(manifestPath)) {
+          manifestPath = path.join(pkgDir, 'skill.yaml');
+        }
+
+        if (fs.existsSync(manifestPath)) {
           try {
-            const raw = fs.readFileSync(path.join(pkgDir, 'skill.yaml'), 'utf-8');
+            const raw = fs.readFileSync(manifestPath, 'utf-8');
             const YAML = await import('yaml');
             const parsed = YAML.parse(raw);
-            if (parsed.type === 'agent') {
+            if (parsed.type === 'agent' || path.basename(manifestPath) === 'agent.yaml') {
               const agent = cache.loadAgent(name, version);
               if (agent.skills && agent.skills.length > 0) {
-                console.log(`⟳ Resolving dependencies for ${name}@${version}...`);
+                console.log(`⟳ Resolving dependencies for agent ${name}@${version}...`);
                 for (const skillDep of agent.skills) {
                   await installRecursively(skillDep.name, skillDep.version.replace('^', '').replace('~', ''));
                 }
               }
             }
-          } catch {
-            // Ignore if it fails to parse or is not an agent
+          } catch (e) {
+            console.warn(`Warning: Could not parse manifest for ${name}@${version}:`, e);
           }
         }
         console.log(`✓ Installed ${name}@${version}`);

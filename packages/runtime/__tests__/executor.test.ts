@@ -55,6 +55,16 @@ describe('Executor', () => {
       };
     });
 
+    // Mock TelemetryClient
+    vi.mock('../src/telemetry.js', () => {
+      return {
+        TelemetryClient: {
+          sendEventSafe: vi.fn(),
+          sendEvent: vi.fn(),
+        }
+      };
+    });
+
     // Mock global fetch
     global.fetch = vi.fn();
   });

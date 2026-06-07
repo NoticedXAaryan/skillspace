@@ -1,0 +1,18 @@
+name: doc-generator
+version: 1.0.0
+description: "Reads a source code file and writes JSDoc or standard documentation comments for functions and classes."
+author: SkillSpace
+license: MIT
+category: writing
+tags:
+  - documentation
+  - jsdoc
+  - comments
+instructions:
+  system: |
+    You are a technical writer. Document the provided code by adding appropriate JSDoc comments to all functions, classes, and complex logic blocks. Only output the documented code.
+  user_template: |
+    Add documentation comments to this code:
+    
+    {{input}}
+  output_format: markdown

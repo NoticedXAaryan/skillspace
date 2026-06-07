@@ -21,9 +21,20 @@ export class RegistryClient {
     return headers;
   }
 
+  private async safeFetch(url: string, init?: RequestInit): Promise<Response> {
+    try {
+      return await fetch(url, init);
+    } catch (err: any) {
+      if (err.cause?.code === 'ECONNREFUSED' || err.message.includes('fetch failed')) {
+        throw new Error(`Could not connect to the registry at ${this.baseUrl}. Is your internet down or the server offline?`);
+      }
+      throw err;
+    }
+  }
+
   async register(username: string, email: string, password: string): Promise<any> {
     console.log(`[DEBUG] Fetching ${this.baseUrl}/api/auth/register`);
-    const res = await fetch(`${this.baseUrl}/api/auth/register`, {
+    const res = await this.safeFetch(`${this.baseUrl}/api/auth/register`, {
       method: 'POST',
       headers: this.getHeaders(),
       body: JSON.stringify({ username, email, password }),
@@ -32,7 +43,7 @@ export class RegistryClient {
   }
 
   async login(email: string, password: string): Promise<any> {
-    const res = await fetch(`${this.baseUrl}/api/auth/login`, {
+    const res = await this.safeFetch(`${this.baseUrl}/api/auth/login`, {
       method: 'POST',
       headers: this.getHeaders(),
       body: JSON.stringify({ email, password }),
@@ -41,7 +52,7 @@ export class RegistryClient {
   }
 
   async me(): Promise<any> {
-    const res = await fetch(`${this.baseUrl}/api/auth/me`, {
+    const res = await this.safeFetch(`${this.baseUrl}/api/auth/me`, {
       headers: this.getHeaders(true),
     });
     return res.json();
@@ -50,17 +61,17 @@ export class RegistryClient {
   async search(query: string, type?: string): Promise<any> {
     const params = new URLSearchParams({ q: query });
     if (type) params.set('type', type);
-    const res = await fetch(`${this.baseUrl}/api/search?${params.toString()}`);
+    const res = await this.safeFetch(`${this.baseUrl}/api/search?${params.toString()}`);
     return res.json();
   }
 
   async getPackage(name: string): Promise<any> {
-    const res = await fetch(`${this.baseUrl}/api/packages/${encodeURIComponent(name)}`);
+    const res = await this.safeFetch(`${this.baseUrl}/api/packages/${encodeURIComponent(name)}`);
     return res.json();
   }
 
   async getVersions(name: string): Promise<any> {
-    const res = await fetch(
+    const res = await this.safeFetch(
       `${this.baseUrl}/api/packages/${encodeURIComponent(name)}/versions`,
     );
     return res.json();
@@ -70,7 +81,7 @@ export class RegistryClient {
     name: string,
     version: string,
   ): Promise<{ buffer: Buffer; checksum: string }> {
-    const res = await fetch(
+    const res = await this.safeFetch(
       `${this.baseUrl}/api/packages/${encodeURIComponent(name)}/${encodeURIComponent(version)}/download`,
     );
     if (!res.ok) throw new Error(`Download failed: ${res.statusText}`);
@@ -86,7 +97,7 @@ export class RegistryClient {
       metadata,
     });
 
-    const res = await fetch(`${this.baseUrl}/api/packages`, {
+    const res = await this.safeFetch(`${this.baseUrl}/api/packages`, {
       method: 'POST',
       headers,
       body,
@@ -95,7 +106,7 @@ export class RegistryClient {
   }
 
   async createOrg(name: string, slug: string): Promise<any> {
-    const res = await fetch(`${this.baseUrl}/api/orgs`, {
+    const res = await this.safeFetch(`${this.baseUrl}/api/orgs`, {
       method: 'POST',
       headers: this.getHeaders(true),
       body: JSON.stringify({ name, slug }),
@@ -104,7 +115,7 @@ export class RegistryClient {
   }
 
   async createOrgInvite(slug: string, role: string = 'member'): Promise<any> {
-    const res = await fetch(`${this.baseUrl}/api/orgs/${encodeURIComponent(slug)}/invites`, {
+    const res = await this.safeFetch(`${this.baseUrl}/api/orgs/${encodeURIComponent(slug)}/invites`, {
       method: 'POST',
       headers: this.getHeaders(true),
       body: JSON.stringify({ role }),
@@ -113,7 +124,7 @@ export class RegistryClient {
   }
 
   async acceptOrgInvite(token: string): Promise<any> {
-    const res = await fetch(`${this.baseUrl}/api/orgs/invites/accept`, {
+    const res = await this.safeFetch(`${this.baseUrl}/api/orgs/invites/accept`, {
       method: 'POST',
       headers: this.getHeaders(true),
       body: JSON.stringify({ token }),

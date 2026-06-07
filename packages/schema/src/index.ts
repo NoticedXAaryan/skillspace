@@ -6,6 +6,7 @@ export { AgentSchema } from './agent.schema.js';
 export { LockFileSchema } from './lockfile.schema.js';
 export { ManifestSchema } from './manifest.schema.js';
 export { WorkflowSchema } from './workflow.schema.js';
+export { BenchmarkSuiteSchema, validateBenchmark } from './benchmark.schema.js';
 export {
   ToolSchema,
   ToolParameterSchema,

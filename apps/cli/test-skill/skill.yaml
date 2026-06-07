@@ -1,0 +1,9 @@
+name: test-skill
+version: 1.0.0
+description: A test skill
+author: testuser
+license: MIT
+instructions:
+  system: "You are a test."
+  user_template: "Do this: {{input}}"
+  output_format: "text"

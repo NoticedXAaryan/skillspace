@@ -34,6 +34,7 @@ export {
   getDefaultModel,
   setDefaultModel,
   getRegistryUrl,
+  getRegistries,
   listConfiguredModels,
   saveCredentials,
   loadCredentials,
@@ -53,3 +54,10 @@ export {
   addSkillToLockFile,
   removeSkillFromLockFile,
 } from './lockfile.js';
+
+// Firewall
+export {
+  type FirewallVerdict,
+  type FirewallContext,
+  type InjectionFirewall,
+} from './firewall/injectionFirewall.js';

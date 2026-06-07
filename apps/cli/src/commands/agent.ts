@@ -40,14 +40,27 @@ agentCommand
   .command('install <agent>')
   .description('Install an agent and its dependencies')
   .action(async (agentName) => {
-    // TODO: Connect to registry and fetch agent and skills
-    console.log(`Installing agent ${agentName}... (registry connection stubbed)`);
+    console.log(`To install an agent, use the unified install command:`);
+    console.log(`  skillspace install ${agentName}`);
   });
 
 agentCommand
   .command('list')
   .description('List installed agents')
   .action(async () => {
-    // TODO: Use cache to list agents
-    console.log('Installed agents: (stub)');
+    const { SkillCache } = await import('@skillspace/runtime');
+    const cache = new SkillCache();
+    const installed = cache.listInstalledAgents();
+
+    if (installed.length === 0) {
+      console.log('No agents installed.');
+      return;
+    }
+
+    console.log(`Installed agents (${installed.length}):\n`);
+
+    for (const pkg of installed) {
+      console.log(`  ${pkg.name}@${pkg.version}`);
+      console.log(`    Path: ${pkg.path}`);
+    }
   });

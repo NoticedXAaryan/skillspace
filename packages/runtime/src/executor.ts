@@ -5,6 +5,10 @@ import { PermissionEnforcer } from './permissions.js';
 import { adapterRegistry } from './adapters/registry.js';
 import { loadConfig, getApiKey, getBaseUrl } from './config.js';
 import type { RuntimeConfig } from './adapters/base.js';
+import { TelemetryClient } from './telemetry.js';
+import { LocalModelScreener } from './firewall/LocalModelScreener.js';
+import { McpRegistry } from './mcp/McpRegistry.js';
+import type { Tool, ChatMessage } from '@skillspace/schema';
 
 // ---------------------------------------------------------------------------
 // Error types
@@ -18,6 +22,13 @@ export class ExecutionError extends Error {
   ) {
     super(message);
     this.name = 'ExecutionError';
+  }
+}
+
+export class FirewallBlockedError extends ExecutionError {
+  constructor(message: string) {
+    super(message, 'FIREWALL_BLOCKED', false);
+    this.name = 'FirewallBlockedError';
   }
 }
 
@@ -76,36 +87,156 @@ export class Executor {
     // 6. Read input (file path or string)
     const input = this.resolveInput(options.input, enforcer);
 
-    // 7. Build model request
-    const request = adapter.buildRequest(skill, input, runtimeConfig);
+    // Firewall Screening
+    if (process.env.FIREWALL_ENABLED === 'true') {
+      const firewall = new LocalModelScreener();
+      const verdict = await firewall.screen(input, {
+        skillName: skill.name,
+        requestedScopes: skill.permissions || [],
+      });
 
-    // 8. Call model API with retry logic
-    const rawResponse = await this.callWithRetry(
-      request,
-      runtimeConfig.timeoutSeconds ?? 30,
-    );
-
-    // 9. Parse response
-    const result = adapter.parseResponse(rawResponse);
-    result.duration_ms = Date.now() - startTime;
-
-    // 10. Validate output schema if specified
-    if (skill.instructions.output_format === 'json' && skill.instructions.output_schema) {
-      try {
-        JSON.parse(result.output);
-      } catch {
-        // If output_format is json but output is not valid JSON, mark as warning
-        console.warn(`Warning: Expected JSON output but received plain text from model.`);
+      if (!verdict.safe && verdict.confidence > 0.85) {
+        TelemetryClient.sendEventSafe({
+          packageId: skill.name,
+          version: skill.version,
+          modelId: 'firewall',
+          durationMs: 0,
+          status: 'error',
+          errorMessage: `Firewall blocked: ${verdict.reason}`
+        });
+        throw new FirewallBlockedError(
+          `Input blocked by injection firewall: ${verdict.reason}`
+        );
       }
     }
 
-    // 11. Write output to file if specified
-    if (options.output) {
-      enforcer.check('filesystem.write');
-      fs.writeFileSync(options.output, result.output, 'utf-8');
-    }
+    const mcpRegistry = new McpRegistry();
+    let finalResult: import('@skillspace/schema').ExecutionResult | null = null;
 
-    return result;
+    try {
+      const hasMcp = skill.mcpServers && skill.mcpServers.length > 0;
+      const tools: Tool[] = [];
+
+      if (hasMcp) {
+        if (!adapter.buildChatRequest) {
+          throw new ExecutionError(`Adapter ${adapter.providerName} does not support Chat required for MCP`, 'UNSUPPORTED_ADAPTER');
+        }
+        for (const srv of skill.mcpServers!) {
+          await mcpRegistry.connect(srv);
+          const serverTools = await mcpRegistry.listTools(srv.name);
+          for (const t of serverTools) {
+            tools.push({
+              name: `mcp_${srv.name}_${t.name.replace(/[^a-zA-Z0-9_-]/g, '_')}`,
+              description: t.description || `Tool from ${srv.name}`,
+              parameters: t.inputSchema?.properties as any || {},
+              required: t.inputSchema?.required || []
+            });
+          }
+        }
+
+        const messages: ChatMessage[] = [
+          { role: 'system', content: skill.instructions.system },
+          { role: 'user', content: skill.instructions.user_template.replace('{{input}}', input) }
+        ];
+
+        let stepCount = 0;
+        const MAX_STEPS = 10;
+        while (stepCount < MAX_STEPS) {
+          stepCount++;
+          const request = adapter.buildChatRequest(messages, tools, runtimeConfig);
+          const rawResponse = await this.callWithRetry(request, runtimeConfig.timeoutSeconds ?? 30);
+          const result = adapter.parseResponse(rawResponse);
+          const assistantMsg = result.message;
+
+          if (!assistantMsg) {
+            finalResult = result;
+            break;
+          }
+
+          messages.push(assistantMsg);
+
+          if (assistantMsg.tool_calls && assistantMsg.tool_calls.length > 0) {
+            for (const tc of assistantMsg.tool_calls) {
+              try {
+                const args = JSON.parse(tc.function.arguments);
+                if (tc.function.name.startsWith('mcp_')) {
+                  const parts = tc.function.name.split('_');
+                  const serverName = parts[1];
+                  const originalToolName = parts.slice(2).join('_');
+                  
+                  // Enforce permissions explicitly required by this server
+                  const srv = skill.mcpServers!.find(s => s.name === serverName);
+                  if (srv && srv.requiredScopes) {
+                    for (const scope of srv.requiredScopes) {
+                      enforcer.check(scope);
+                    }
+                  }
+
+                  const toolResult = await mcpRegistry.callTool(serverName!, originalToolName, args);
+                  messages.push({ role: 'tool', tool_call_id: tc.id, content: typeof toolResult === 'string' ? toolResult : JSON.stringify(toolResult) });
+                } else {
+                  messages.push({ role: 'tool', tool_call_id: tc.id, content: `Error: Unknown tool type` });
+                }
+              } catch (err) {
+                messages.push({ role: 'tool', tool_call_id: tc.id, content: `Error executing tool: ${(err as Error).message}` });
+              }
+            }
+          } else {
+            finalResult = result;
+            break;
+          }
+        }
+        if (!finalResult) {
+          throw new ExecutionError('Skill execution exceeded max steps', 'MAX_STEPS_EXCEEDED');
+        }
+      } else {
+        // Normal execution path
+        const request = adapter.buildRequest(skill, input, runtimeConfig);
+        const rawResponse = await this.callWithRetry(request, runtimeConfig.timeoutSeconds ?? 30);
+        finalResult = adapter.parseResponse(rawResponse);
+      }
+
+      finalResult.duration_ms = Date.now() - startTime;
+      const result = finalResult;
+      result.duration_ms = Date.now() - startTime;
+
+      // 10. Validate output schema if specified
+      if (skill.instructions.output_format === 'json' && skill.instructions.output_schema) {
+        try {
+          JSON.parse(result.output);
+        } catch {
+          // If output_format is json but output is not valid JSON, mark as warning
+          console.warn(`Warning: Expected JSON output but received plain text from model.`);
+        }
+      }
+
+      // 11. Write output to file if specified
+      if (options.output) {
+        enforcer.check('filesystem.write');
+        fs.writeFileSync(options.output, result.output, 'utf-8');
+      }
+
+      TelemetryClient.sendEventSafe({
+        packageId: skill.name,
+        version: skill.version,
+        modelId,
+        durationMs: result.duration_ms || 0,
+        status: 'success'
+      });
+
+      return result;
+    } catch (e) {
+      TelemetryClient.sendEventSafe({
+        packageId: skill.name,
+        version: skill.version,
+        modelId,
+        durationMs: Date.now() - startTime,
+        status: 'error'
+      });
+      throw e;
+    } finally {
+      await mcpRegistry.disconnectAll();
+    }
   }
 
   /**
@@ -144,6 +275,30 @@ export class Executor {
     };
 
     const input = this.resolveInput(options.input, enforcer);
+
+    // Firewall Screening
+    if (process.env.FIREWALL_ENABLED === 'true') {
+      const firewall = new LocalModelScreener();
+      const verdict = await firewall.screen(input, {
+        skillName: skill.name,
+        requestedScopes: skill.permissions || [],
+      });
+
+      if (!verdict.safe && verdict.confidence > 0.85) {
+        TelemetryClient.sendEventSafe({
+          packageId: skill.name,
+          version: skill.version,
+          modelId: 'firewall',
+          durationMs: 0,
+          status: 'error',
+          errorMessage: `Firewall blocked: ${verdict.reason}`
+        });
+        throw new FirewallBlockedError(
+          `Input blocked by injection firewall: ${verdict.reason}`
+        );
+      }
+    }
+
     const request = adapter.buildRequest(skill, input, runtimeConfig);
 
     // Enable streaming in the request body
@@ -157,6 +312,8 @@ export class Executor {
       () => controller.abort(),
       (runtimeConfig.timeoutSeconds ?? 30) * 1000,
     );
+
+    const startTime = Date.now();
 
     try {
       const response = await fetch(request.url, {
@@ -201,6 +358,23 @@ export class Executor {
         const text = adapter.parseStreamChunk(buffer);
         if (text) yield text;
       }
+      
+      TelemetryClient.sendEventSafe({
+        packageId: skill.name,
+        version: skill.version,
+        modelId,
+        durationMs: Date.now() - startTime,
+        status: 'success'
+      });
+    } catch (e) {
+      TelemetryClient.sendEventSafe({
+        packageId: skill.name,
+        version: skill.version,
+        modelId,
+        durationMs: Date.now() - startTime,
+        status: 'error'
+      });
+      throw e;
     } finally {
       clearTimeout(timeout);
     }

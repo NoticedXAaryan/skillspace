@@ -12,12 +12,12 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@skillspace/schema": "workspace:*",
-    "@skillspace/runtime": "workspace:*"
+    "@skillspace/runtime": "workspace:*",
+    "@skillspace/schema": "workspace:*"
   },
   "devDependencies": {
+    "rimraf": "^6.0.0",
     "typescript": "^5.7.0",
-    "vitest": "^3.2.0",
-    "rimraf": "^6.0.0"
+    "vitest": "^3.2.6"
   }
 }

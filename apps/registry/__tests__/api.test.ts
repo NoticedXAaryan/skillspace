@@ -157,18 +157,20 @@ describe('Registry API', () => {
     it('publishes a new package', async () => {
       vi.mocked(getUserFromRequest).mockReturnValue({ userId: 'user-1', username: 'testuser', email: 'test@example.com' });
       
-      const formData = new FormData();
-      formData.append('metadata', JSON.stringify({
-        name: 'new-skill',
-        version: '1.0.0',
-        description: 'New skill',
-        type: 'skill',
-      }));
-      formData.append('file', new Blob(['fake file content']), 'package.skillpkg');
+      const fileContent = Buffer.from('fake file content').toString('base64');
 
       const req = new NextRequest('http://localhost/api/packages', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          file: fileContent,
+          metadata: {
+            name: 'new-skill',
+            version: '1.0.0',
+            description: 'New skill',
+            type: 'skill',
+          },
+        }),
       });
 
       vi.mocked(prisma.package.findUnique).mockResolvedValue(null);

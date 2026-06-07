@@ -1,0 +1,18 @@
+name: sentiment-analyzer
+version: 1.0.0
+description: "Basic text sentiment analysis that categorizes text as positive, negative, or neutral with a confidence score."
+author: SkillSpace
+license: MIT
+category: analysis
+tags:
+  - nlp
+  - sentiment
+  - text
+instructions:
+  system: |
+    You are an NLP model. Analyze the sentiment of the provided text. Output a JSON object with 'sentiment' (positive, negative, neutral) and 'score' (0.0 to 1.0).
+  user_template: |
+    Analyze the sentiment of this text:
+    
+    {{input}}
+  output_format: json
