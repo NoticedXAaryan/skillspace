@@ -5,13 +5,16 @@ export const agentCommand = new Command('agent')
   .description('Manage and execute agents');
 
 agentCommand
-  .command('run <agent>')
+  .command('run <agent> [positionalInput...]')
   .description('Run an agent')
   .option('-i, --input <input>', 'Input text or file path')
   .option('-t, --task <task>', 'Task description (alias for --input)')
   .option('-s, --session <sessionId>', 'Resume or start a session by ID')
-  .action(async (agentName, options) => {
-    const input = options.input || options.task;
+  .action(async (agentName, positionalInput, options) => {
+    let input = options.input || options.task;
+    if (positionalInput && positionalInput.length > 0) {
+      input = input ? `${input} ${positionalInput.join(' ')}` : positionalInput.join(' ');
+    }
     if (!input) {
       console.error('Error: Must provide --input or --task');
       process.exit(1);

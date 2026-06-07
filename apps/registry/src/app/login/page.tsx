@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import styles from './page.module.css';
 
 export default function LoginPage() {
@@ -8,6 +10,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -25,7 +28,7 @@ export default function LoginPage() {
         setError(data.error.message);
       } else {
         localStorage.setItem('token', data.data.token);
-        window.location.href = '/';
+        router.push('/');
       }
     } catch {
       setError('Network error. Please try again.');
@@ -72,7 +75,7 @@ export default function LoginPage() {
 
         <p className={styles.authFooter}>
           Don&apos;t have an account?{' '}
-          <a href="/register">Create one</a>
+          <Link href="/register">Create one</Link>
         </p>
       </div>
     </main>

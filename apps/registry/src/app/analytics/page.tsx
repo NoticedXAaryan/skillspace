@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { Activity, Clock, Cpu, CheckCircle } from 'lucide-react';
 
 interface LogEntry {
@@ -24,26 +24,20 @@ export default function AnalyticsDashboard() {
     fetch('/api/analytics?limit=100')
       .then(res => res.json())
       .then(data => {
-        if (Array.isArray(data)) {
-          setLogs(data);
-        }
+        if (Array.isArray(data)) setLogs(data);
         setLoading(false);
       })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
+      .catch(() => setLoading(false));
   }, []);
 
   if (loading) {
     return (
-      <div className="flex h-[50vh] items-center justify-center">
-        <div className="text-xl font-medium text-slate-400 animate-pulse">Loading Analytics...</div>
+      <div className="container" style={{ display: 'flex', height: '50vh', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ fontSize: '1.2rem', color: 'var(--text-secondary)' }}>Loading Analytics...</div>
       </div>
     );
   }
 
-  // Aggregate Data
   const totalExecutions = logs.length;
   const avgDuration = totalExecutions > 0 
     ? Math.round(logs.reduce((acc, log) => acc + log.durationMs, 0) / totalExecutions) 
@@ -53,7 +47,6 @@ export default function AnalyticsDashboard() {
     ? Math.round((logs.filter(l => l.status === 'success').length / totalExecutions) * 100) 
     : 100;
 
-  // Chart Data Preparation (Executions over time / by package)
   const packageDistribution = logs.reduce((acc: any, log) => {
     const pkg = log.packageId || 'Unknown';
     if (!acc[pkg]) acc[pkg] = { name: pkg, executions: 0 };
@@ -63,108 +56,76 @@ export default function AnalyticsDashboard() {
   const barData = Object.values(packageDistribution);
 
   return (
-    <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-white">Execution Analytics</h1>
-        <p className="mt-2 text-sm text-slate-400">
-          Monitor your organization's capability usage and model performance.
-        </p>
+    <div className="container" style={{ padding: '3rem 1.5rem' }}>
+      <div style={{ marginBottom: '2rem' }}>
+        <h1 style={{ fontSize: '2rem', fontWeight: 800, color: '#fff' }}>Execution Analytics</h1>
+        <p style={{ color: 'var(--text-secondary)' }}>Monitor usage and performance.</p>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <div className="bg-slate-800/50 backdrop-blur border border-slate-700/50 overflow-hidden rounded-xl p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 bg-blue-500/20 p-3 rounded-lg">
-              <Activity className="h-6 w-6 text-blue-400" />
-            </div>
-            <div className="ml-5 w-0 flex-1">
-              <dt className="text-sm font-medium text-slate-400 truncate">Total Executions</dt>
-              <dd className="text-2xl font-semibold text-white">{totalExecutions}</dd>
-            </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+        <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <Activity size={32} color="var(--accent)" />
+          <div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Total Executions</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#fff' }}>{totalExecutions}</div>
           </div>
         </div>
-
-        <div className="bg-slate-800/50 backdrop-blur border border-slate-700/50 overflow-hidden rounded-xl p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 bg-purple-500/20 p-3 rounded-lg">
-              <Clock className="h-6 w-6 text-purple-400" />
-            </div>
-            <div className="ml-5 w-0 flex-1">
-              <dt className="text-sm font-medium text-slate-400 truncate">Avg Latency (ms)</dt>
-              <dd className="text-2xl font-semibold text-white">{avgDuration}ms</dd>
-            </div>
+        <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <Clock size={32} color="#a855f7" />
+          <div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Avg Latency</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#fff' }}>{avgDuration}ms</div>
           </div>
         </div>
-
-        <div className="bg-slate-800/50 backdrop-blur border border-slate-700/50 overflow-hidden rounded-xl p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 bg-green-500/20 p-3 rounded-lg">
-              <CheckCircle className="h-6 w-6 text-green-400" />
-            </div>
-            <div className="ml-5 w-0 flex-1">
-              <dt className="text-sm font-medium text-slate-400 truncate">Success Rate</dt>
-              <dd className="text-2xl font-semibold text-white">{successRate}%</dd>
-            </div>
+        <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <CheckCircle size={32} color="var(--success)" />
+          <div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Success Rate</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#fff' }}>{successRate}%</div>
           </div>
         </div>
-
-        <div className="bg-slate-800/50 backdrop-blur border border-slate-700/50 overflow-hidden rounded-xl p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 bg-amber-500/20 p-3 rounded-lg">
-              <Cpu className="h-6 w-6 text-amber-400" />
-            </div>
-            <div className="ml-5 w-0 flex-1">
-              <dt className="text-sm font-medium text-slate-400 truncate">Tokens Consumed</dt>
-              <dd className="text-2xl font-semibold text-white">{totalTokens.toLocaleString()}</dd>
-            </div>
+        <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <Cpu size={32} color="var(--warning)" />
+          <div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Tokens Consumed</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#fff' }}>{totalTokens.toLocaleString()}</div>
           </div>
         </div>
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        <div className="bg-slate-800/50 backdrop-blur border border-slate-700/50 rounded-xl p-6">
-          <h3 className="text-lg font-medium text-white mb-6">Executions by Package</h3>
-          <div className="h-72">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
+        <div className="card">
+          <h3 style={{ color: '#fff', marginBottom: '1rem' }}>Executions by Package</h3>
+          <div style={{ height: '300px' }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={barData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                <XAxis dataKey="name" stroke="#94a3b8" />
-                <YAxis stroke="#94a3b8" />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
-                  itemStyle={{ color: '#38bdf8' }}
-                />
-                <Bar dataKey="executions" fill="#38bdf8" radius={[4, 4, 0, 0]} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis dataKey="name" stroke="var(--text-secondary)" />
+                <YAxis stroke="var(--text-secondary)" />
+                <Tooltip contentStyle={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: '#fff' }} />
+                <Bar dataKey="executions" fill="var(--accent)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="bg-slate-800/50 backdrop-blur border border-slate-700/50 rounded-xl p-6">
-          <h3 className="text-lg font-medium text-white mb-6">Recent Executions Log</h3>
-          <div className="overflow-hidden overflow-y-auto h-72 pr-2">
-            <ul className="divide-y divide-slate-700/50">
-              {logs.slice(0, 50).map((log) => (
-                <li key={log.id} className="py-3 flex justify-between">
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium text-slate-200">{log.packageId}@{log.version}</span>
-                    <span className="text-xs text-slate-500">{log.modelId}</span>
-                  </div>
-                  <div className="flex flex-col items-end">
-                    <span className={`text-sm ${log.status === 'success' ? 'text-green-400' : 'text-red-400'}`}>
-                      {log.status}
-                    </span>
-                    <span className="text-xs text-slate-500">{log.durationMs}ms</span>
-                  </div>
-                </li>
-              ))}
-              {logs.length === 0 && (
-                <li className="py-8 text-center text-slate-500 text-sm">No execution logs found.</li>
-              )}
-            </ul>
-          </div>
+        <div className="card">
+          <h3 style={{ color: '#fff', marginBottom: '1rem' }}>Recent Executions</h3>
+          <ul style={{ listStyle: 'none', padding: 0, maxHeight: '300px', overflowY: 'auto' }}>
+            {logs.slice(0, 50).map((log) => (
+              <li key={log.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 0', borderBottom: '1px solid var(--border)' }}>
+                <div>
+                  <div style={{ color: '#fff', fontSize: '0.9rem' }}>{log.packageId}@{log.version}</div>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{log.modelId}</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ color: log.status === 'success' ? 'var(--success)' : 'var(--error)', fontSize: '0.9rem' }}>{log.status}</div>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{log.durationMs}ms</div>
+                </div>
+              </li>
+            ))}
+            {logs.length === 0 && <li style={{ color: 'var(--text-muted)', textAlign: 'center', marginTop: '2rem' }}>No execution logs.</li>}
+          </ul>
         </div>
       </div>
     </div>

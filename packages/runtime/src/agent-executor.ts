@@ -118,7 +118,7 @@ export class AgentExecutor {
       tools.push({
         name: `mcp_${serverName}_${safeToolName}`,
         description: tool.description || `Tool from ${serverName}`,
-        parameters: tool.inputSchema?.properties ? tool.inputSchema.properties as any : {},
+        parameters: tool.inputSchema?.properties || {},
         required: tool.inputSchema?.required || []
       });
     }
@@ -299,25 +299,37 @@ export class AgentExecutor {
     request: { url: string; headers: Record<string, string>; body: unknown },
     timeoutSeconds: number,
   ): Promise<unknown> {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), timeoutSeconds * 1000);
+    let lastError: Error | undefined;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), timeoutSeconds * 1000);
 
-    try {
-      const response = await fetch(request.url, {
-        method: 'POST',
-        headers: request.headers,
-        body: JSON.stringify(request.body),
-        signal: controller.signal,
-      });
+      try {
+        const response = await fetch(request.url, {
+          method: 'POST',
+          headers: request.headers,
+          body: JSON.stringify(request.body),
+          signal: controller.signal,
+        });
 
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new ExecutionError(`Model API error: ${response.status} ${errText}`, 'API_ERROR');
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new ExecutionError(`Model API error: ${response.status} ${errText}`, 'API_ERROR');
+        }
+
+        return await response.json();
+      } catch (err) {
+        lastError = err instanceof Error ? err : new Error(String(err));
+        if (lastError.name === 'AbortError') {
+          throw new ExecutionError(`Request timed out after ${timeoutSeconds} seconds`, 'TIMEOUT');
+        }
+        if (attempt < 2) {
+          await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+        }
+      } finally {
+        clearTimeout(timeout);
       }
-
-      return await response.json();
-    } finally {
-      clearTimeout(timeout);
     }
+    throw new ExecutionError(`Failed after 3 attempts: ${lastError?.message ?? 'Unknown error'}`, 'MAX_RETRIES');
   }
 }

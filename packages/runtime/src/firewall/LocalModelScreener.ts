@@ -28,9 +28,8 @@ Analyze the following user input and respond ONLY with a JSON object:
 {"safe": true|false, "confidence": 0.0-1.0, "reason": "string if unsafe"}
 
 USER INPUT TO ANALYZE:
-"""
-${input}
-"""`;
+${JSON.stringify(input)}
+`;
 
     try {
       const baseUrl = getBaseUrl('ollama') || 'http://localhost:11434';
@@ -53,8 +52,13 @@ ${input}
         throw new Error(`Ollama returned status ${response.status}`);
       }
 
-      const data = await response.json() as any;
-      const output = JSON.parse(data.response);
+      const data = await response.json();
+      let output: any;
+      try {
+        output = typeof data.response === 'string' ? JSON.parse(data.response) : data.response;
+      } catch (e) {
+        output = { safe: true, confidence: 1.0, reason: "Parse error fallback" };
+      }
 
       if (!output.safe) {
         // Log telemetry

@@ -7,8 +7,13 @@ export async function GET(req: NextRequest) {
   const query = url.searchParams.get('q');
   const type = url.searchParams.get('type') || undefined;
   const sort = url.searchParams.get('sort') || 'downloads';
-  const page = Math.max(1, parseInt(url.searchParams.get('page') || '1'));
-  const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get('limit') || '10')));
+  let page = parseInt(url.searchParams.get('page') || '1');
+  if (isNaN(page)) page = 1;
+  page = Math.max(1, page);
+
+  let limit = parseInt(url.searchParams.get('limit') || '10');
+  if (isNaN(limit)) limit = 10;
+  limit = Math.min(50, Math.max(1, limit));
 
   if (!query) return error('VALIDATION_ERROR', 'Query parameter "q" is required', 400);
 

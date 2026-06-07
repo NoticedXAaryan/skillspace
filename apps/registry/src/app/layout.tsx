@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import Navbar from '@/components/Navbar';
 
 export const metadata: Metadata = {
   title: 'SkillSpace — The Universal AI Capability Registry',
@@ -12,19 +13,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <nav className="navbar">
-          <a href="/" className="navLogo">
-            ⚡ SkillSpace
-          </a>
-          <div className="navLinks">
-            <a href="/">Explore</a>
-            <a href="/docs">Docs</a>
-            <a href="/login">Sign In</a>
-            <a href="/register" className="btn btnPrimary" style={{ padding: '0.5rem 1rem' }}>
-              Get Started
-            </a>
-          </div>
-        </nav>
+        <Navbar />
         {children}
       </body>
     </html>

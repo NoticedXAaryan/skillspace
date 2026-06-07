@@ -36,7 +36,13 @@ export default async function PackageVersionPage({ params }: { params: Promise<{
     notFound();
   }
 
-  const tags = Array.isArray(JSON.parse(pkg.tags)) ? JSON.parse(pkg.tags) : [];
+  let tags: string[] = [];
+  try {
+    tags = JSON.parse(pkg.tags as string);
+    if (!Array.isArray(tags)) tags = [];
+  } catch {
+    tags = [];
+  }
 
   return (
     <main className="container" style={{ padding: '2rem 1.5rem 6rem' }}>

@@ -128,7 +128,7 @@ export class Executor {
             tools.push({
               name: `mcp_${srv.name}_${t.name.replace(/[^a-zA-Z0-9_-]/g, '_')}`,
               description: t.description || `Tool from ${srv.name}`,
-              parameters: t.inputSchema?.properties as any || {},
+              parameters: t.inputSchema?.properties || {},
               required: t.inputSchema?.required || []
             });
           }
@@ -308,38 +308,40 @@ export class Executor {
 
     // 5. Make streaming request
     const controller = new AbortController();
-    const timeout = setTimeout(
-      () => controller.abort(),
-      (runtimeConfig.timeoutSeconds ?? 30) * 1000,
-    );
+      let timeout = setTimeout(
+        () => controller.abort(),
+        (runtimeConfig.timeoutSeconds ?? 30) * 1000,
+      );
 
-    const startTime = Date.now();
+      const startTime = Date.now();
 
-    try {
-      const response = await fetch(request.url, {
-        method: 'POST',
-        headers: request.headers,
-        body: JSON.stringify(request.body),
-        signal: controller.signal,
-      });
+      try {
+        const response = await fetch(request.url, {
+          method: 'POST',
+          headers: request.headers,
+          body: JSON.stringify(request.body),
+          signal: controller.signal,
+        });
 
-      if (!response.ok) {
-        throw new ExecutionError(
-          `Model API returned ${response.status}: ${response.statusText}`,
-          'API_ERROR',
-        );
-      }
+        if (!response.ok) {
+          throw new ExecutionError(
+            `Model API returned ${response.status}: ${response.statusText}`,
+            'API_ERROR',
+          );
+        }
 
-      if (!response.body) {
-        throw new ExecutionError('No response body for streaming', 'STREAMING_ERROR');
-      }
+        if (!response.body) {
+          throw new ExecutionError('No response body for streaming', 'STREAMING_ERROR');
+        }
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
 
-      while (true) {
-        const { done, value } = await reader.read();
+        while (true) {
+          clearTimeout(timeout);
+          timeout = setTimeout(() => controller.abort(), (runtimeConfig.timeoutSeconds ?? 30) * 1000);
+          const { done, value } = await reader.read();
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });

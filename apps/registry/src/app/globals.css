@@ -155,7 +155,7 @@ body::before {
   transform: translateY(-2px);
 }
 
-/* ─── Tags ─── */
+/* ─── Tags & Inputs ─── */
 .tag {
   display: inline-flex;
   align-items: center;
@@ -166,6 +166,24 @@ body::before {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--accent);
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  transition: all var(--transition);
+  outline: none;
+}
+
+.input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.2);
 }
 
 /* ─── Code Block ─── */

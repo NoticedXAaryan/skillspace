@@ -50,16 +50,7 @@ export function registerRunCommand(program: Command): void {
             },
           };
 
-          if (opts.stream || isInteractive) {
-            // Streaming mode
-            for await (const chunk of executor.runStream(runOptions)) {
-              process.stdout.write(chunk);
-            }
-            process.stdout.write('\n\n');
-          } else {
-          // Normal mode — determine if this is an agent or a skill
-          console.log(`⟳ Running "${skillName}"...`);
-
+          // Determine if this is an agent or a skill
           let isAgent = false;
           try {
             const agentResolver = new AgentResolver();
@@ -68,6 +59,19 @@ export function registerRunCommand(program: Command): void {
           } catch {
             // Not an agent — will run as skill
           }
+
+          if (opts.stream || isInteractive) {
+            if (isAgent) {
+              console.error(`✗ Error: Streaming mode (--stream) is not yet supported for agents.`);
+              process.exit(1);
+            }
+            // Streaming mode
+            for await (const chunk of executor.runStream(runOptions)) {
+              process.stdout.write(chunk);
+            }
+            process.stdout.write('\n\n');
+          } else {
+          // Normal mode
 
           let result;
           if (isAgent) {

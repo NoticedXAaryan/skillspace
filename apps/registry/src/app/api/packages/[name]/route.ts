@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { success, notFound } from '@/lib/api-response';
+import { getUserFromRequest } from '@/lib/auth';
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ name: string }> }) {
   try {
@@ -16,14 +17,23 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ nam
 
     if (!pkg) return notFound(`Package "${name}" not found`);
 
-    // Rudimentary RBAC check for private packages
     if (pkg.isPrivate) {
-      const authHeader = _req.headers.get('authorization');
-      if (!authHeader) {
+      const user = getUserFromRequest(_req);
+      if (!user) {
         return new Response(JSON.stringify({ error: { message: 'Unauthorized. This package is private.' } }), {
           status: 401,
           headers: { 'Content-Type': 'application/json' },
         });
+      }
+      if (pkg.orgId) {
+        const isMember = await prisma.organizationMember.findUnique({
+          where: { userId_organizationId: { userId: user.userId, organizationId: pkg.orgId } }
+        });
+        if (!isMember && pkg.ownerId !== user.userId) {
+          return new Response(JSON.stringify({ error: { message: 'Forbidden' } }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+        }
+      } else if (pkg.ownerId !== user.userId) {
+        return new Response(JSON.stringify({ error: { message: 'Forbidden' } }), { status: 403, headers: { 'Content-Type': 'application/json' } });
       }
     }
 

@@ -120,7 +120,7 @@ export default async function HomePage() {
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>Featured Capabilities</h2>
-            <Link href="/packages" className={styles.viewAllLink}>
+            <Link href="/" className={styles.viewAllLink}>
               View Registry <ChevronRight size={16} />
             </Link>
           </div>

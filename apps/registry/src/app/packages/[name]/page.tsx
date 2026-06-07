@@ -1,22 +1,19 @@
 import styles from '../../page.module.css';
 import VersionPicker from '@/components/VersionPicker';
-import { Terminal, Shield, Download, Clock, User, Hash, Box } from 'lucide-react';
-
-async function getPackage(name: string) {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/packages/${name}`, { cache: 'no-store' });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.data;
-  } catch {
-    return null;
-  }
-}
+import { Terminal, Shield, Download, Clock, User, Box } from 'lucide-react';
+import Link from 'next/link';
+import prisma from '@/lib/prisma';
 
 export default async function PackagePage({ params }: { params: Promise<{ name: string }> }) {
   const { name } = await params;
-  const pkg = await getPackage(name);
+  
+  const pkg = await prisma.package.findUnique({
+    where: { name },
+    include: {
+      owner: { select: { id: true, username: true } },
+      versions: { orderBy: { publishedAt: 'desc' } }
+    }
+  });
 
   if (!pkg) {
     return (
@@ -25,24 +22,31 @@ export default async function PackagePage({ params }: { params: Promise<{ name: 
         <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
           The capability &quot;{name}&quot; doesn&apos;t exist in the registry.
         </p>
-        <a href="/" className="btn btnPrimary" style={{ marginTop: '2rem' }}>
+        <Link href="/" className="btn btnPrimary" style={{ marginTop: '2rem' }}>
           ← Back to Registry
-        </a>
+        </Link>
       </main>
     );
   }
 
-  const tags = Array.isArray(pkg.tags) ? pkg.tags : [];
-  const latestVersion = pkg.latestVersion;
-  const allVersions = pkg.allVersions || [];
+  let tags: string[] = [];
+  try {
+    tags = JSON.parse(pkg.tags as string);
+    if (!Array.isArray(tags)) tags = [];
+  } catch {
+    tags = [];
+  }
+
+  const allVersions = pkg.versions || [];
+  const latestVersion = allVersions[0];
 
   return (
     <main className="container" style={{ padding: '2rem 1.5rem 6rem' }}>
       {/* Banner support: if a package specifies a banner URL, we render it */}
-      {pkg.bannerUrl && (
+      {(pkg as any).bannerUrl && (
         <div style={{
           width: '100%', height: '240px', borderRadius: 'var(--radius-lg)',
-          backgroundImage: `url(${pkg.bannerUrl})`, backgroundSize: 'cover', backgroundPosition: 'center',
+          backgroundImage: `url(${(pkg as any).bannerUrl})`, backgroundSize: 'cover', backgroundPosition: 'center',
           marginBottom: '2rem', border: '1px solid var(--border)'
         }} />
       )}
@@ -63,7 +67,7 @@ export default async function PackagePage({ params }: { params: Promise<{ name: 
                   {tags.map((tag: string) => (
                     <span key={tag} className="tag">{tag}</span>
                   ))}
-                  {pkg.type && <span className="tag" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.2)' }}>{pkg.type}</span>}
+                  {(pkg as any).type && <span className="tag" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.2)' }}>{(pkg as any).type}</span>}
                 </div>
               </div>
               

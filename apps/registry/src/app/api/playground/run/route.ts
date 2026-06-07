@@ -3,32 +3,13 @@ import prisma from '@/lib/prisma';
 import { Executor } from '@skillspace/runtime';
 import { SkillSchema } from '@skillspace/schema';
 
-const rateLimitMap = new Map<string, { count: number; expiresAt: number }>();
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const windowMs = 60 * 1000; // 1 minute
-  const maxRequests = 5;
-
-  let record = rateLimitMap.get(ip);
-  if (!record || record.expiresAt < now) {
-    record = { count: 1, expiresAt: now + windowMs };
-    rateLimitMap.set(ip, record);
-    return true;
-  }
-
-  if (record.count >= maxRequests) {
-    return false;
-  }
-
-  record.count++;
-  return true;
-}
+import { rateLimit } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
   try {
     const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
-    if (!checkRateLimit(ip)) {
+    const limit = await rateLimit(`playground:${ip}`, 5, 60 * 1000);
+    if (!limit.allowed) {
       return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
     }
 
@@ -97,10 +78,17 @@ export async function POST(req: NextRequest) {
           });
 
           let fullOutput = '';
+          let isTimeout = false;
+          const timeoutId = setTimeout(() => { isTimeout = true; }, 30000); // 30s timeout
+
           for await (const chunk of generator) {
+            if (isTimeout) {
+              throw new Error('Playground execution timeout exceeded (30s)');
+            }
             fullOutput += chunk;
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'token', content: chunk })}\n\n`));
           }
+          clearTimeout(timeoutId);
 
           // Update session
           await prisma.playgroundSession.update({

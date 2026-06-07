@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -97,17 +97,35 @@ model ExecutionLog {
 }
 
 model BenchmarkScore {
-  id          String   @id @default(uuid())
+  id          String   @id @default(cuid())
   packageId   String
-  package     Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
   version     String
   suiteName   String
   score       Float
   passedCount Int
   totalCount  Int
   createdAt   DateTime @default(now())
+  package     Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
 
   @@unique([packageId, version, suiteName])
+}
+
+model RateLimit {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  count     Int      @default(0)
+  resetAt   DateTime
+}
+
+model Invite {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  orgId     String
+  role      String   @default("member")
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 }
 
 model PackageAllowlist {

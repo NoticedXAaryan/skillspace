@@ -60,8 +60,8 @@ services:
     entrypoint: >
       /bin/sh -c "
       /usr/bin/mc config host add myminio http://minio:9000 minioadmin minioadmin;
-      /usr/bin/mc mb myminio/skillspace-registry || true;
-      /usr/bin/mc anonymous set public myminio/skillspace-registry;
+      /usr/bin/mc mb myminio/packages;
+      /usr/bin/mc mb myminio/avatars;
       exit 0;
       "
 

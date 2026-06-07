@@ -1,19 +1,34 @@
-const rateMap = new Map<string, { count: number; resetAt: number }>();
+import prisma from './prisma';
 
-export function rateLimit(key: string, maxRequests: number, windowMs: number): { allowed: boolean; remaining: number } {
-  const now = Date.now();
-  const entry = rateMap.get(key);
+export async function rateLimit(key: string, maxRequests: number, windowMs: number): Promise<{ allowed: boolean; remaining: number }> {
+  const now = new Date();
+  
+  // Clean up expired tokens periodically (could be done in a cron, but doing it opportunistically here)
+  if (Math.random() < 0.01) {
+    await prisma.rateLimit.deleteMany({ where: { resetAt: { lt: now } } }).catch(() => {});
+  }
 
-  if (!entry || now > entry.resetAt) {
-    rateMap.set(key, { count: 1, resetAt: now + windowMs });
+  let record = await prisma.rateLimit.findUnique({ where: { key } });
+
+  if (!record || record.resetAt < now) {
+    record = await prisma.rateLimit.upsert({
+      where: { key },
+      update: { count: 1, resetAt: new Date(now.getTime() + windowMs) },
+      create: { key, count: 1, resetAt: new Date(now.getTime() + windowMs) }
+    });
     return { allowed: true, remaining: maxRequests - 1 };
   }
 
-  entry.count++;
-  if (entry.count > maxRequests) {
+  if (record.count >= maxRequests) {
     return { allowed: false, remaining: 0 };
   }
-  return { allowed: true, remaining: maxRequests - entry.count };
+
+  record = await prisma.rateLimit.update({
+    where: { key },
+    data: { count: { increment: 1 } }
+  });
+
+  return { allowed: true, remaining: maxRequests - record.count };
 }
 
 export function getClientIp(req: Request): string {

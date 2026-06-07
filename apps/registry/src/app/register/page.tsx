@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import styles from '../login/page.module.css';
 
 export default function RegisterPage() {
@@ -9,6 +11,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -26,7 +29,7 @@ export default function RegisterPage() {
         setError(data.error.message);
       } else {
         localStorage.setItem('token', data.data.token);
-        window.location.href = '/';
+        router.push('/');
       }
     } catch {
       setError('Network error. Please try again.');
@@ -86,7 +89,7 @@ export default function RegisterPage() {
 
         <p className={styles.authFooter}>
           Already have an account?{' '}
-          <a href="/login">Sign in</a>
+          <Link href="/login">Sign in</Link>
         </p>
       </div>
     </main>

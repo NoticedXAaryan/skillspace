@@ -14,6 +14,7 @@
     "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1063.0",
     "@prisma/client": "^6.9.0",
     "@skillspace/runtime": "workspace:*",
     "@skillspace/schema": "workspace:*",

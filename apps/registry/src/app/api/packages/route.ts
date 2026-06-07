@@ -9,8 +9,14 @@ import { storePackage } from '@/lib/storage';
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const type = url.searchParams.get('type') || undefined;
-  const page = Math.max(1, parseInt(url.searchParams.get('page') || '1'));
-  const limit = Math.min(100, Math.max(1, parseInt(url.searchParams.get('limit') || '20')));
+  let page = parseInt(url.searchParams.get('page') || '1');
+  if (isNaN(page)) page = 1;
+  page = Math.max(1, page);
+
+  let limit = parseInt(url.searchParams.get('limit') || '20');
+  if (isNaN(limit)) limit = 20;
+  limit = Math.min(100, Math.max(1, limit));
+
   const skip = (page - 1) * limit;
 
   const where = type ? { type } : {};
@@ -76,7 +82,7 @@ export async function POST(req: NextRequest) {
     const checksum = `sha256:${crypto.createHash('sha256').update(buffer).digest('hex')}`;
 
     // Store the file
-    const storagePath = storePackage(name, version, buffer);
+    const storagePath = await storePackage(name, version, buffer);
 
     // Handle scope
     let scope: string | null = null;
