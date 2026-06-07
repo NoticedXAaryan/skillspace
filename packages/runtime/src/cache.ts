@@ -1,6 +1,5 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import * as crypto from 'node:crypto';
 import YAML from 'yaml';
 import { validateSkill, validateAgent } from '@skillspace/schema';
 import type { Skill, Agent } from '@skillspace/schema';
@@ -26,26 +25,8 @@ export class SkillCache {
     name: string,
     version: string,
     files: Map<string, Buffer>,
-    expectedChecksum?: string,
   ): Promise<string> {
     const pkgDir = this.getPackageDir(name, version);
-
-    // Verify checksum if provided
-    if (expectedChecksum) {
-      // Compute checksum of all file contents combined
-      const hash = crypto.createHash('sha256');
-      for (const [filePath, content] of files) {
-        hash.update(filePath);
-        hash.update(content);
-      }
-      const computed = `sha256:${hash.digest('hex')}`;
-      if (computed !== expectedChecksum) {
-        throw new Error(
-          `Checksum mismatch for ${name}@${version}. ` +
-            `Expected: ${expectedChecksum}, Got: ${computed}`,
-        );
-      }
-    }
 
     // Create directory
     fs.mkdirSync(pkgDir, { recursive: true });
@@ -165,7 +146,7 @@ export class SkillCache {
 
   loadAgent(name: string, version: string): Agent {
     const pkgDir = this.getPackageDir(name, version);
-    const agentYamlPath = path.join(pkgDir, 'agent.yaml');
+    const agentYamlPath = path.join(pkgDir, 'skill.yaml'); // Agents use skill.yaml as the manifest
 
     if (!fs.existsSync(agentYamlPath)) {
       throw new Error(`Agent not found: ${name}@${version} not installed locally`);
@@ -173,11 +154,13 @@ export class SkillCache {
 
     const raw = fs.readFileSync(agentYamlPath, 'utf-8');
     const parsed = YAML.parse(raw);
+    
+    // We parse it using validateAgent to ensure it conforms to Agent schema
     const result = validateAgent(parsed);
 
     if (!result.success) {
       throw new Error(
-        `Invalid agent.yaml for ${name}@${version}: ${result.errors.message}`,
+        `Invalid agent manifest for ${name}@${version}: ${result.errors.message}`,
       );
     }
 
@@ -186,6 +169,7 @@ export class SkillCache {
 
   listInstalledAgents(): Array<{ name: string; version: string; path: string }> {
     if (!fs.existsSync(this.registryDir)) {
+      console.log(`[DEBUG] Registry dir does not exist: ${this.registryDir}`);
       return [];
     }
 
@@ -201,8 +185,21 @@ export class SkillCache {
       const version = entry.name.substring(atIndex + 1);
       const pkgPath = path.join(this.registryDir, entry.name);
 
-      if (fs.existsSync(path.join(pkgPath, 'agent.yaml'))) {
-        packages.push({ name, version, path: pkgPath });
+      const manifestPath = path.join(pkgPath, 'skill.yaml');
+      console.log(`[DEBUG] Checking agent manifest: ${manifestPath}`);
+      if (fs.existsSync(manifestPath)) {
+        try {
+          const raw = fs.readFileSync(manifestPath, 'utf-8');
+          const parsed = YAML.parse(raw);
+          console.log(`[DEBUG] Parsed type for ${name}: ${parsed.type}`);
+          if (parsed.type === 'agent') {
+            packages.push({ name, version, path: pkgPath });
+          }
+        } catch (e) {
+          console.log(`[DEBUG] Parse error for ${name}:`, e);
+        }
+      } else {
+        console.log(`[DEBUG] Manifest does not exist at ${manifestPath}`);
       }
     }
 

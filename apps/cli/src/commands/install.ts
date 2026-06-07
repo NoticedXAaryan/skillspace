@@ -41,9 +41,17 @@ export function registerInstallCommand(program: Command): void {
         console.log(`⟳ Downloading ${name}@${version}...`);
         const { buffer, checksum } = await client.downloadPackage(name, version);
 
+        if (checksum) {
+          const crypto = await import('node:crypto');
+          const computed = `sha256:${crypto.createHash('sha256').update(buffer).digest('hex')}`;
+          if (computed !== checksum) {
+            throw new Error(`Checksum mismatch for ${name}@${version}. Expected: ${checksum}, Got: ${computed}`);
+          }
+        }
+
         console.log(`⟳ Installing ${name}@${version}...`);
         const files = extractSkillPackage(buffer);
-        const pkgDir = await cache.installPackage(name, version, files, checksum || undefined);
+        const pkgDir = await cache.installPackage(name, version, files);
 
         lock = addSkillToLockFile(lock, name, {
           version,
@@ -54,13 +62,22 @@ export function registerInstallCommand(program: Command): void {
         // Check if it's an agent and install dependencies
         const fs = await import('node:fs');
         const path = await import('node:path');
-        if (fs.existsSync(path.join(pkgDir, 'agent.yaml'))) {
-          const agent = cache.loadAgent(name, version);
-          if (agent.skills && agent.skills.length > 0) {
-            console.log(`⟳ Resolving dependencies for ${name}@${version}...`);
-            for (const skillDep of agent.skills) {
-              await installRecursively(skillDep.name, skillDep.version.replace('^', '').replace('~', ''));
+        if (fs.existsSync(path.join(pkgDir, 'skill.yaml'))) {
+          try {
+            const raw = fs.readFileSync(path.join(pkgDir, 'skill.yaml'), 'utf-8');
+            const YAML = await import('yaml');
+            const parsed = YAML.parse(raw);
+            if (parsed.type === 'agent') {
+              const agent = cache.loadAgent(name, version);
+              if (agent.skills && agent.skills.length > 0) {
+                console.log(`⟳ Resolving dependencies for ${name}@${version}...`);
+                for (const skillDep of agent.skills) {
+                  await installRecursively(skillDep.name, skillDep.version.replace('^', '').replace('~', ''));
+                }
+              }
             }
+          } catch {
+            // Ignore if it fails to parse or is not an agent
           }
         }
         console.log(`✓ Installed ${name}@${version}`);

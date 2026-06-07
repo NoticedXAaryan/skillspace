@@ -37,6 +37,30 @@ export class OllamaAdapter implements ModelAdapter {
     };
   }
 
+  buildChatRequest(
+    messages: import('@skillspace/schema').ChatMessage[],
+    _tools: import('@skillspace/schema').Tool[],
+    config: RuntimeConfig,
+  ): ModelRequest {
+    // Basic implementation for testing mock
+    return {
+      url: `${config.baseUrl || 'http://localhost:11434'}/api/chat`,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: {
+        model: config.modelId,
+        messages,
+        stream: false,
+        options: {
+          temperature: config.temperature,
+          num_predict: config.maxTokens,
+        },
+      },
+      stream: false,
+    };
+  }
+
   parseResponse(raw: unknown): ExecutionResult {
     const response = raw as {
       message: { role: string; content: string };
@@ -47,6 +71,7 @@ export class OllamaAdapter implements ModelAdapter {
 
     return {
       output: response.message?.content ?? '',
+      message: response.message as any,
       usage: {
         promptTokens: response.prompt_eval_count ?? 0,
         completionTokens: response.eval_count ?? 0,

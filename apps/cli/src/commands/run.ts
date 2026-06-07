@@ -1,5 +1,5 @@
 import type { Command } from 'commander';
-import { Executor } from '@skillspace/runtime';
+import { Executor, AgentExecutor, SkillResolver } from '@skillspace/runtime';
 
 export function registerRunCommand(program: Command): void {
   program
@@ -36,7 +36,28 @@ export function registerRunCommand(program: Command): void {
         } else {
           // Normal mode
           console.log(`⟳ Running "${skillName}"...`);
-          const result = await executor.run(runOptions);
+          
+          const resolver = new SkillResolver();
+          const skill = resolver.resolve(skillName);
+          
+          let result;
+          if (skill.type === 'agent') {
+            const agentExecutor = new AgentExecutor();
+            result = await agentExecutor.run({
+              agent: skillName,
+              input: opts.input,
+            });
+            // We mock the output shape from AgentExecutor for logging
+            result = {
+              ...result,
+              output: result.message?.content || '',
+              model: skill.agent?.model || 'unknown',
+              usage: { promptTokens: 0, completionTokens: 0 },
+              status: 'success'
+            };
+          } else {
+            result = await executor.run(runOptions);
+          }
 
           console.log('');
           console.log(result.output);

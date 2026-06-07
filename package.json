@@ -7,15 +7,20 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "test": "turbo run test",
+    "test:e2e": "jest --config e2e/jest.config.js --runInBand",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yaml}\"",
     "clean": "turbo run clean && rimraf node_modules"
   },
   "devDependencies": {
-    "turbo": "^2.9.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^22.19.19",
+    "jest": "^30.4.2",
     "prettier": "^3.3.0",
     "rimraf": "^6.0.0",
+    "ts-jest": "^29.4.11",
+    "turbo": "^2.9.0",
     "typescript": "^5.7.0"
   },
   "packageManager": "pnpm@11.5.0",

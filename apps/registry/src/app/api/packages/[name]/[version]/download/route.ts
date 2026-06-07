@@ -23,7 +23,7 @@ export async function GET(
   const data = readPackage(name, version);
   return new NextResponse(new Uint8Array(data), {
     headers: {
-      'Content-Type': 'application/gzip',
+      'Content-Type': 'application/octet-stream',
       'Content-Disposition': `attachment; filename="${name}-${version}.skillpkg"`,
       'X-Checksum': pkgVersion.checksum,
     },

@@ -22,6 +22,7 @@ export class RegistryClient {
   }
 
   async register(username: string, email: string, password: string): Promise<any> {
+    console.log(`[DEBUG] Fetching ${this.baseUrl}/api/auth/register`);
     const res = await fetch(`${this.baseUrl}/api/auth/register`, {
       method: 'POST',
       headers: this.getHeaders(),
@@ -79,18 +80,43 @@ export class RegistryClient {
   }
 
   async publish(file: Buffer, metadata: Record<string, unknown>): Promise<any> {
-    const formData = new FormData();
-    formData.append('file', new Blob([new Uint8Array(file)]), 'package.skillpkg');
-    formData.append('metadata', JSON.stringify(metadata));
-
-    const headers: Record<string, string> = {};
-    const token = loadCredentials();
-    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const headers = this.getHeaders(true);
+    const body = JSON.stringify({
+      file: file.toString('base64'),
+      metadata,
+    });
 
     const res = await fetch(`${this.baseUrl}/api/packages`, {
       method: 'POST',
       headers,
-      body: formData,
+      body,
+    });
+    return res.json();
+  }
+
+  async createOrg(name: string, slug: string): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/api/orgs`, {
+      method: 'POST',
+      headers: this.getHeaders(true),
+      body: JSON.stringify({ name, slug }),
+    });
+    return res.json();
+  }
+
+  async createOrgInvite(slug: string, role: string = 'member'): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/api/orgs/${encodeURIComponent(slug)}/invites`, {
+      method: 'POST',
+      headers: this.getHeaders(true),
+      body: JSON.stringify({ role }),
+    });
+    return res.json();
+  }
+
+  async acceptOrgInvite(token: string): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/api/orgs/invites/accept`, {
+      method: 'POST',
+      headers: this.getHeaders(true),
+      body: JSON.stringify({ token }),
     });
     return res.json();
   }

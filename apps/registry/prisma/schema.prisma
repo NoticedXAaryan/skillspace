@@ -54,6 +54,7 @@ model Package {
   tags        String           @default("[]")
   downloads   Int              @default(0)
   verified    Boolean          @default(false)
+  isPrivate   Boolean          @default(false)
   createdAt   DateTime         @default(now())
   versions    PackageVersion[]
 }

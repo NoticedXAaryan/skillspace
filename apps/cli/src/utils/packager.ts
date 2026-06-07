@@ -23,7 +23,7 @@ export interface PackageFile {
 export function createSkillPackage(dir: string): { buffer: Buffer; files: PackageFile[]; checksum: string } {
   const files: PackageFile[] = [];
   const requiredFiles = ['skill.yaml'];
-  const optionalFiles = ['README.md', 'CHANGELOG.md'];
+  const optionalFiles = ['README.md', 'CHANGELOG.md', 'workflow.yaml', 'agent.js', 'index.js'];
   const optionalDirs = ['adapters', 'knowledge', 'tests'];
 
   // Read required files

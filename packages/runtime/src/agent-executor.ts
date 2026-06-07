@@ -66,6 +66,7 @@ export class AgentExecutor {
       timeoutSeconds: 60,
       baseUrl: getBaseUrl(provider),
     };
+    console.error(`[AgentExecutor] Provider: ${provider}, BaseURL: ${runtimeConfig.baseUrl}, from config: ${JSON.stringify(loadConfig())}`);
 
     const input = this.resolveInput(options.input, enforcer);
 

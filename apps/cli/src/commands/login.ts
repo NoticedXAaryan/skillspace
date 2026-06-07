@@ -38,7 +38,7 @@ export function registerLoginCommand(program: Command): void {
         const result = await client.register(opts.username, opts.email, opts.password);
 
         if (result.error) {
-          console.error(`✗ Registration failed: ${result.error.message}`);
+          console.error(`✗ Registration failed: ${JSON.stringify(result.error)}`);
           process.exit(1);
         }
 

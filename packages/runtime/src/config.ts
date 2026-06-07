@@ -7,7 +7,7 @@ import YAML from 'yaml';
 // SkillSpace config directory: ~/.skillspace/
 // ---------------------------------------------------------------------------
 
-const SKILLSPACE_DIR = path.join(os.homedir(), '.skillspace');
+const SKILLSPACE_DIR = process.env.SKILLSPACE_HOME || path.join(os.homedir(), '.skillspace');
 const CONFIG_FILE = path.join(SKILLSPACE_DIR, 'config.yaml');
 const CREDENTIALS_FILE = path.join(SKILLSPACE_DIR, 'credentials');
 const REGISTRY_DIR = path.join(SKILLSPACE_DIR, 'registry');
@@ -66,7 +66,8 @@ export function loadConfig(): SkillSpaceConfig {
     const raw = fs.readFileSync(CONFIG_FILE, 'utf-8');
     const parsed = YAML.parse(raw) as Partial<SkillSpaceConfig>;
     return { ...DEFAULT_CONFIG, ...parsed };
-  } catch {
+  } catch (err) {
+    console.error('Failed to load config:', err);
     return { ...DEFAULT_CONFIG };
   }
 }

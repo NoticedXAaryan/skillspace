@@ -77,6 +77,22 @@ export class WorkflowResolver {
     const globalWorkflow = path.join(this.globalDir, `${name}.yaml`);
     if (fs.existsSync(globalWorkflow)) return fs.readFileSync(globalWorkflow, 'utf-8');
 
+    // 4. Registry scope (via SkillCache)
+    try {
+      const { SkillCache } = await import('./cache.js');
+      const cache = new SkillCache();
+      const versions = cache.getInstalledVersions(name);
+      if (versions.length > 0) {
+        // Pick highest version or just the first
+        const latest = versions.sort((a, b) => b.localeCompare(a))[0];
+        const pkgDir = cache.getPackageDir(name, latest);
+        const yamlPath = path.join(pkgDir, 'workflow.yaml');
+        if (fs.existsSync(yamlPath)) return fs.readFileSync(yamlPath, 'utf-8');
+      }
+    } catch (e) {
+      // Ignore cache errors
+    }
+
     throw new Error(`Workflow "${name}" not found locally, in project, or globally.`);
   }
 

@@ -11,6 +11,7 @@ export function registerPublishCommand(program: Command): void {
     .command('publish')
     .description('Publish the current directory as a skill package')
     .option('-d, --dir <dir>', 'Directory to publish', '.')
+    .option('--private', 'Publish as a private package (requires org scope)', false)
     .action(async (opts) => {
       const dir = path.resolve(opts.dir);
       const skillYamlPath = path.join(dir, 'skill.yaml');
@@ -57,6 +58,7 @@ export function registerPublishCommand(program: Command): void {
         description: skill.description,
         tags: skill.tags,
         category: skill.category,
+        isPrivate: opts.private,
       });
 
       if (result.error) {

@@ -40,15 +40,13 @@ export async function POST(req: NextRequest) {
   if (!auth) return unauthorized();
 
   try {
-    const formData = await req.formData();
-    const file = formData.get('file') as File | null;
-    const metadataRaw = formData.get('metadata') as string | null;
+    const body = await req.json();
+    const fileBase64 = body.file as string | null;
+    const metadata = body.metadata as Record<string, unknown> | null;
 
-    if (!file || !metadataRaw) {
+    if (!fileBase64 || !metadata) {
       return error('VALIDATION_ERROR', 'Both file and metadata are required', 400);
     }
-
-    const metadata = JSON.parse(metadataRaw);
     const MetadataSchema = z.object({
       name: z.string().min(1).regex(/^(@[a-z0-9-]+\/)?[a-z][a-z0-9]*(-[a-z0-9]+)*$/),
       version: z.string().regex(/^\d+\.\d+\.\d+$/),
@@ -56,6 +54,7 @@ export async function POST(req: NextRequest) {
       type: z.enum(['skill', 'agent', 'workflow', 'mcp', 'knowledge']).default('skill'),
       tags: z.array(z.string()).max(10).default([]),
       manifest: z.record(z.unknown()).optional(),
+      isPrivate: z.boolean().optional().default(false),
     });
 
     const parsed = MetadataSchema.safeParse(metadata);
@@ -63,11 +62,10 @@ export async function POST(req: NextRequest) {
       return error('VALIDATION_ERROR', 'Invalid metadata', 400, parsed.error.flatten());
     }
 
-    const { name, version, description, type, tags } = parsed.data;
+    const { name, version, description, type, tags, isPrivate } = parsed.data;
 
     // Read file buffer
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const buffer = Buffer.from(fileBase64, 'base64');
 
     // Compute checksum
     const checksum = `sha256:${crypto.createHash('sha256').update(buffer).digest('hex')}`;
@@ -100,6 +98,8 @@ export async function POST(req: NextRequest) {
         return error('FORBIDDEN', `You are not a member of @${scope}`, 403);
       }
       orgId = org.id;
+    } else if (isPrivate) {
+      return error('VALIDATION_ERROR', 'Only scoped packages can be private', 400);
     }
 
     // Upsert package
@@ -113,6 +113,7 @@ export async function POST(req: NextRequest) {
           type,
           ownerId: auth.userId,
           description,
+          isPrivate,
           tags: JSON.stringify(tags),
         },
       });

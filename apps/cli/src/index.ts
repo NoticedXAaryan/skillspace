@@ -13,6 +13,8 @@ import { registerInfoCommand } from './commands/info.js';
 import { agentCommand } from './commands/agent.js';
 import { mcpCommand } from './commands/mcp.js';
 import { workflowCommand } from './commands/workflow.js';
+import { orgCommand } from './commands/org.js';
+import { envCommand } from './commands/environment.js';
 
 const program = new Command();
 
@@ -36,5 +38,7 @@ registerInfoCommand(program);
 program.addCommand(agentCommand);
 program.addCommand(mcpCommand);
 program.addCommand(workflowCommand);
+program.addCommand(orgCommand);
+program.addCommand(envCommand);
 
 program.parse();
