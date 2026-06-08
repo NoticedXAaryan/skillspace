@@ -3,7 +3,7 @@ import { S3Client, PutObjectCommand, GetObjectCommand, HeadObjectCommand } from 
 const MINIO_ENDPOINT = process.env.MINIO_ENDPOINT || 'http://localhost:9000';
 const MINIO_ACCESS_KEY = process.env.MINIO_ACCESS_KEY || 'minioadmin';
 const MINIO_SECRET_KEY = process.env.MINIO_SECRET_KEY || 'minioadmin';
-const BUCKET_NAME = 'packages';
+const BUCKET_NAME = process.env.MINIO_BUCKET_NAME || 'packages';
 
 const s3Client = new S3Client({
   endpoint: MINIO_ENDPOINT,
