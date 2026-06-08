@@ -1,0 +1,13 @@
+name: test
+version: 1.0.0
+description: dsnfeaskf
+author: fewfjwef
+license: MIT
+tags:
+  - code
+category: code
+instructions:
+  system: You are an expert at test.
+  user_template: "{{input}}"
+  output_format: text
+permissions: []

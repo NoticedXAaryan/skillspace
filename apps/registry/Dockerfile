@@ -2,11 +2,12 @@ FROM node:22-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/registry/package.json ./apps/registry/
 COPY packages/schema/package.json ./packages/schema/
+COPY packages/runtime/package.json ./packages/runtime/
 RUN corepack enable pnpm && pnpm install --frozen-lockfile
 
 # Rebuild the source code only when needed
@@ -21,6 +22,7 @@ RUN pnpm --filter @skillspace/registry build
 
 # Production image, copy all the files and run next
 FROM base AS runner
+RUN apk add --no-cache openssl
 WORKDIR /app
 ENV NODE_ENV production
 

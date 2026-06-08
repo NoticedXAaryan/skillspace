@@ -1,0 +1,35 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/skillspace-registry', '-f', 'apps/registry/Dockerfile', '.']
+
+  # Push the container image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/skillspace-registry']
+
+  # Deploy container image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'skillspace-registry'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/skillspace-registry'
+      - '--region'
+      - 'us-central1'
+      - '--allow-unauthenticated'
+      - '--min-instances'
+      - '0'
+      - '--max-instances'
+      - '1'
+      - '--memory'
+      - '256Mi'
+      - '--set-env-vars'
+      - 'NODE_ENV=production,DATABASE_URL=$_DATABASE_URL'
+
+images:
+  - 'gcr.io/$PROJECT_ID/skillspace-registry'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

@@ -23,21 +23,22 @@ describe('CLI E2E', () => {
   const runCli = async (args: string) => {
     // Run the CLI using tsx in the current directory
     const cliPath = path.resolve(__dirname, '../src/index.ts');
-    return execAsync(`pnpm exec tsx ${cliPath} ${args}`, { cwd: tempDir });
+    const tsxPath = path.resolve(__dirname, '../node_modules/.bin/tsx');
+    return execAsync(`${tsxPath} ${cliPath} ${args}`, { cwd: tempDir });
   };
 
-  it('init command creates skillspace.yaml', async () => {
-    const { stdout } = await runCli('init --name test-project --yes');
+  it('init command creates skill.yaml', async () => {
+    const { stdout } = await runCli('init --yes');
     expect(stdout).toContain('Initialized SkillSpace project');
-    expect(fs.existsSync(path.join(tempDir, 'skillspace.yaml'))).toBe(true);
+    expect(fs.existsSync(path.join(tempDir, 'skill.yaml'))).toBe(true);
   });
 
-  it('init command fails if skillspace.yaml already exists', async () => {
+  it('init command fails if skill.yaml already exists', async () => {
     try {
-      await runCli('init --name test-project --yes');
+      await runCli('init --yes');
       expect(true).toBe(false); // Should not reach here
     } catch (err: any) {
-      expect(err.stderr).toContain('skillspace.yaml already exists');
+      expect(err.stderr).toContain('skill.yaml already exists');
     }
   });
 
