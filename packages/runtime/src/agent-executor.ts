@@ -42,7 +42,7 @@ export class AgentExecutor {
         combinedPermissions.add(p);
       }
     }
-    const enforcer = new PermissionEnforcer(agent.name, Array.from(combinedPermissions));
+    const enforcer = new PermissionEnforcer(agent.name, Array.from(combinedPermissions) as string[]);
     this.enforceInputPermissions(enforcer, options);
 
     // 3. Resolve model and adapter

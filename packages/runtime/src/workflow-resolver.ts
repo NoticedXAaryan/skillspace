@@ -41,7 +41,7 @@ export class WorkflowResolver {
     // Validate against Schema
     const result = WorkflowSchema.safeParse(data);
     if (!result.success) {
-      const errorMsg = result.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+      const errorMsg = result.error.errors.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ');
       throw new Error(`Invalid workflow definition for "${name}": ${errorMsg}`);
     }
 

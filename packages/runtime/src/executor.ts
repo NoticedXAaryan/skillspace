@@ -165,7 +165,7 @@ export class Executor {
                   const originalToolName = parts.slice(2).join('_');
                   
                   // Enforce permissions explicitly required by this server
-                  const srv = skill.mcpServers!.find(s => s.name === serverName);
+                  const srv = skill.mcpServers!.find((s: any) => s.name === serverName);
                   if (srv && srv.requiredScopes) {
                     for (const scope of srv.requiredScopes) {
                       enforcer.check(scope);

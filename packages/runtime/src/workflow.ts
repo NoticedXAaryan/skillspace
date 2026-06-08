@@ -34,7 +34,7 @@ export class WorkflowEngine {
       else definedStepIds.add(i.toString());
       
       if ('parallel' in step) {
-        step.parallel.forEach((p, idx) => {
+        step.parallel.forEach((p: any, idx: number) => {
           if (p.id) definedStepIds.add(p.id);
           else definedStepIds.add(`${step.id || i.toString()}_${idx}`);
         });
@@ -84,7 +84,7 @@ export class WorkflowEngine {
     }
 
     if (workflow.outputs) {
-      for (const expr of Object.values(workflow.outputs)) {
+      for (const expr of Object.values(workflow.outputs) as string[]) {
         const matches = expr.match(/\{\{(.*?)\}\}/g);
         if (matches) {
           for (const match of matches) {
@@ -116,7 +116,7 @@ export class WorkflowEngine {
 
       try {
         if ('parallel' in step) {
-          const promises = step.parallel.map(async (subStep, index) => {
+          const promises = step.parallel.map(async (subStep: any, index: number) => {
             const subStepId = subStep.id || `${stepId}_${index}`;
             return this.executeStep(subStep, context, subStepId);
           });
@@ -138,7 +138,7 @@ export class WorkflowEngine {
 
     const outputs: Record<string, string> = {};
     if (options.workflow.outputs) {
-      for (const [key, expr] of Object.entries(options.workflow.outputs)) {
+      for (const [key, expr] of Object.entries(options.workflow.outputs) as [string, string][]) {
         if (!expr.includes('{{')) {
           try {
             outputs[key] = String(jexl.evalSync(expr, context));
