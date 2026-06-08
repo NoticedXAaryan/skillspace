@@ -48,15 +48,21 @@ export async function POST(req: Request) {
   }
 }
 
+import { getUserFromRequest } from '@/lib/auth';
+
 export async function GET(req: Request) {
   try {
-    // Basic aggregation for the dashboard
+    const user = getUserFromRequest(req as any);
+    if (!user) {
+      return NextResponse.json({ error: { message: 'Unauthorized' } }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get('limit') || '100', 10);
     
-    // In a real app we'd verify the user is an admin or org member.
-    // For now we just return the latest logs.
+    // For now we return logs for the authenticated user only
     const logs = await prisma.executionLog.findMany({
+      where: { userId: user.userId },
       orderBy: { createdAt: 'desc' },
       take: limit,
       include: {

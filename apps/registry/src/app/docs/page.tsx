@@ -1,77 +1,93 @@
-import styles from '../page.module.css';
+import styles from './page.module.css';
+import DocsSidebar from './DocsSidebar';
+
+export const metadata = {
+  title: 'Documentation — SkillSpace',
+  description: 'Learn how to install, publish, and run AI capabilities on SkillSpace.',
+};
 
 export default function DocsPage() {
   return (
-    <main className="container" style={{ padding: '4rem 1.5rem', maxWidth: '900px' }}>
-      <h1 style={{ fontSize: '3rem', marginBottom: '1rem', color: '#fff' }}>SkillSpace Documentation</h1>
-      <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', marginBottom: '3rem' }}>
-        The universal package manager and runtime for AI capabilities. Learn how it works under the hood and how to get started.
-      </p>
+    <main className="container">
+      <div className={styles.layout}>
+        {/* Sidebar */}
+        <DocsSidebar />
 
-      <div className="card" style={{ marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '1.5rem', color: '#fff', marginBottom: '1rem' }}>How It Works</h2>
-        <p style={{ color: 'var(--text-secondary)', lineHeight: '1.8' }}>
-          SkillSpace solves the problem of prompt drift and platform lock-in. It operates similarly to npm, but for AI skills, agents, and workflows. 
-        </p>
-        <ul style={{ color: 'var(--text-secondary)', marginTop: '1rem', marginLeft: '1.5rem', lineHeight: '1.8' }}>
-          <li><strong>Resolution:</strong> The CLI fetches the `skill.yaml` from the registry and caches it locally.</li>
-          <li><strong>Model Adapter Layer (MAL):</strong> The runtime translates your model-agnostic instructions into the specific format required by the target model (e.g., OpenAI, Claude, Ollama).</li>
-          <li><strong>Execution Sandbox:</strong> The skill runs within strict permissions. It cannot read files or access the network unless explicitly permitted by the user.</li>
-        </ul>
-      </div>
-
-      <div className="card" style={{ marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '1.5rem', color: '#fff', marginBottom: '1rem' }}>CLI Commands</h2>
-        
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ color: '#fff', marginBottom: '0.5rem' }}>Initialization & Setup</h3>
-          <div className="codeBlock">
-            <code>skillspace init</code>
+        {/* Main Content */}
+        <div className={styles.content}>
+          <div className={styles.header}>
+            <h1 className={styles.title}>Documentation</h1>
+            <p className={styles.subtitle}>
+              Learn how to build, publish, and consume AI capabilities with SkillSpace.
+            </p>
           </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: '0.5rem' }}>Initializes skillspace.yaml in your current directory.</p>
-        </div>
 
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ color: '#fff', marginBottom: '0.5rem' }}>Model Configuration</h3>
-          <div className="codeBlock">
-            <code>skillspace model add [provider]</code>
-          </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: '0.5rem' }}>Configures API keys for providers like openai, anthropic, or ollama.</p>
-        </div>
+          <section id="introduction" className={styles.section}>
+            <h2 className={styles.sectionTitle}>Introduction</h2>
+            <div className={styles.sectionContent}>
+              <p>
+                SkillSpace is a universal runtime and registry for AI capabilities. It allows you to package prompts, agents, and multi-step workflows into versioned, installable modules that run predictably across different models (Claude, OpenAI, Gemini).
+              </p>
+              <p>
+                Instead of copying and pasting prompts or writing custom wrapper code for every new LLM integration, you can install a capability just like an npm package.
+              </p>
+              
+              <div className="codeBlock" style={{ marginTop: '2rem' }}>
+                <code>skillspace install security-review</code>
+              </div>
+            </div>
+          </section>
 
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ color: '#fff', marginBottom: '0.5rem' }}>Installation</h3>
-          <div className="codeBlock">
-            <code>skillspace install [name]@[version]</code>
-          </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: '0.5rem' }}>Installs a capability and generates a lock file for reproducibility.</p>
-        </div>
+          <section id="publishing" className={styles.section}>
+            <h2 className={styles.sectionTitle}>Publishing</h2>
+            <div className={styles.sectionContent}>
+              <p>
+                To publish a skill, you must first create a <code>skillspace.yaml</code> manifest file in your project directory. This file defines the capability's inputs, outputs, models, and any required permissions.
+              </p>
+              <h3>1. Initialize a Package</h3>
+              <div className="codeBlock">
+                <pre><code>{`skillspace init
+# Follow the interactive prompts to generate skillspace.yaml`}</code></pre>
+              </div>
+              
+              <h3>2. Write your Logic</h3>
+              <p>
+                Implement your logic in the main entrypoint file specified in your manifest. Use standard standard input and output streams for cross-platform compatibility.
+              </p>
 
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ color: '#fff', marginBottom: '0.5rem' }}>Execution</h3>
-          <div className="codeBlock">
-            <code>skillspace run [name] --input ./src --model anthropic/claude-3-5-sonnet</code>
-          </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: '0.5rem' }}>Runs the installed capability securely. Override the default model using the --model flag.</p>
-        </div>
-      </div>
+              <h3>3. Publish</h3>
+              <p>
+                Once you are ready, push your capability to the global registry:
+              </p>
+              <div className="codeBlock">
+                <code>skillspace publish</code>
+              </div>
+            </div>
+          </section>
 
-      <div className="card" style={{ marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '1.5rem', color: '#fff', marginBottom: '1rem' }}>Configuration (skillspace.yaml)</h2>
-        <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', lineHeight: '1.8' }}>
-          The local `skillspace.yaml` file defines the default behavior of the runtime within your project.
-        </p>
-        <div className="codeBlock">
-          <code>
-{`version: 1.0
-default_model: openai/gpt-4o
-skills:
-  security-review: ^2.1.0
-  code-documenter: ^1.4.2
-permissions:
-  allow_read: ["./src", "./tests"]
-  allow_network: false`}
-          </code>
+          <section id="workflows" className={styles.section}>
+            <h2 className={styles.sectionTitle}>Workflows</h2>
+            <div className={styles.sectionContent}>
+              <p>
+                Workflows allow you to chain multiple capabilities together into a single execution graph. Outputs from one skill can be piped directly into the inputs of another.
+              </p>
+              <p>
+                To create a workflow, specify the <code>type: workflow</code> in your manifest and define the step sequence:
+              </p>
+              <div className="codeBlock">
+                <pre><code>{`name: @my-org/summarize-and-translate
+type: workflow
+steps:
+  - id: summarize
+    uses: @core/summarizer@1.0.0
+  - id: translate
+    uses: @core/translator@2.0.0
+    with:
+      target_language: es
+    input: \${steps.summarize.output}`}</code></pre>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
     </main>

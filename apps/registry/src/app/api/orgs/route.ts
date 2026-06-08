@@ -60,7 +60,14 @@ export async function GET(request: NextRequest) {
     // List orgs the user is a member of
     const members = await prisma.orgMember.findMany({
       where: { userId: user.userId },
-      include: { organization: true }
+      include: { 
+        organization: {
+          include: {
+            packages: { include: { versions: { orderBy: { publishedAt: 'desc' }, take: 1 } } },
+            members: { include: { user: { select: { id: true, username: true, email: true } } } }
+          }
+        } 
+      }
     });
 
     const orgs = members.map(m => m.organization);

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
 import Link from 'next/link';
+import PackageCard from '@/components/PackageCard';
 
 interface UserProfile {
   id: string;
@@ -150,19 +151,16 @@ export default function ProfilePage() {
           <div className="card">
             <h2 className={styles.sectionTitle}>Your Packages</h2>
             {profile.packages.length > 0 ? (
-              <div className={styles.packageList}>
-                {profile.packages.map((pkg) => (
-                  <Link href={`/packages/${pkg.name}`} key={pkg.id} className={styles.packageCard}>
-                    <div className={styles.packageName}>{pkg.name}</div>
-                    <div className={styles.packageDesc}>{pkg.description}</div>
-                    <div className={styles.packageMeta}>
-                      <span>Downloads: {pkg.downloads.toLocaleString()}</span>
-                      <span>
-                        Latest: {pkg.versions[0]?.version || 'No versions'}
-                      </span>
-                    </div>
-                  </Link>
-                ))}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1rem' }}>
+                {profile.packages.map((pkg: any, i: number) => {
+                  const enrichedPkg = {
+                    ...pkg,
+                    tags: typeof pkg.tags === 'string' ? JSON.parse(pkg.tags || '[]') : pkg.tags,
+                    latestVersion: pkg.versions?.[0]?.version,
+                    owner: { username: profile.username }
+                  };
+                  return <PackageCard key={pkg.id} pkg={enrichedPkg} index={i} />;
+                })}
               </div>
             ) : (
               <p style={{ color: 'var(--text-secondary)' }}>You haven&apos;t published any packages yet.</p>

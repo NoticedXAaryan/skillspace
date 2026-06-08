@@ -1,6 +1,7 @@
 import styles from './page.module.css';
 import Link from 'next/link';
 import { Package, Shield, RefreshCw, Cpu, BookOpen, Terminal, ChevronRight } from 'lucide-react';
+import PackageCard from '@/components/PackageCard';
 
 interface PackageData {
   name: string;
@@ -24,11 +25,6 @@ async function getFeaturedPackages(): Promise<PackageData[]> {
   } catch {
     return [];
   }
-}
-
-function formatDownloads(n: number): string {
-  if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
-  return String(n);
 }
 
 export default async function HomePage() {
@@ -121,7 +117,7 @@ export default async function HomePage() {
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>Featured Capabilities</h2>
-            <Link href="/" className={styles.viewAllLink}>
+            <Link href="/packages" className={styles.viewAllLink}>
               View Registry <ChevronRight size={16} />
             </Link>
           </div>
@@ -138,58 +134,12 @@ export default async function HomePage() {
           ) : (
             <div className={styles.packagesGrid}>
               {packages.map((pkg, i) => (
-                <Link
-                  key={pkg.name}
-                  href={`/packages/${pkg.name}`}
-                  className={`card ${styles.packageCard}`}
-                  style={{ animationDelay: `${i * 40}ms` }}
-                >
-                  <div className={styles.packageHeader}>
-                    <div className={styles.packageTitleRow}>
-                      <span className={styles.packageName}>{pkg.name}</span>
-                      {pkg.latestVersion && (
-                        <span className={styles.versionTag}>v{pkg.latestVersion}</span>
-                      )}
-                    </div>
-                    {pkg.type && <span className={styles.typeBadge}>{pkg.type}</span>}
-                  </div>
-                  
-                  <p className={styles.packageDesc}>{pkg.description}</p>
-                  
-                  <div className={styles.tagsRow}>
-                    {pkg.tags?.slice(0, 3).map((tag) => (
-                      <span key={tag} className="tag">{tag}</span>
-                    ))}
-                  </div>
-                  
-                  <div className={styles.packageFooter}>
-                    <div className={styles.packageAuthor}>
-                      <div className={styles.authorAvatar}>
-                        {pkg.owner?.username?.[0]?.toUpperCase() || 'S'}
-                      </div>
-                      {pkg.owner?.username || 'skillspace'}
-                    </div>
-                    <div className={styles.packageStats}>
-                      <span className={styles.downloads}>
-                        <ChevronDown size={14} className="inlineIcon" /> 
-                        {formatDownloads(pkg.downloads)}
-                      </span>
-                    </div>
-                  </div>
-                </Link>
+                <PackageCard key={pkg.name} pkg={pkg} index={i} />
               ))}
             </div>
           )}
         </section>
       </div>
     </main>
-  );
-}
-
-function ChevronDown(props: any) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="m6 9 6 6 6-6"/>
-    </svg>
   );
 }

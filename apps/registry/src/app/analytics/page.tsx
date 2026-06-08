@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { Activity, Clock, Cpu, CheckCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface LogEntry {
   id: string;
@@ -19,16 +20,32 @@ interface LogEntry {
 export default function AnalyticsDashboard() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    fetch('/api/analytics?limit=100')
-      .then(res => res.json())
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+
+    fetch('/api/analytics?limit=100', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => {
+        if (res.status === 401) {
+          localStorage.removeItem('token');
+          router.push('/login');
+          throw new Error('Unauthorized');
+        }
+        return res.json();
+      })
       .then(data => {
         if (Array.isArray(data)) setLogs(data);
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, []);
+  }, [router]);
 
   if (loading) {
     return (
@@ -48,18 +65,26 @@ export default function AnalyticsDashboard() {
     : 100;
 
   const packageDistribution = logs.reduce((acc: any, log) => {
-    const pkg = log.packageId || 'Unknown';
+    const pkg = log.package?.name || 'Unknown';
     if (!acc[pkg]) acc[pkg] = { name: pkg, executions: 0 };
     acc[pkg].executions += 1;
     return acc;
   }, {});
   const barData = Object.values(packageDistribution);
 
+  const timeSeriesDataMap = logs.reduce((acc: any, log) => {
+    const date = new Date(log.createdAt).toLocaleDateString();
+    if (!acc[date]) acc[date] = { date, executions: 0 };
+    acc[date].executions += 1;
+    return acc;
+  }, {});
+  const lineData = Object.values(timeSeriesDataMap).reverse();
+
   return (
     <div className="container" style={{ padding: '3rem 1.5rem' }}>
       <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 800, color: '#fff' }}>Execution Analytics</h1>
-        <p style={{ color: 'var(--text-secondary)' }}>Monitor usage and performance.</p>
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 800, color: '#fff' }}>Analytics Dashboard</h1>
+        <p style={{ color: 'var(--text-secondary)' }}>Monitor usage, latency, and costs.</p>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
@@ -93,39 +118,80 @@ export default function AnalyticsDashboard() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
         <div className="card">
-          <h3 style={{ color: '#fff', marginBottom: '1rem' }}>Executions by Package</h3>
+          <h3 style={{ color: '#fff', marginBottom: '1rem' }}>Executions Over Time</h3>
           <div style={{ height: '300px' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={barData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="name" stroke="var(--text-secondary)" />
+              <LineChart data={lineData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
+                <XAxis dataKey="date" stroke="var(--text-secondary)" />
                 <YAxis stroke="var(--text-secondary)" />
-                <Tooltip contentStyle={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border)', color: '#fff' }} />
-                <Bar dataKey="executions" fill="var(--accent)" radius={[4, 4, 0, 0]} />
-              </BarChart>
+                <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--border-subtle)', color: '#fff' }} />
+                <Line type="monotone" dataKey="executions" stroke="var(--accent)" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 8 }} />
+              </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         <div className="card">
-          <h3 style={{ color: '#fff', marginBottom: '1rem' }}>Recent Executions</h3>
-          <ul style={{ listStyle: 'none', padding: 0, maxHeight: '300px', overflowY: 'auto' }}>
-            {logs.slice(0, 50).map((log) => (
-              <li key={log.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem 0', borderBottom: '1px solid var(--border)' }}>
-                <div>
-                  <div style={{ color: '#fff', fontSize: '0.9rem' }}>{log.packageId}@{log.version}</div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{log.modelId}</div>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ color: log.status === 'success' ? 'var(--success)' : 'var(--error)', fontSize: '0.9rem' }}>{log.status}</div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{log.durationMs}ms</div>
-                </div>
-              </li>
-            ))}
-            {logs.length === 0 && <li style={{ color: 'var(--text-muted)', textAlign: 'center', marginTop: '2rem' }}>No execution logs.</li>}
-          </ul>
+          <h3 style={{ color: '#fff', marginBottom: '1rem' }}>Executions by Package</h3>
+          <div style={{ height: '300px' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={barData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
+                <XAxis dataKey="name" stroke="var(--text-secondary)" />
+                <YAxis stroke="var(--text-secondary)" />
+                <RechartsTooltip contentStyle={{ backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--border-subtle)', color: '#fff' }} />
+                <Bar dataKey="executions" fill="#a855f7" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      <div className="card">
+        <h3 style={{ color: '#fff', marginBottom: '1.5rem' }}>Recent Executions</h3>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: 'var(--text-secondary)' }}>
+                <th style={{ padding: '1rem' }}>Date</th>
+                <th style={{ padding: '1rem' }}>Package</th>
+                <th style={{ padding: '1rem' }}>Version</th>
+                <th style={{ padding: '1rem' }}>Model</th>
+                <th style={{ padding: '1rem' }}>Duration</th>
+                <th style={{ padding: '1rem' }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {logs.slice(0, 50).map((log) => (
+                <tr key={log.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                  <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>
+                    {new Date(log.createdAt).toLocaleString()}
+                  </td>
+                  <td style={{ padding: '1rem', color: '#fff', fontWeight: 500 }}>
+                    {log.package?.name || 'Unknown'}
+                  </td>
+                  <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>{log.version}</td>
+                  <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>{log.modelId}</td>
+                  <td style={{ padding: '1rem', color: 'var(--text-secondary)' }}>{log.durationMs}ms</td>
+                  <td style={{ padding: '1rem' }}>
+                    <span className="tag" style={{ color: log.status === 'success' ? 'var(--success)' : 'var(--error)', background: log.status === 'success' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)' }}>
+                      {log.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+              {logs.length === 0 && (
+                <tr>
+                  <td colSpan={6} style={{ padding: '3rem 1rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                    No execution logs found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
