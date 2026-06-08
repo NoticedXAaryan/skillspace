@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "cd ../.. && pnpm --filter @skillspace/schema build && pnpm --filter @skillspace/runtime build",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
