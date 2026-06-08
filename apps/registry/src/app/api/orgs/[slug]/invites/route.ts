@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getUserFromRequest } from '@/lib/auth';
-import crypto from 'node:crypto';
-import { inviteTokens } from '@/lib/invites';
+import { createInvite } from '@/lib/invites';
 
 export async function POST(request: NextRequest, props: { params: Promise<{ slug: string }> }) {
   try {
@@ -34,14 +33,9 @@ export async function POST(request: NextRequest, props: { params: Promise<{ slug
       return NextResponse.json({ error: 'Only admins can generate invites' }, { status: 403 });
     }
 
-    const token = crypto.randomBytes(32).toString('hex');
-    inviteTokens.set(token, {
-      orgId: org.id,
-      role,
-      expires: Date.now() + 1000 * 60 * 60 * 24 // 24 hours
-    });
+    const invite = await createInvite(org.id, role, 24);
 
-    return NextResponse.json({ token, expires_in: '24h' });
+    return NextResponse.json({ token: invite.token, expires_in: '24h' });
   } catch (error) {
     console.error('Failed to generate invite:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

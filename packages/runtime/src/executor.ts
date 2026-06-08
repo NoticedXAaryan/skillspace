@@ -128,7 +128,7 @@ export class Executor {
             tools.push({
               name: `mcp_${srv.name}_${t.name.replace(/[^a-zA-Z0-9_-]/g, '_')}`,
               description: t.description || `Tool from ${srv.name}`,
-              parameters: t.inputSchema?.properties || {},
+              parameters: (t.inputSchema?.properties || {}) as any,
               required: t.inputSchema?.required || []
             });
           }

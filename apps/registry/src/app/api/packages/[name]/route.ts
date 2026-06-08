@@ -26,8 +26,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ nam
         });
       }
       if (pkg.orgId) {
-        const isMember = await prisma.organizationMember.findUnique({
-          where: { userId_organizationId: { userId: user.userId, organizationId: pkg.orgId } }
+        const isMember = await prisma.orgMember.findUnique({
+          where: { organizationId_userId: { userId: user.userId, organizationId: pkg.orgId } }
         });
         if (!isMember && pkg.ownerId !== user.userId) {
           return new Response(JSON.stringify({ error: { message: 'Forbidden' } }), { status: 403, headers: { 'Content-Type': 'application/json' } });

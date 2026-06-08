@@ -52,7 +52,7 @@ ${JSON.stringify(input)}
         throw new Error(`Ollama returned status ${response.status}`);
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as any;
       let output: any;
       try {
         output = typeof data.response === 'string' ? JSON.parse(data.response) : data.response;

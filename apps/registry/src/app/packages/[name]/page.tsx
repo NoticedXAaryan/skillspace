@@ -4,6 +4,8 @@ import { Terminal, Shield, Download, Clock, User, Box } from 'lucide-react';
 import Link from 'next/link';
 import prisma from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 export default async function PackagePage({ params }: { params: Promise<{ name: string }> }) {
   const { name } = await params;
   

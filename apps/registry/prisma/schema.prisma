@@ -32,6 +32,7 @@ model Organization {
   packages    Package[]
   allowlistedPackages PackageAllowlist[]
   accessPolicies AccessPolicy[]
+  invites     Invite[]
 }
 
 model OrgMember {

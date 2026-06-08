@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getUserFromRequest } from '@/lib/auth';
-import { inviteTokens } from '@/lib/invites';
+import { validateInvite, consumeInvite } from '@/lib/invites';
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,8 +17,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Token is required' }, { status: 400 });
     }
 
-    const invite = inviteTokens.get(token);
-    if (!invite || invite.expires < Date.now()) {
+    const invite = await validateInvite(token);
+    if (!invite) {
       return NextResponse.json({ error: 'Invalid or expired invite token' }, { status: 400 });
     }
 
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    inviteTokens.delete(token);
+    await consumeInvite(token);
 
     return NextResponse.json({ message: 'Successfully joined organization' });
   } catch (error) {

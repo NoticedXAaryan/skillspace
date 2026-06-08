@@ -13,7 +13,7 @@ const RegisterSchema = z.object({
 
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
-  const { allowed } = rateLimit(`register:${ip}`, 3, 3600000);
+  const { allowed } = await rateLimit(`register:${ip}`, 3, 3600000);
   if (!allowed) return rateLimited('Registration limit exceeded. Try again later.');
 
   const body = await req.json().catch(() => null);

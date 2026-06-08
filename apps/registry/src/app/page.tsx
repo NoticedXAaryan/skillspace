@@ -43,12 +43,11 @@ export default async function HomePage() {
         {/* Hero Section */}
         <section className={styles.hero}>
           <div className={styles.heroBadge}>
-            <span className={styles.badgePulse}></span>
             SkillSpace v0.1.0 is live
           </div>
           
           <h1 className={styles.heroTitle}>
-            The Universal Runtime & Registry <br/> for <span className={styles.gradientText}>AI Capabilities</span>
+            The Universal Runtime & Registry for AI Capabilities
           </h1>
           <p className={styles.heroSubtitle}>
             Install, share, version, and execute AI skills, agents, and workflows. Stop rebuilding prompts from scratch. Ship AI features with the predictability of software packages.
@@ -57,7 +56,7 @@ export default async function HomePage() {
           <div className={styles.heroActions}>
             <div className={styles.installSnippet}>
               <Terminal size={16} className={styles.snippetIcon} />
-              <code>skillspace install security-review</code>
+              <span>skillspace install security-review</span>
             </div>
             <Link href="/docs" className="btn btnSecondary">
               <BookOpen size={16} />
@@ -87,28 +86,30 @@ export default async function HomePage() {
         {/* Features Grid */}
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Why SkillSpace?</h2>
-            <p className={styles.sectionSubtitle}>Designed for production AI engineering.</p>
+            <div>
+              <h2 className={styles.sectionTitle}>Why SkillSpace?</h2>
+              <p className={styles.sectionSubtitle}>Designed for production AI engineering.</p>
+            </div>
           </div>
           
           <div className={styles.featuresGrid}>
             <div className={`card ${styles.featureCard}`}>
-              <div className={styles.featureIconWrapper} style={{ background: 'rgba(102, 126, 234, 0.15)', color: '#667eea' }}>
-                <RefreshCw size={24} />
+              <div className={styles.featureIconWrapper}>
+                <RefreshCw size={16} />
               </div>
               <h3>Write Once, Run Anywhere</h3>
               <p>The Model Adapter Layer instantly translates your skills across Claude, OpenAI, and Ollama without code changes.</p>
             </div>
             <div className={`card ${styles.featureCard}`}>
-              <div className={styles.featureIconWrapper} style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981' }}>
-                <Shield size={24} />
+              <div className={styles.featureIconWrapper}>
+                <Shield size={16} />
               </div>
               <h3>Secure by Default</h3>
               <p>Every skill declares explicit permissions. The runtime enforces boundaries, ensuring skills can never access unauthorized files or networks.</p>
             </div>
             <div className={`card ${styles.featureCard}`}>
-              <div className={styles.featureIconWrapper} style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b' }}>
-                <Package size={24} />
+              <div className={styles.featureIconWrapper}>
+                <Package size={16} />
               </div>
               <h3>Versioned & Reproducible</h3>
               <p>Generate lock files for your AI workflows. Your entire team gets the exact same capability stack on day one.</p>
@@ -127,10 +128,10 @@ export default async function HomePage() {
 
           {packages.length === 0 ? (
             <div className={styles.emptyState}>
-              <Cpu size={48} className={styles.emptyIcon} />
+              <Cpu size={32} className={styles.emptyIcon} />
               <h3>No packages found</h3>
               <p>The registry is currently empty. Be the first to publish a skill!</p>
-              <Link href="/docs/publishing" className="btn btnPrimary" style={{ marginTop: '1rem' }}>
+              <Link href="/docs/publishing" className="btn btnSecondary" style={{ marginTop: '1rem' }}>
                 Learn how to publish
               </Link>
             </div>
@@ -141,7 +142,7 @@ export default async function HomePage() {
                   key={pkg.name}
                   href={`/packages/${pkg.name}`}
                   className={`card ${styles.packageCard}`}
-                  style={{ animationDelay: `${i * 0.05}s` }}
+                  style={{ animationDelay: `${i * 40}ms` }}
                 >
                   <div className={styles.packageHeader}>
                     <div className={styles.packageTitleRow}>

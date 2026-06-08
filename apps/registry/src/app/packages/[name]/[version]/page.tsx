@@ -1,5 +1,7 @@
 import styles from '../../../page.module.css';
 import prisma from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import VersionPicker from '@/components/VersionPicker';

@@ -1,6 +1,8 @@
 import prisma from '@/lib/prisma';
 import PlaygroundClient from './PlaygroundClient';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'SkillSpace Playground',
   description: 'Try out public skills instantly in the browser.',

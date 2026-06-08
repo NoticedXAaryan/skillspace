@@ -18,8 +18,8 @@ export async function GET(
       return error('UNAUTHORIZED', 'Unauthorized. This package is private.', 401);
     }
     if (pkg.orgId) {
-      const isMember = await prisma.organizationMember.findUnique({
-        where: { userId_organizationId: { userId: user.userId, organizationId: pkg.orgId } }
+      const isMember = await prisma.orgMember.findUnique({
+        where: { organizationId_userId: { userId: user.userId, organizationId: pkg.orgId } }
       });
       if (!isMember && pkg.ownerId !== user.userId) {
         return error('FORBIDDEN', 'Forbidden', 403);

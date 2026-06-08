@@ -118,7 +118,7 @@ export class AgentExecutor {
       tools.push({
         name: `mcp_${serverName}_${safeToolName}`,
         description: tool.description || `Tool from ${serverName}`,
-        parameters: tool.inputSchema?.properties || {},
+        parameters: (tool.inputSchema?.properties || {}) as any,
         required: tool.inputSchema?.required || []
       });
     }
