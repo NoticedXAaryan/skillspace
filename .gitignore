@@ -49,3 +49,5 @@ graphify-out/
 
 .UI_UX
 
+# TypeScript build info
+*.tsbuildinfo
