@@ -39,3 +39,29 @@ export function testSkill(_skill: ReturnType<typeof defineSkill>, _input: string
   // Phase 2: will run the skill locally against Ollama
   throw new Error('testSkill() is not yet implemented. Coming in Phase 2.');
 }
+
+// --- Phase 6 API Client ---
+
+export class SkillSpaceClient {
+  private baseUrl: string;
+
+  constructor(config?: { baseUrl?: string }) {
+    this.baseUrl = config?.baseUrl || 'https://registry.skillspace.ai/api/v1';
+  }
+
+  packages = {
+    search: async (query: string, limit = 20) => {
+      const res = await fetch(`${this.baseUrl}/packages?q=${encodeURIComponent(query)}&limit=${limit}`);
+      if (!res.ok) throw new Error('Failed to fetch packages');
+      return res.json();
+    },
+  };
+
+  users = {
+    search: async (username: string, limit = 20) => {
+      const res = await fetch(`${this.baseUrl}/users?username=${encodeURIComponent(username)}&limit=${limit}`);
+      if (!res.ok) throw new Error('Failed to fetch users');
+      return res.json();
+    },
+  };
+}

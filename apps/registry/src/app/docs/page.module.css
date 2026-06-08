@@ -1,6 +1,6 @@
 .layout {
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: 240px 1fr 240px;
   gap: var(--space-12);
   padding: var(--space-8) 0 var(--space-16);
 }
@@ -127,4 +127,61 @@
     padding-right: 0;
     padding-bottom: var(--space-6);
   }
+}
+
+.mdxContent {
+  color: var(--text-secondary);
+  line-height: 1.7;
+  font-size: var(--text-base);
+}
+
+.mdxContent :global(h1) {
+  font-size: var(--text-3xl);
+  color: var(--text-primary);
+  margin: var(--space-8) 0 var(--space-4);
+}
+
+.mdxContent :global(h2) {
+  font-size: var(--text-2xl);
+  color: var(--text-primary);
+  margin: var(--space-8) 0 var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.mdxContent :global(h3) {
+  font-size: var(--text-xl);
+  color: var(--text-primary);
+  margin: var(--space-6) 0 var(--space-3);
+}
+
+.mdxContent :global(p) {
+  margin-bottom: var(--space-4);
+}
+
+.mdxContent :global(ul) {
+  margin-bottom: var(--space-4);
+  padding-left: var(--space-6);
+}
+
+.mdxContent :global(li) {
+  margin-bottom: var(--space-2);
+}
+
+.mdxContent :global(a) {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.mdxContent :global(a:hover) {
+  text-decoration: underline;
+}
+
+.mdxContent :global(code) {
+  background: var(--bg-elevated);
+  padding: 0.2em 0.4em;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  color: var(--text-primary);
 }

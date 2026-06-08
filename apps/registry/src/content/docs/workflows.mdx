@@ -1,0 +1,18 @@
+---
+title: Workflows
+description: Build complex execution graphs.
+---
+
+# Workflows
+
+Workflows pipe data between multiple skills.
+
+```yaml
+type: workflow
+steps:
+  - id: analyze
+    uses: @security/analyzer@1.0.0
+  - id: report
+    uses: @core/formatter@2.0.0
+    input: ${steps.analyze.output}
+```

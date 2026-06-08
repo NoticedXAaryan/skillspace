@@ -6,15 +6,15 @@
 /* ─── Design Tokens (Sharp Dark) ─── */
 :root {
   /* Backgrounds */
-  --bg-base:       #09090b;   /* Page / root */
-  --bg-surface:    #111113;   /* Cards, panels */
-  --bg-elevated:   #18181b;   /* Dropdowns, popovers */
-  --bg-overlay:    #1e1e21;   /* Modal backdrops, hover states */
+  --bg-base:       #050505;   /* Page / root */
+  --bg-surface:    #0f0f0f;   /* Cards, panels */
+  --bg-elevated:   #151515;   /* Dropdowns, popovers */
+  --bg-overlay:    rgba(21, 21, 21, 0.8);
 
   /* Borders */
-  --border-subtle: rgba(255,255,255,0.06);
-  --border-base:   rgba(255,255,255,0.10);
-  --border-strong: rgba(255,255,255,0.18);
+  --border-subtle: #242424;
+  --border-base:   #2a2a2a;
+  --border-strong: #333333;
 
   /* Text */
   --text-primary:  #fafafa;
@@ -23,14 +23,15 @@
   --text-disabled: #3f3f46;
 
   /* Accents */
-  --accent:        #e4e4e7;
-  --accent-glow:   rgba(228,228,231,0.08);
+  --accent:        #5B8CFF;
+  --accent-secondary: #8B5CF6;
+  --accent-glow:   rgba(91, 140, 255, 0.15);
 
   /* Semantic */
-  --success:       #22c55e;
-  --warning:       #f59e0b;
-  --error:         #ef4444;
-  --info:          #3b82f6;
+  --success:       #22C55E;
+  --warning:       #F59E0B;
+  --error:         #EF4444;
+  --info:          #5B8CFF;
 
   /* Typography */
   --font-sans: 'Geist', 'DM Sans', 'Plus Jakarta Sans', system-ui;

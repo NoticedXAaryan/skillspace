@@ -1,72 +1,68 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import styles from './page.module.css';
 
 export default function DocsSidebar() {
-  const [activeId, setActiveId] = useState('introduction');
+  const pathname = usePathname();
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const sections = ['introduction', 'publishing', 'workflows'];
-      let current = sections[0];
-      for (const section of sections) {
-        const element = document.getElementById(section);
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          if (rect.top <= 150) {
-            current = section;
-          }
-        }
-      }
-      setActiveId(current);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const nav = [
+    {
+      title: 'Getting Started',
+      items: [
+        { label: 'Introduction', href: '/docs/getting-started' },
+        { label: 'Core Concepts', href: '/docs/concepts' },
+        { label: 'Architecture', href: '/docs/architecture' },
+      ]
+    },
+    {
+      title: 'Developers',
+      items: [
+        { label: 'CLI Reference', href: '/docs/cli' },
+        { label: 'TypeScript SDK', href: '/docs/sdk' },
+        { label: 'Security & Sandbox', href: '/docs/security' },
+        { label: 'Organizations', href: '/docs/organizations' },
+      ]
+    },
+    {
+      title: 'Guides',
+      items: [
+        { label: 'Building Agents', href: '/docs/agents' },
+        { label: 'Chaining Workflows', href: '/docs/workflows' },
+        { label: 'Examples', href: '/docs/examples' },
+      ]
+    },
+    {
+      title: 'Community',
+      items: [
+        { label: 'Contributing', href: '/docs/contributing' },
+      ]
+    }
+  ];
 
   return (
     <aside className={styles.sidebar}>
-      <div className={styles.navGroup}>
-        <div className={styles.navTitle}>Getting Started</div>
-        <ul className={styles.navList}>
-          <li>
-            <Link href="#introduction" className={`${styles.navLink} ${activeId === 'introduction' ? styles.navLinkActive : ''}`}>
-              Introduction
-            </Link>
-          </li>
-          <li><Link href="#installation" className={styles.navLink}>Installation</Link></li>
-          <li><Link href="#concepts" className={styles.navLink}>Core Concepts</Link></li>
-        </ul>
-      </div>
-      
-      <div className={styles.navGroup}>
-        <div className={styles.navTitle}>Developers</div>
-        <ul className={styles.navList}>
-          <li>
-            <Link href="#publishing" className={`${styles.navLink} ${activeId === 'publishing' ? styles.navLinkActive : ''}`}>
-              Publishing
-            </Link>
-          </li>
-          <li><Link href="#manifest" className={styles.navLink}>Manifest Format</Link></li>
-          <li><Link href="#security" className={styles.navLink}>Security</Link></li>
-        </ul>
-      </div>
-
-      <div className={styles.navGroup}>
-        <div className={styles.navTitle}>Guides</div>
-        <ul className={styles.navList}>
-          <li>
-            <Link href="#workflows" className={`${styles.navLink} ${activeId === 'workflows' ? styles.navLinkActive : ''}`}>
-              Workflows
-            </Link>
-          </li>
-          <li><Link href="#agents" className={styles.navLink}>Agents</Link></li>
-        </ul>
-      </div>
+      {nav.map((group, i) => (
+        <div key={i} className={styles.navGroup}>
+          <div className={styles.navTitle}>{group.title}</div>
+          <ul className={styles.navList}>
+            {group.items.map((item, j) => {
+              const isActive = pathname === item.href || (pathname === '/docs' && item.href === '/docs/getting-started');
+              return (
+                <li key={j}>
+                  <Link 
+                    href={item.href} 
+                    className={`${styles.navLink} ${isActive ? styles.navLinkActive : ''}`}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
     </aside>
   );
 }

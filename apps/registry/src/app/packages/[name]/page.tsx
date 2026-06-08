@@ -4,6 +4,7 @@ import InstallCard from '@/components/InstallCard';
 import { Shield, Download, Clock, User, Box } from 'lucide-react';
 import Link from 'next/link';
 import prisma from '@/lib/prisma';
+import PackageTabs from './PackageTabs';
 
 export const dynamic = 'force-dynamic';
 
@@ -146,6 +147,22 @@ export default async function PackagePage({ params }: { params: Promise<{ name: 
                   ))}
                   {(pkg as any).type && <span className="tag" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.2)' }}>{(pkg as any).type}</span>}
                 </div>
+
+                <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                  {pkg.verified && (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: 'var(--text-sm)', color: 'var(--success)', fontWeight: 'var(--weight-medium)' }}>
+                      <Shield size={14} /> Verified Publisher
+                    </span>
+                  )}
+                  {!pkg.isPrivate && (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: 'var(--text-sm)', color: '#3b82f6', fontWeight: 'var(--weight-medium)' }}>
+                      <Box size={14} /> Open Source
+                    </span>
+                  )}
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
+                    <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--success)' }}></span> Health: 98/100
+                  </span>
+                </div>
               </div>
               
               {allVersions.length > 0 && latestVersion && (
@@ -161,12 +178,10 @@ export default async function PackagePage({ params }: { params: Promise<{ name: 
             </div>
           </div>
 
-          <div className="card" style={{ marginTop: '2rem', padding: '2.5rem' }}>
-            <h2 style={{ fontSize: '1.5rem', color: '#fff', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
-              Documentation
-            </h2>
-            <div style={{ color: 'var(--text-secondary)', lineHeight: '1.8' }}>
-              {readme ? (
+          <PackageTabs 
+            pkgName={pkg.name}
+            readmeContent={
+              readme ? (
                 renderMarkdown(readme)
               ) : (
                 <>
@@ -182,9 +197,9 @@ export default async function PackagePage({ params }: { params: Promise<{ name: 
                     <code>skillspace run {pkg.name} --input ./src</code>
                   </div>
                 </>
-              )}
-            </div>
-          </div>
+              )
+            }
+          />
 
           <div className="card" style={{ marginTop: '2rem', padding: '2.5rem' }}>
             <h2 style={{ fontSize: '1.5rem', color: '#fff', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
@@ -275,6 +290,33 @@ export default async function PackagePage({ params }: { params: Promise<{ name: 
             </div>
           )}
         </aside>
+      </div>
+
+      <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid var(--border-subtle)' }}>
+        <h2 style={{ fontSize: '1.5rem', color: '#fff', marginBottom: '1.5rem' }}>Similar Skills</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+          <Link href="/packages/vision-parser" style={{ textDecoration: 'none' }}>
+            <div className="card" style={{ padding: '1.5rem', transition: 'all 0.2s', border: '1px solid var(--border-subtle)' }}>
+              <h3 style={{ color: 'var(--text-primary)', marginBottom: '0.5rem' }}>vision-parser</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1rem' }}>A robust computer vision tool for extracting text.</p>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}><Download size={12} style={{ display: 'inline' }}/> 1.2k</div>
+            </div>
+          </Link>
+          <Link href="/packages/document-qa" style={{ textDecoration: 'none' }}>
+            <div className="card" style={{ padding: '1.5rem', transition: 'all 0.2s', border: '1px solid var(--border-subtle)' }}>
+              <h3 style={{ color: 'var(--text-primary)', marginBottom: '0.5rem' }}>document-qa</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1rem' }}>Question answering over large PDF documents.</p>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}><Download size={12} style={{ display: 'inline' }}/> 8.4k</div>
+            </div>
+          </Link>
+          <Link href="/packages/text-to-sql" style={{ textDecoration: 'none' }}>
+            <div className="card" style={{ padding: '1.5rem', transition: 'all 0.2s', border: '1px solid var(--border-subtle)' }}>
+              <h3 style={{ color: 'var(--text-primary)', marginBottom: '0.5rem' }}>text-to-sql</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1rem' }}>Translate natural language queries into SQL.</p>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}><Download size={12} style={{ display: 'inline' }}/> 3.1k</div>
+            </div>
+          </Link>
+        </div>
       </div>
     </main>
   );

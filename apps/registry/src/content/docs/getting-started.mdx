@@ -1,0 +1,49 @@
+---
+title: Getting Started
+description: Install the CLI and run your first Skill in under 60 seconds.
+---
+
+# Getting Started
+
+SkillSpace is the universal package manager and execution runtime for AI capabilities. Think of it like npm, but for LLM prompts, agents, and workflows.
+
+## Prerequisites
+
+You need Node.js 18+ installed on your machine.
+
+## Installation
+
+Install the SkillSpace CLI globally:
+
+```bash
+npm install -g skillspace-cli
+```
+
+Or run it directly using `npx`:
+
+```bash
+npx skillspace-cli <command>
+```
+
+## Running Your First Skill
+
+To see the power of SkillSpace, you can run a community skill immediately. You don't need an account to run public skills if you provide your own LLM API key.
+
+```bash
+export OPENAI_API_KEY="sk-..."
+skillspace run @core/summarizer "Explain quantum computing simply"
+```
+
+The runtime will:
+1. Fetch the exact, immutable `@core/summarizer` package from the registry.
+2. Resolve its internal dependencies and prompts.
+3. Securely execute the inference using your API key.
+4. Stream the deterministic output back to your terminal.
+
+## Next Steps
+
+Now that you've run a skill, learn how to create and publish your own!
+
+- [Core Concepts](/docs/concepts)
+- [Publishing a Skill](/docs/cli)
+- [Building Agents](/docs/agents)

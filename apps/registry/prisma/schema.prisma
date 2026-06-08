@@ -8,31 +8,67 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(uuid())
-  username     String    @unique
-  email        String    @unique
+  id           String  @id @default(uuid())
+  username     String  @unique
+  email        String  @unique
   passwordHash String
-  plan         String    @default("free")
-  verified     Boolean   @default(false)
-  createdAt    DateTime  @default(now())
-  packages     Package[]
-  orgMemberships OrgMember[]
-  executionLogs ExecutionLog[]
-  addedAllowlists PackageAllowlist[]
+  plan         String  @default("free")
+  verified     Boolean @default(false)
+
+  // Profile Fields
+  avatar  String?
+  banner  String?
+  bio     String?
+  github  String?
+  website String?
+  twitter String?
+
+  createdAt          DateTime            @default(now())
+  packages           Package[]
+  orgMemberships     OrgMember[]
+  executionLogs      ExecutionLog[]
+  addedAllowlists    PackageAllowlist[]
   playgroundSessions PlaygroundSession[]
+  stars              Star[]
+  followers          Follower[]          @relation("UserFollowing")
+  following          Follower[]          @relation("UserFollowers")
+  collections        Collection[]
+  reviews            Review[]
+  discussions        Discussion[]
+  discussionComments DiscussionComment[]
+  skillRequests      SkillRequest[]
+  showcaseProjects   ShowcaseProject[]
+  roadmapItems       RoadmapItem[]
+  roadmapVotes       RoadmapVote[]
+
+  onboarding UserOnboarding?
+}
+
+model UserOnboarding {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  walkthroughCompleted Boolean  @default(false)
+  firstSkillInstalled  Boolean  @default(false)
+  firstSkillRun        Boolean  @default(false)
+  firstSkillPublished  Boolean  @default(false)
+  onboardingCompleted  Boolean  @default(false)
+  currentStep          Int      @default(1)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Organization {
-  id          String      @id @default(uuid())
-  slug        String      @unique
-  name        String
-  plan        String      @default("team")
-  createdAt   DateTime    @default(now())
-  members     OrgMember[]
-  packages    Package[]
+  id                  String             @id @default(uuid())
+  slug                String             @unique
+  name                String
+  plan                String             @default("team")
+  createdAt           DateTime           @default(now())
+  members             OrgMember[]
+  packages            Package[]
   allowlistedPackages PackageAllowlist[]
-  accessPolicies AccessPolicy[]
-  invites     Invite[]
+  accessPolicies      AccessPolicy[]
+  invites             Invite[]
 }
 
 model OrgMember {
@@ -48,23 +84,27 @@ model OrgMember {
 }
 
 model Package {
-  id          String           @id @default(uuid())
-  type        String           @default("skill")
-  name        String           @unique
-  scope       String?
-  ownerId     String
-  owner       User             @relation(fields: [ownerId], references: [id])
-  orgId       String?
-  organization Organization?   @relation(fields: [orgId], references: [id])
-  description String
-  tags        String           @default("[]")
-  downloads   Int              @default(0)
-  verified    Boolean          @default(false)
-  isPrivate   Boolean          @default(false)
-  createdAt   DateTime         @default(now())
-  versions    PackageVersion[]
-  executions  ExecutionLog[]
-  benchmarks  BenchmarkScore[]
+  id           String              @id @default(uuid())
+  type         String              @default("skill")
+  name         String              @unique
+  scope        String?
+  ownerId      String
+  owner        User                @relation(fields: [ownerId], references: [id])
+  orgId        String?
+  organization Organization?       @relation(fields: [orgId], references: [id])
+  description  String
+  tags         String              @default("[]")
+  downloads    Int                 @default(0)
+  verified     Boolean             @default(false)
+  isPrivate    Boolean             @default(false)
+  createdAt    DateTime            @default(now())
+  versions     PackageVersion[]
+  executions   ExecutionLog[]
+  benchmarks   BenchmarkScore[]
+  stars        Star[]
+  collections  CollectionPackage[]
+  reviews      Review[]
+  discussions  Discussion[]
 }
 
 model PackageVersion {
@@ -82,19 +122,19 @@ model PackageVersion {
 }
 
 model ExecutionLog {
-  id          String   @id @default(uuid())
-  packageId   String
-  package     Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  version     String
-  userId      String?
-  user        User?    @relation(fields: [userId], references: [id])
-  orgId       String?
-  modelId     String
-  durationMs  Int
-  tokensUsed  Int      @default(0)
-  status      String   @default("success") // success, error
+  id           String   @id @default(uuid())
+  packageId    String
+  package      Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  version      String
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id])
+  orgId        String?
+  modelId      String
+  durationMs   Int
+  tokensUsed   Int      @default(0)
+  status       String   @default("success") // success, error
   errorMessage String?
-  createdAt   DateTime @default(now())
+  createdAt    DateTime @default(now())
 }
 
 model BenchmarkScore {
@@ -112,10 +152,10 @@ model BenchmarkScore {
 }
 
 model RateLimit {
-  id        String   @id @default(cuid())
-  key       String   @unique
-  count     Int      @default(0)
-  resetAt   DateTime
+  id      String   @id @default(cuid())
+  key     String   @unique
+  count   Int      @default(0)
+  resetAt DateTime
 }
 
 model Invite {
@@ -130,39 +170,170 @@ model Invite {
 }
 
 model PackageAllowlist {
-  id        String   @id @default(uuid())
-  orgId     String
+  id           String       @id @default(uuid())
+  orgId        String
   organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  package   String   // The name of the allowed package
-  addedById String
-  addedBy   User     @relation(fields: [addedById], references: [id])
-  createdAt DateTime @default(now())
+  package      String // The name of the allowed package
+  addedById    String
+  addedBy      User         @relation(fields: [addedById], references: [id])
+  createdAt    DateTime     @default(now())
 
   @@unique([orgId, package])
 }
 
 model AccessPolicy {
-  id        String   @id @default(uuid())
-  orgId     String
+  id           String       @id @default(uuid())
+  orgId        String
   organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  role      String   // admin, member, custom
-  resource  String   // 'packages', 'benchmarks', 'analytics', 'settings'
-  action    String   // 'read', 'write', 'delete'
-  effect    String   @default("allow") // 'allow', 'deny'
-  createdAt DateTime @default(now())
+  role         String // admin, member, custom
+  resource     String // 'packages', 'benchmarks', 'analytics', 'settings'
+  action       String // 'read', 'write', 'delete'
+  effect       String       @default("allow") // 'allow', 'deny'
+  createdAt    DateTime     @default(now())
 }
 
 model PlaygroundSession {
+  id         String   @id @default(cuid())
+  skillName  String
+  input      String
+  output     String?
+  durationMs Int?
+  modelUsed  String?
+  status     String   @default("pending") // pending | running | done | error
+  error      String?
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime // sessions auto-expire after 24h
+}
+
+model Star {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  packageId String
+  package   Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, packageId])
+}
+
+model Follower {
   id          String   @id @default(cuid())
-  skillName   String
-  input       String
-  output      String?
-  durationMs  Int?
-  modelUsed   String?
-  status      String   @default("pending") // pending | running | done | error
-  error       String?
-  userId      String?
-  user        User?    @relation(fields: [userId], references: [id])
+  followerId  String
+  follower    User     @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
+  followingId String
+  following   User     @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
-  expiresAt   DateTime // sessions auto-expire after 24h
+
+  @@unique([followerId, followingId])
+}
+
+model Collection {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isPublic    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  packages CollectionPackage[]
+}
+
+model CollectionPackage {
+  id           String     @id @default(cuid())
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  packageId    String
+  package      Package    @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  addedAt      DateTime   @default(now())
+
+  @@unique([collectionId, packageId])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int // e.g., 1 to 5
+  comment   String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  packageId String
+  package   Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, packageId])
+}
+
+model Discussion {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  packageId String?
+  package   Package? @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  comments DiscussionComment[]
+}
+
+model DiscussionComment {
+  id           String     @id @default(cuid())
+  content      String
+  discussionId String
+  discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model SkillRequest {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status      String   @default("open") // open, claimed, completed
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ShowcaseProject {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  url         String
+  imageUrl    String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
+
+model RoadmapItem {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  status      String   @default("planned") // planned, in_progress, completed
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  votes RoadmapVote[]
+}
+
+model RoadmapVote {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roadmapItemId String
+  roadmapItem   RoadmapItem @relation(fields: [roadmapItemId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+
+  @@unique([userId, roadmapItemId])
 }

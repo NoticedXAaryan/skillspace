@@ -1,0 +1,144 @@
+.sidebar {
+  width: 280px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    display: none; /* In a real app, this would be a mobile drawer */
+  }
+}
+
+.filterSection {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  position: sticky;
+  top: 100px;
+}
+
+.filterTitle {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.filterGroup {
+  margin-bottom: var(--space-6);
+}
+
+.label {
+  display: block;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+  font-weight: var(--weight-medium);
+}
+
+.select {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  outline: none;
+}
+
+.select:focus {
+  border-color: var(--accent);
+}
+
+.range {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-3);
+  cursor: pointer;
+}
+
+.checkboxLabel input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 16px;
+  height: 16px;
+}
+
+.main {
+  flex-grow: 1;
+}
+
+.searchBar {
+  display: flex;
+  align-items: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 0 var(--space-4);
+  margin-bottom: var(--space-6);
+  transition: border-color 0.2s;
+}
+
+.searchBar:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.searchIcon {
+  color: var(--text-muted);
+}
+
+.searchInput {
+  flex-grow: 1;
+  background: transparent;
+  border: none;
+  padding: var(--space-4);
+  color: var(--text-primary);
+  font-size: var(--text-base);
+  outline: none;
+}
+
+.resultsHeader {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-4);
+}
+
+.emptyState {
+  text-align: center;
+  padding: var(--space-12) 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.emptyState h3 {
+  font-size: var(--text-xl);
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.emptyState p {
+  color: var(--text-secondary);
+  margin-bottom: var(--space-6);
+}

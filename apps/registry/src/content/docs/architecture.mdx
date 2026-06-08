@@ -1,0 +1,39 @@
+---
+title: Architecture
+description: Understand how the SkillSpace Runtime and Registry are designed.
+---
+
+# Architecture
+
+SkillSpace is designed around two primary components: the **Registry** and the **Runtime**.
+
+<ArchitectureDiagram type="full" />
+
+## The Registry
+
+The Registry (where you are right now) is built on Next.js 15, Prisma, and Neon Postgres. It serves as the immutable ledger of all published capabilities.
+
+When a package is published:
+1. The CLI bundles your `skillspace.yaml` and source code.
+2. It's uploaded to a secure object store.
+3. The Registry records the Semantic Version, hashes, and dependencies.
+
+### Immutability
+Once a version (e.g., `1.0.0`) is published, it can never be altered. If you fix a typo in your prompt, you must publish `1.0.1`. This guarantees execution reproducibility.
+
+## The Runtime
+
+The Runtime is an open-source execution engine written in TypeScript. It is responsible for parsing manifests, managing sandboxes, and normalizing LLM APIs.
+
+<ArchitectureDiagram type="runtime" />
+
+### Execution Sandboxing
+Because AI agents can write and execute arbitrary code, the Runtime runs inside a restricted environment. File system access and network egress are blocked by default unless explicitly granted in the package manifest.
+
+```yaml
+permissions:
+  network:
+    - https://api.github.com/*
+  fs:
+    - read: ./src
+```

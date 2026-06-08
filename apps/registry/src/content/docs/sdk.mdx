@@ -1,0 +1,20 @@
+---
+title: TypeScript SDK
+description: Integrate SkillSpace natively into your app.
+---
+
+# TypeScript SDK
+
+Execute capabilities directly from your Next.js, Node, or Bun backend using the `@skillspace/runtime` package.
+
+```typescript
+import { SkillSpace } from '@skillspace/runtime';
+
+const client = new SkillSpace({ apiKey: process.env.OPENAI_API_KEY });
+
+const result = await client.run('@core/summarizer', {
+  input: "Long document text..."
+});
+
+console.log(result.output);
+```

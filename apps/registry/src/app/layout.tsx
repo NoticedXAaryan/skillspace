@@ -2,6 +2,10 @@ import type { Metadata } from 'next';
 import './globals.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import CommandPalette from '@/components/CommandPalette';
+import ActivationWidget from '@/components/ActivationWidget';
+import OnboardingModal from '@/components/OnboardingModal';
+import { Toaster } from 'sonner';
 
 export const metadata: Metadata = {
   title: 'SkillSpace — The Universal AI Capability Registry',
@@ -17,6 +21,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Navbar />
         {children}
         <Footer />
+        <CommandPalette />
+        <ActivationWidget />
+        <OnboardingModal />
+        <Toaster theme="dark" position="bottom-right" />
       </body>
     </html>
   );

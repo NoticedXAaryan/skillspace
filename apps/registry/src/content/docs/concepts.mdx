@@ -1,0 +1,26 @@
+---
+title: Core Concepts
+description: The fundamental primitives of SkillSpace.
+---
+
+# Core Concepts
+
+SkillSpace is built on three main primitives: Skills, Agents, and Workflows.
+
+## Skills
+
+A Skill is the smallest atomic unit of AI execution. It represents a single, deterministic function call to an LLM.
+
+```yaml
+name: my-skill
+type: skill
+prompt: Translate {{text}} to French.
+```
+
+## Agents
+
+An Agent is an autonomous loop that can invoke tools, observe the environment, and reason about its next steps.
+
+## Workflows
+
+A Workflow connects Skills and Agents into a Directed Acyclic Graph (DAG) for complex data pipelines.

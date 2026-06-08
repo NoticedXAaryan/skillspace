@@ -1,143 +1,237 @@
+export const dynamic = 'force-dynamic';
 import styles from './page.module.css';
 import Link from 'next/link';
-import { Package, Shield, RefreshCw, Cpu, BookOpen, Terminal, ChevronRight } from 'lucide-react';
+import { Package, Shield, RefreshCw, Cpu, BookOpen, Terminal, ChevronRight, Zap, Globe, Layers, Star } from 'lucide-react';
 import PackageCard from '@/components/PackageCard';
+import AnimatedTerminal from '@/components/AnimatedTerminal';
+import EmptyState from '@/components/EmptyState';
+import { prisma } from '@/lib/prisma';
 
-interface PackageData {
-  name: string;
-  description: string;
-  downloads: number;
-  latestVersion?: string;
-  tags: string[];
-  owner?: { username: string };
-  type?: string;
+async function getCommunityStats() {
+  try {
+    const [skillsCount, usersCount, executionsCount, downloadsResult] = await Promise.all([
+      prisma.package.count(),
+      prisma.user.count(),
+      prisma.executionLog.count(),
+      prisma.package.aggregate({
+        _sum: {
+          downloads: true,
+        },
+      }),
+    ]);
+    return { 
+      skillsCount, 
+      usersCount, 
+      executionsCount, 
+      downloadsCount: downloadsResult._sum.downloads || 0 
+    };
+  } catch {
+    return { skillsCount: 0, usersCount: 0, executionsCount: 0, downloadsCount: 0 };
+  }
 }
 
-async function getFeaturedPackages(): Promise<PackageData[]> {
+async function getFeaturedPackages() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/packages?limit=6`, {
-      cache: 'no-store',
+    const packages = await prisma.package.findMany({
+      take: 6,
+      orderBy: { downloads: 'desc' },
+      include: {
+        owner: { select: { username: true } },
+        versions: { orderBy: { publishedAt: 'desc' }, take: 1 },
+      },
     });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.data || [];
+    return packages.map(pkg => ({
+      ...pkg,
+      tags: typeof pkg.tags === 'string' ? JSON.parse(pkg.tags || '[]') : pkg.tags,
+      latestVersion: pkg.versions[0]?.version,
+    }));
   } catch {
     return [];
   }
 }
 
 export default async function HomePage() {
+  const stats = await getCommunityStats();
   const packages = await getFeaturedPackages();
 
   return (
     <main className={styles.main}>
-      {/* Dynamic Background */}
       <div className={styles.ambientGlow} />
       
       <div className="container">
         {/* Hero Section */}
         <section className={styles.hero}>
-          <div className={styles.heroBadge}>
-            SkillSpace v0.1.0 is live
-          </div>
-          
-          <h1 className={styles.heroTitle}>
-            The Universal Runtime & Registry for AI Capabilities
-          </h1>
+          <div className={styles.heroBadge}>SkillSpace v0.1.0 is live</div>
+          <h1 className={styles.heroTitle}>Package AI Skills Like Software.</h1>
           <p className={styles.heroSubtitle}>
-            Install, share, version, and execute AI skills, agents, and workflows. Stop rebuilding prompts from scratch. Ship AI features with the predictability of software packages.
+            Install, version, share, and run AI capabilities across any model. The open-source registry and runtime for modern AI engineering.
           </p>
+          
+          <AnimatedTerminal />
 
           <div className={styles.heroActions}>
-            <div className={styles.installSnippet}>
-              <Terminal size={16} className={styles.snippetIcon} />
-              <span>skillspace install security-review</span>
-            </div>
-            <Link href="/docs" className="btn btnSecondary">
-              <BookOpen size={16} />
-              Read the Docs
+            <Link href="/packages" className="btn btnPrimary" style={{ padding: 'var(--space-3) var(--space-6)', fontSize: 'var(--text-base)' }}>
+              Explore Registry <ChevronRight size={18} />
+            </Link>
+            <Link href="/docs" className="btn btnSecondary" style={{ padding: 'var(--space-3) var(--space-6)', fontSize: 'var(--text-base)' }}>
+              <BookOpen size={18} /> Read Docs
             </Link>
           </div>
         </section>
 
-        {/* Stats Strip */}
-        <div className={styles.statsStrip}>
-          <div className={styles.statBox}>
-            <div className={styles.statValue}>Cross-Model</div>
-            <div className={styles.statLabel}>Claude, GPT-4, Gemini</div>
+        {/* What Is A Skill */}
+        <section className={styles.section}>
+          <div className={styles.sectionHeaderCentered}>
+            <h2 className={styles.sectionTitle}>What is a Skill?</h2>
+            <p className={styles.sectionSubtitle}>A reproducible block of AI logic.</p>
           </div>
-          <div className={styles.statDivider} />
-          <div className={styles.statBox}>
-            <div className={styles.statValue}>&lt;5s</div>
-            <div className={styles.statLabel}>Avg. Install Time</div>
+          <div className={styles.flowchart}>
+            <div className={styles.flowNode}>Prompt</div>
+            <div className={styles.flowPlus}>+</div>
+            <div className={styles.flowNode}>Workflow</div>
+            <div className={styles.flowPlus}>+</div>
+            <div className={styles.flowNode}>Model Logic</div>
+            <div className={styles.flowPlus}>+</div>
+            <div className={styles.flowNode}>Versioning</div>
+            <div className={styles.flowEquals}>=</div>
+            <div className={styles.flowResult}>Skill</div>
           </div>
-          <div className={styles.statDivider} />
-          <div className={styles.statBox}>
-            <div className={styles.statValue}>100%</div>
-            <div className={styles.statLabel}>Reproducible Workflows</div>
+        </section>
+
+        {/* How It Works */}
+        <section className={styles.section}>
+          <div className={styles.sectionHeaderCentered}>
+            <h2 className={styles.sectionTitle}>How It Works</h2>
+            <p className={styles.sectionSubtitle}>Ship capabilities in 3 simple steps.</p>
           </div>
-        </div>
+          <div className={styles.stepsGrid}>
+            <div className={styles.stepCard}>
+              <div className={styles.stepNumber}>1</div>
+              <h3>Install</h3>
+              <code>skillspace install @core/summary</code>
+              <p>Add versioned skills to your project securely via CLI.</p>
+            </div>
+            <div className={styles.stepCard}>
+              <div className={styles.stepNumber}>2</div>
+              <h3>Run</h3>
+              <code>skillspace run @core/summary</code>
+              <p>Execute locally or on your own infra across any LLM.</p>
+            </div>
+            <div className={styles.stepCard}>
+              <div className={styles.stepNumber}>3</div>
+              <h3>Publish</h3>
+              <code>skillspace publish</code>
+              <p>Share your compiled workflows with the community.</p>
+            </div>
+          </div>
+        </section>
 
         {/* Features Grid */}
         <section className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <div>
-              <h2 className={styles.sectionTitle}>Why SkillSpace?</h2>
-              <p className={styles.sectionSubtitle}>Designed for production AI engineering.</p>
-            </div>
+          <div className={styles.sectionHeaderCentered}>
+            <h2 className={styles.sectionTitle}>Why SkillSpace?</h2>
+            <p className={styles.sectionSubtitle}>Designed for production AI engineering.</p>
           </div>
-          
           <div className={styles.featuresGrid}>
             <div className={`card ${styles.featureCard}`}>
-              <div className={styles.featureIconWrapper}>
-                <RefreshCw size={16} />
-              </div>
-              <h3>Write Once, Run Anywhere</h3>
-              <p>The Model Adapter Layer instantly translates your skills across Claude, OpenAI, and Ollama without code changes.</p>
+              <RefreshCw size={24} className={styles.featureIcon} />
+              <h3>Write Once</h3>
+              <p>Run your skills across Claude, OpenAI, and Ollama instantly.</p>
             </div>
             <div className={`card ${styles.featureCard}`}>
-              <div className={styles.featureIconWrapper}>
-                <Shield size={16} />
-              </div>
-              <h3>Secure by Default</h3>
-              <p>Every skill declares explicit permissions. The runtime enforces boundaries, ensuring skills can never access unauthorized files or networks.</p>
+              <Layers size={24} className={styles.featureIcon} />
+              <h3>Versioned</h3>
+              <p>Predictable releases with explicit semantic versioning.</p>
             </div>
             <div className={`card ${styles.featureCard}`}>
-              <div className={styles.featureIconWrapper}>
-                <Package size={16} />
-              </div>
-              <h3>Versioned & Reproducible</h3>
-              <p>Generate lock files for your AI workflows. Your entire team gets the exact same capability stack on day one.</p>
+              <Globe size={24} className={styles.featureIcon} />
+              <h3>Open Source</h3>
+              <p>100% community-driven ecosystem. Build together.</p>
             </div>
+            <div className={`card ${styles.featureCard}`}>
+              <Terminal size={24} className={styles.featureIcon} />
+              <h3>Runtime Powered</h3>
+              <p>Consistent execution graphs across all environments.</p>
+            </div>
+            <div className={`card ${styles.featureCard}`}>
+              <Shield size={24} className={styles.featureIcon} />
+              <h3>Secure</h3>
+              <p>Strict allowlists and governance. Code never leaks.</p>
+            </div>
+            <div className={`card ${styles.featureCard}`}>
+              <Zap size={24} className={styles.featureIcon} />
+              <h3>Fast</h3>
+              <p>Optimized execution and caching out of the box.</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Community Stats */}
+        <section className={styles.statsStrip}>
+          <div className={styles.statBox}>
+            <div className={styles.statValue}>{stats.skillsCount.toLocaleString()}</div>
+            <div className={styles.statLabel}>Total Skills</div>
+          </div>
+          <div className={styles.statDivider} />
+          <div className={styles.statBox}>
+            <div className={styles.statValue}>{stats.usersCount.toLocaleString()}</div>
+            <div className={styles.statLabel}>Contributors</div>
+          </div>
+          <div className={styles.statDivider} />
+          <div className={styles.statBox}>
+            <div className={styles.statValue}>{stats.downloadsCount.toLocaleString()}</div>
+            <div className={styles.statLabel}>Downloads</div>
+          </div>
+          <div className={styles.statDivider} />
+          <div className={styles.statBox}>
+            <div className={styles.statValue}>{stats.executionsCount.toLocaleString()}</div>
+            <div className={styles.statLabel}>Executions</div>
+          </div>
+        </section>
+
+        {/* Package of the Week */}
+        <section className={styles.section} style={{ padding: '4rem 0', background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%)', borderRadius: 'var(--radius-2xl)', border: '1px solid var(--border-subtle)', marginBottom: '4rem' }}>
+          <div className={styles.sectionHeaderCentered}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', padding: '4px 12px', borderRadius: 'var(--radius-full)', fontSize: '0.875rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>
+              <Star size={14} /> Package of the Week
+            </div>
+            <h2 className={styles.sectionTitle} style={{ margin: 0 }}>@core/autonomous-agent</h2>
+            <p className={styles.sectionSubtitle}>A fully featured autonomous agent runner with tool use and memory.</p>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '2rem' }}>
+            <Link href="/packages/autonomous-agent" className="btn btnPrimary">View Package</Link>
           </div>
         </section>
 
         {/* Featured Packages */}
         <section className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Featured Capabilities</h2>
-            <Link href="/packages" className={styles.viewAllLink}>
-              View Registry <ChevronRight size={16} />
-            </Link>
+          <div className={styles.sectionHeaderCentered}>
+            <h2 className={styles.sectionTitle}>Trending Skills</h2>
+            <p className={styles.sectionSubtitle}>Discover the most popular community capabilities.</p>
           </div>
-
           {packages.length === 0 ? (
-            <div className={styles.emptyState}>
-              <Cpu size={32} className={styles.emptyIcon} />
-              <h3>No packages found</h3>
-              <p>The registry is currently empty. Be the first to publish a skill!</p>
-              <Link href="/docs/publishing" className="btn btnSecondary" style={{ marginTop: '1rem' }}>
-                Learn how to publish
-              </Link>
-            </div>
+            <EmptyState 
+              title="No packages found"
+              description="The registry is currently empty. Be the first to publish a skill!"
+              actionText="Publish First Skill"
+              actionHref="/create"
+            />
           ) : (
             <div className={styles.packagesGrid}>
               {packages.map((pkg, i) => (
-                <PackageCard key={pkg.name} pkg={pkg} index={i} />
+                <PackageCard key={pkg.name} pkg={pkg as any} index={i} />
               ))}
             </div>
           )}
+        </section>
+
+        {/* Final CTA */}
+        <section className={styles.finalCta}>
+          <h2>Ready to revolutionize your AI workflows?</h2>
+          <p>Join the open source ecosystem today.</p>
+          <Link href="/create" className="btn btnPrimary" style={{ marginTop: '1.5rem', padding: 'var(--space-4) var(--space-8)', fontSize: 'var(--text-lg)' }}>
+            Start Building Skills Today
+          </Link>
         </section>
       </div>
     </main>

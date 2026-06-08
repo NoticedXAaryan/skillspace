@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Search, PackageSearch } from 'lucide-react';
 import PackageCard from '@/components/PackageCard';
+import EmptyState from '@/components/EmptyState';
 import styles from './page.module.css';
 
 interface PackageData {
@@ -144,14 +145,13 @@ function PackagesContent() {
           ))}
         </div>
       ) : packages.length === 0 ? (
-        <div className={styles.emptyState}>
-          <PackageSearch size={48} style={{ color: 'var(--text-muted)', margin: '0 auto var(--space-4)' }} />
-          <h3>No capabilities found</h3>
-          <p>We couldn't find any packages matching your search criteria.</p>
-          <button className="btn btnSecondary" onClick={() => { setQuery(''); handleTypeChange('all'); }}>
-            Clear filters
-          </button>
-        </div>
+        <EmptyState
+          icon={<PackageSearch size={32} style={{ color: 'var(--text-muted)' }} />}
+          title="No capabilities found"
+          description="We couldn't find any packages matching your search criteria."
+          actionText="Clear filters"
+          onAction={() => { setQuery(''); handleTypeChange('all'); }}
+        />
       ) : (
         <div className={styles.grid}>
           {packages.map((pkg, i) => (
