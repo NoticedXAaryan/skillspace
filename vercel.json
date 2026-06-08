@@ -1,7 +1,0 @@
-{
-  "version": 2,
-  "buildCommand": "pnpm --filter @skillspace/registry build",
-  "outputDirectory": "apps/registry/.next",
-  "installCommand": "pnpm install",
-  "framework": "nextjs"
-}
