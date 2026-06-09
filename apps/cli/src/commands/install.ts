@@ -16,8 +16,9 @@ import { intro } from '../ui/states/intro.js';
 import { createLoader } from '../ui/states/loader.js';
 import { successCritical, successStandard } from '../ui/states/success.js';
 import { errorOperational, errorInline } from '../ui/states/error.js';
-import { text, isCancel } from '@clack/prompts';
+import { text, confirm, isCancel } from '@clack/prompts';
 import { c } from '../ui/tokens/colors.js';
+import { warn } from '../ui/states/warning.js';
 
 export function registerInstallCommand(program: Command): void {
   program
@@ -67,6 +68,28 @@ export function registerInstallCommand(program: Command): void {
         if (!version) {
           throw new Error('No versions available for this package.');
         }
+
+        // --- VERIFIED PACKAGE CHECK ---
+        const isVerified = pkgInfo.data.verified === true;
+        if (!isVerified) {
+          if (opts.yes) {
+            console.warn(`\n[WARN] Installing unverified package: ${name}`);
+          } else {
+            if (loader) loader.succeed('Pending verification...');
+            warn(`The package "${name}" is not verified.`);
+            const shouldInstall = await confirm({
+              message: 'Are you sure you want to install this unverified package?',
+              initialValue: false
+            });
+            
+            if (isCancel(shouldInstall) || !shouldInstall) {
+              errorInline('Installation aborted by user.');
+              process.exit(1);
+            }
+            if (!opts.yes) loader = createLoader(`Downloading ${name}@${version}...`);
+          }
+        }
+        // ------------------------------
 
         if (cache.isInstalled(name, version)) {
           return; // Already installed
