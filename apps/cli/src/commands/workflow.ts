@@ -34,13 +34,13 @@ workflowCommand
   .action(async () => {
     const fs = await import('node:fs');
     const path = await import('node:path');
-    const { getSkillspacePath } = await import('@skillspace/runtime/dist/config.js');
+    const { getSkillspacePath } = await import('@skillspace/runtime');
 
     const cwd = process.cwd();
     const dirs = [
       { name: 'Local Project (workflows/)', path: path.join(cwd, 'workflows') },
-      { name: 'Local Project (.skillspace/workflows/)', path: path.join(cwd, '.skillspace', 'workflows') },
-      { name: 'Global (~/.skillspace/workflows/)', path: path.join(getSkillspacePath(), 'workflows') },
+      { name: 'Local Project (.air/workflows/)', path: path.join(cwd, '.air', 'workflows') },
+      { name: 'Global (~/.air/workflows/)', path: path.join(getSkillspacePath(), 'workflows') },
     ];
 
     let foundAny = false;
@@ -60,6 +60,6 @@ workflowCommand
 
     if (!foundAny) {
       console.log('No workflows found locally or globally.');
-      console.log('Create a workflow file in ./workflows/ or ~/.skillspace/workflows/.');
+      console.log('Create a workflow file in ./workflows/ or ~/.air/workflows/.');
     }
   });

@@ -11,7 +11,7 @@ describe('CLI E2E', () => {
   let tempDir: string;
 
   beforeAll(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'skillspace-cli-test-'));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'air-cli-test-'));
   });
 
   afterAll(() => {
@@ -29,7 +29,7 @@ describe('CLI E2E', () => {
 
   it('init command creates skill.yaml', async () => {
     const { stdout } = await runCli('init --yes');
-    expect(stdout).toContain('Initialized SkillSpace project');
+    expect(stdout).toContain('Initialized AIR project');
     expect(fs.existsSync(path.join(tempDir, 'skill.yaml'))).toBe(true);
   });
 

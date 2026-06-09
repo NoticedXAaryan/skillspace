@@ -19,20 +19,17 @@ export class SkillCache {
   }
 
   /**
-   * Install a package from a .skillpkg Buffer into the local registry.
-   * Extracts to ~/.skillspace/registry/<name>@<version>/
-   *
-   * @param expectedChecksum - Optional SHA-256 checksum to verify (format: "sha256:<hex>")
+   * Prepares the package directory and verifies checksum of the tarball buffer.
+   * Returns the path to the package directory.
    */
-  async installPackage(
+  async preparePackageDir(
     name: string,
     version: string,
-    files: Map<string, Buffer>,
+    buffer: Buffer,
     expectedChecksum?: string,
   ): Promise<string> {
-    // Verify checksum before writing anything
     if (expectedChecksum) {
-      const actualChecksum = this.computeChecksum(files);
+      const actualChecksum = `sha256:${crypto.createHash('sha256').update(buffer).digest('hex')}`;
       if (actualChecksum !== expectedChecksum) {
         throw new Error(
           `Checksum mismatch for ${name}@${version}: expected ${expectedChecksum}, got ${actualChecksum}`,
@@ -41,32 +38,9 @@ export class SkillCache {
     }
 
     const pkgDir = this.getPackageDir(name, version);
-
-    // Create directory
     fs.mkdirSync(pkgDir, { recursive: true });
 
-    // Write all files
-    for (const [filePath, content] of files) {
-      const fullPath = path.join(pkgDir, filePath);
-      fs.mkdirSync(path.dirname(fullPath), { recursive: true });
-      fs.writeFileSync(fullPath, content);
-    }
-
     return pkgDir;
-  }
-
-  /**
-   * Compute a SHA-256 checksum over all files in a package.
-   * Deterministic: iterates files sorted by name.
-   */
-  computeChecksum(files: Map<string, Buffer>): string {
-    const hash = crypto.createHash('sha256');
-    const sortedKeys = [...files.keys()].sort();
-    for (const key of sortedKeys) {
-      hash.update(key);
-      hash.update(files.get(key)!);
-    }
-    return `sha256:${hash.digest('hex')}`;
   }
 
   /**

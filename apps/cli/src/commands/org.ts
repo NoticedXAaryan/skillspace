@@ -42,7 +42,7 @@ orgCommand
       
       console.log(`✅ Invite generated! Share this token with your team member:`);
       console.log(`\n    ${result.token}\n`);
-      console.log(`They can join by running: skillspace org join ${result.token}`);
+      console.log(`They can join by running: air org join ${result.token}`);
       console.log(`(Token expires in ${result.expires_in})`);
     } catch (err) {
       console.error(`❌ Error: ${err instanceof Error ? err.message : String(err)}`);

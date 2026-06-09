@@ -16,14 +16,58 @@ import { workflowCommand } from './commands/workflow.js';
 import { orgCommand } from './commands/org.js';
 import { envCommand } from './commands/environment.js';
 import { registerBenchmarkCommand } from './commands/benchmark.js';
+import { registerHelpCommand } from './commands/help.js';
+
+import chalk from 'chalk';
+import { c } from './ui/tokens/colors.js';
 
 const program = new Command();
 
 program
-  .name('skillspace')
-  .description('The universal runtime and registry for AI capabilities')
+  .name('air')
+  .description(c.brand('The universal runtime and registry for AI capabilities'))
   .version('0.2.0');
 
+const customHelp = `
+${chalk.bold(c.brand('AIR CLI'))} - The universal runtime and registry for AI capabilities.
+
+${chalk.bold('USAGE')}
+  $ air <command> [options]
+
+${chalk.bold('EXECUTION')}
+  ${c.code('run')}         Execute an Agent, Skill, or Workflow locally.
+
+${chalk.bold('PACKAGE MANAGEMENT')}
+  ${c.code('search')}      Search the global AIR registry for capabilities.
+  ${c.code('install')}     Install a package to your local system.
+  ${c.code('uninstall')}   Remove an installed package.
+  ${c.code('list')}        List all locally installed packages.
+  ${c.code('info')}        View detailed metadata about a specific package.
+
+${chalk.bold('CREATOR TOOLS')}
+  ${c.code('init')}        Scaffold a new Agent, Skill, or MCP Server project.
+  ${c.code('publish')}     Publish your project to the AIR registry.
+  ${c.code('benchmark')}   Run automated tests and benchmarks against your agent.
+
+${chalk.bold('ACCOUNT & CONFIG')}
+  ${c.code('login')}       Authenticate with your AIR account.
+  ${c.code('whoami')}      View your current authentication status.
+  ${c.code('model')}       Configure your default AI models (OpenAI, Anthropic, Ollama).
+  ${c.code('org')}         Manage your organization and team access.
+  ${c.code('env')}         Manage environment variables and secrets.
+
+${chalk.bold('ADVANCED')}
+  ${c.code('agent')}       Advanced Agent operations.
+  ${c.code('mcp')}         Advanced MCP Server operations.
+  ${c.code('workflow')}    Advanced Workflow operations.
+
+${c.textFaint('Run `air <command> --help` for detailed information on specific commands.')}
+${c.info('Run `air help` to launch the interactive documentation explorer!')}
+`;
+
+program.helpInformation = () => customHelp;
+
+registerHelpCommand(program);
 registerInitCommand(program);
 registerLoginCommand(program);
 registerWhoamiCommand(program);

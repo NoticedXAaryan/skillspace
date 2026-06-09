@@ -3,7 +3,7 @@ import { loadCredentials, getRegistryUrl } from '@skillspace/runtime';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
- * API client for the SkillSpace registry.
+ * API client for the AIR registry.
  */
 export class RegistryClient {
   public baseUrl: string;
@@ -92,15 +92,18 @@ export class RegistryClient {
 
   async publish(file: Buffer, metadata: Record<string, unknown>): Promise<any> {
     const headers = this.getHeaders(true);
-    const body = JSON.stringify({
-      file: file.toString('base64'),
-      metadata,
-    });
+    delete headers['Content-Type']; // Let fetch set the boundary
+
+    const formData = new FormData();
+    formData.append('metadata', JSON.stringify(metadata));
+    
+    // We append the file buffer as a Blob
+    formData.append('file', new Blob([file], { type: 'application/gzip' }), 'package.tar.gz');
 
     const res = await this.safeFetch(`${this.baseUrl}/api/packages`, {
       method: 'POST',
       headers,
-      body,
+      body: formData,
     });
     return res.json();
   }

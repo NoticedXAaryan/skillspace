@@ -7,7 +7,7 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "test": "turbo run test",
-    "test:e2e": "jest --config e2e/jest.config.js --runInBand",
+    "test:testing": "jest --config testing/jest.config.js --runInBand",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yaml}\"",

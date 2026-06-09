@@ -1,0 +1,24 @@
+{
+  "name": "@air/memory-mcp",
+  "version": "0.1.0",
+  "description": "Local SQLite FTS5 memory server for AIR Agents",
+  "type": "module",
+  "bin": {
+    "air-memory-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "dev": "tsc -w"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "better-sqlite3": "^11.5.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

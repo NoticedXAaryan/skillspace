@@ -1,6 +1,11 @@
 import type { Command } from 'commander';
-import { Executor, AgentExecutor, AgentResolver } from '@skillspace/runtime';
-import inquirer from 'inquirer';
+import { Executor, AgentExecutor, AgentResolver, resolveEnvForPackage } from '@skillspace/runtime';
+import { text, isCancel } from '@clack/prompts';
+import { intro } from '../ui/states/intro.js';
+import { createLoader } from '../ui/states/loader.js';
+import { successStandard } from '../ui/states/success.js';
+import { errorOperational, errorInline } from '../ui/states/error.js';
+import { c } from '../ui/tokens/colors.js';
 
 export function registerRunCommand(program: Command): void {
   program
@@ -12,28 +17,45 @@ export function registerRunCommand(program: Command): void {
     .option('-t, --temperature <temp>', 'Override temperature', parseFloat)
     .option('--max-tokens <tokens>', 'Override max tokens', parseInt)
     .option('--stream', 'Stream output in real-time')
+    .option('-y, --yes', 'Headless mode (strictly bypass interactive prompts)')
     .action(async (skillName: string, opts) => {
       const executor = new Executor();
 
       let input = opts.input;
       const isInteractive = !input;
 
-      if (isInteractive) {
-        console.log(`Starting interactive session with "${skillName}". Type "exit" or "quit" to stop.\n`);
+      if (isInteractive && opts.yes) {
+        errorOperational('Input required', {
+          message: `Input is required for "${skillName}" in headless mode.`,
+          hint: 'Use --input "your input".'
+        });
+        process.exit(1);
       }
+
+      if (isInteractive) {
+        intro('run', skillName);
+        console.log(c.textFaint('Type "exit" or "quit" to stop.\n'));
+      }
+
+      // --- ENVIRONMENT INJECTION ---
+      const pkgEnv = resolveEnvForPackage(skillName);
+      Object.assign(process.env, pkgEnv);
+      // -----------------------------
 
       try {
         do {
           if (isInteractive) {
-            const answers = await inquirer.prompt([
-              {
-                type: 'input',
-                name: 'input',
-                message: '❯',
-              }
-            ]);
-            input = answers.input.trim();
+            const inputPrompt = await text({
+              message: c.brand('❯'),
+            });
+            if (isCancel(inputPrompt)) { 
+              errorInline('Session ended.'); 
+              process.exit(0); 
+            }
+            input = (inputPrompt as string).trim();
+            
             if (input.toLowerCase() === 'exit' || input.toLowerCase() === 'quit') {
+              successStandard('Session ended.');
               break;
             }
             if (!input) continue;
@@ -62,7 +84,11 @@ export function registerRunCommand(program: Command): void {
 
           if (opts.stream || isInteractive) {
             if (isAgent) {
-              console.error(`✗ Error: Streaming mode (--stream) is not yet supported for agents.`);
+              if (isInteractive) {
+                errorInline(`Streaming mode is not yet supported for agents.`);
+              } else {
+                errorOperational('Streaming error', { message: 'Streaming mode (--stream) is not yet supported for agents.' });
+              }
               process.exit(1);
             }
             // Streaming mode
@@ -71,35 +97,39 @@ export function registerRunCommand(program: Command): void {
             }
             process.stdout.write('\n\n');
           } else {
-          // Normal mode
+            // Normal mode
+            let result;
+            const loader = !opts.yes ? createLoader(`Executing ${skillName}`) : null;
 
-          let result;
-          if (isAgent) {
-            const agentExecutor = new AgentExecutor();
-            result = await agentExecutor.run({
-              agent: skillName,
-              input: input,
-            });
-          } else {
-            result = await executor.run(runOptions);
+            if (isAgent) {
+              const agentExecutor = new AgentExecutor();
+              result = await agentExecutor.run({
+                agent: skillName,
+                input: input,
+              });
+            } else {
+              result = await executor.run(runOptions);
+            }
+
+            if (loader) loader.succeed('Execution complete');
+
+            if (!opts.yes) {
+              console.log('\n' + result.output + '\n');
+              successStandard('Execution Stats', {
+                'Model': result.model,
+                'Duration': `${result.duration_ms}ms`,
+                'Tokens': `${result.usage.promptTokens} in / ${result.usage.completionTokens} out`,
+                'Status': result.status
+              });
+            } else {
+              console.log(result.output);
+            }
           }
-
-          console.log('');
-          console.log(result.output);
-          console.log('');
-          console.log('─'.repeat(50));
-          console.log(`  Model: ${result.model}`);
-          console.log(`  Duration: ${result.duration_ms}ms`);
-          console.log(`  Tokens: ${result.usage.promptTokens} in / ${result.usage.completionTokens} out`);
-          console.log(`  Status: ${result.status}`);
-
-          if (opts.output) {
-            console.log(`  Output saved to: ${opts.output}`);
-          }
-        }
         } while (isInteractive);
       } catch (err) {
-        console.error(`✗ Execution failed: ${err instanceof Error ? err.message : err}`);
+        errorOperational('Execution failed', {
+          message: err instanceof Error ? err.message : String(err)
+        });
         process.exit(1);
       }
     });

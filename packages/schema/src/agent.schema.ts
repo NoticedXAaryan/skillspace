@@ -84,6 +84,7 @@ export const AgentSchema = z.object({
   mcp_servers: z.array(McpServerRefSchema).default([]),
 
   permissions: z.array(PermissionSchema).default([]),
+  env: z.record(z.string()).default({}),
 
   memory: MemorySchema.default({ type: 'none' }),
 

@@ -51,13 +51,21 @@ export async function POST(req: NextRequest) {
   if (!auth) return unauthorized();
 
   try {
-    const body = await req.json();
-    const fileBase64 = body.file as string | null;
-    const metadata = body.metadata as Record<string, unknown> | null;
+    const formData = await req.formData();
+    const file = formData.get('file') as File | null;
+    const metadataStr = formData.get('metadata') as string | null;
 
-    if (!fileBase64 || !metadata) {
+    if (!file || !metadataStr) {
       return error('VALIDATION_ERROR', 'Both file and metadata are required', 400);
     }
+    
+    let metadata: Record<string, unknown>;
+    try {
+      metadata = JSON.parse(metadataStr);
+    } catch (e) {
+      return error('VALIDATION_ERROR', 'Invalid JSON in metadata', 400);
+    }
+
     const MetadataSchema = z.object({
       name: z.string().min(1).regex(/^(@[a-z0-9-]+\/)?[a-z][a-z0-9]*(-[a-z0-9]+)*$/),
       version: z.string().regex(/^\d+\.\d+\.\d+$/),
@@ -76,7 +84,8 @@ export async function POST(req: NextRequest) {
     const { name, version, description, type, tags, isPrivate } = parsed.data;
 
     // Read file buffer
-    const buffer = Buffer.from(fileBase64, 'base64');
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
 
     // Compute checksum
     const checksum = `sha256:${crypto.createHash('sha256').update(buffer).digest('hex')}`;

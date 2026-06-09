@@ -12,7 +12,7 @@ export function registerListCommand(program: Command): void {
 
       if (installed.length === 0) {
         console.log('No packages installed.');
-        console.log('Run `skillspace install <package>` to install one.');
+        console.log('Run `air install <package>` to install one.');
         return;
       }
 

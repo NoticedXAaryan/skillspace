@@ -7,6 +7,8 @@ import {
   listConfiguredModels,
   adapterRegistry,
 } from '@skillspace/runtime';
+import { intro, password as passwordPrompt, isCancel, cancel, outro, spinner } from '@clack/prompts';
+import pc from 'picocolors';
 
 export function registerModelCommand(program: Command): void {
   const model = program
@@ -18,33 +20,43 @@ export function registerModelCommand(program: Command): void {
     .description('Configure an API key for a model provider (openai, anthropic, gemini, ollama)')
     .option('-k, --key <apiKey>', 'API key for the provider')
     .option('-u, --url <baseUrl>', 'Custom base URL for the provider')
+    .option('-y, --yes', 'Headless mode')
     .action(async (provider: string, opts) => {
       const providers = adapterRegistry.listProviders();
       if (!providers.includes(provider)) {
-        console.error(`✗ Unknown provider "${provider}". Available: ${providers.join(', ')}`);
+        if (!opts.yes) cancel(`Unknown provider "${provider}". Available: ${providers.join(', ')}`);
+        else console.error(`✗ Unknown provider "${provider}". Available: ${providers.join(', ')}`);
         process.exit(1);
       }
 
       let key = opts.key;
       let url = opts.url;
 
+      if (!opts.yes && !key && provider !== 'ollama') {
+        intro(pc.bgCyan(pc.black(` AIR Model Setup: ${provider} `)));
+        
+        const keyInput = await passwordPrompt({
+          message: `API Key for ${provider}:`,
+        });
+        if (isCancel(keyInput)) { cancel('Operation cancelled.'); process.exit(0); }
+        key = keyInput;
+      }
+
       if (!key && provider !== 'ollama') {
-        const inquirer = (await import('inquirer')).default;
-        const answers = await inquirer.prompt([
-          {
-            type: 'password',
-            name: 'key',
-            message: `API Key for ${provider}:`,
-          }
-        ]);
-        key = answers.key;
+        if (!opts.yes) cancel('API key is required.');
+        else console.error('✗ API key is required.');
+        process.exit(1);
       }
 
       setApiKey(provider, key || '', url);
-      console.log(`\n✓ Provider configured: "${provider}"`);
-
-      if (url) {
-        console.log(`  Base URL: ${url}`);
+      
+      if (!opts.yes) {
+        let msg = `✓ Provider configured: "${provider}"`;
+        if (url) msg += `\n  Base URL: ${url}`;
+        outro(pc.green(msg));
+      } else {
+        console.log(`✓ Provider configured: "${provider}"`);
+        if (url) console.log(`  Base URL: ${url}`);
       }
     });
 
@@ -56,7 +68,7 @@ export function registerModelCommand(program: Command): void {
       const defaultModel = getDefaultModel();
 
       if (models.length === 0) {
-        console.log('No models configured. Run `skillspace model add <provider> -k <key>`');
+        console.log('No models configured. Run `air model add <provider> -k <key>`');
         return;
       }
 
@@ -96,18 +108,22 @@ export function registerModelCommand(program: Command): void {
   model
     .command('test <modelId>')
     .description('Test a model by sending a simple prompt')
-    .action(async (modelId: string) => {
+    .option('-y, --yes', 'Headless mode')
+    .action(async (modelId: string, opts) => {
       try {
         const { adapter, modelName } = adapterRegistry.getAdapter(modelId);
         const provider = modelId.split('/')[0]!;
         const apiKey = getApiKey(provider) ?? '';
 
         if (!apiKey && provider !== 'ollama') {
-          console.error(`✗ No API key for "${provider}". Run \`skillspace model add ${provider}\``);
+          console.error(`✗ No API key for "${provider}". Run \`air model add ${provider}\``);
           process.exit(1);
         }
 
-        console.log(`Testing ${modelId}...`);
+        const s = spinner();
+        if (!opts.yes) s.start(`Testing ${modelId}...`);
+        else console.log(`Testing ${modelId}...`);
+
         const testSkill = {
           name: 'test',
           version: '1.0.0',
@@ -124,10 +140,11 @@ export function registerModelCommand(program: Command): void {
           examples: [],
           permissions: [],
           mcpServers: [],
+          env: {},
           config: { temperature: 0.3, max_tokens: 100, timeout_seconds: 15 },
         };
 
-        const request = adapter.buildRequest(testSkill, 'Say "SkillSpace works!" and nothing else.', {
+        const request = adapter.buildRequest(testSkill, 'Say "AIR works!" and nothing else.', {
           apiKey,
           modelId: modelName,
           temperature: 0.3,
@@ -143,14 +160,21 @@ export function registerModelCommand(program: Command): void {
         });
 
         if (!res.ok) {
+          if (!opts.yes) s.stop('Test failed.');
           console.error(`✗ API returned ${res.status}: ${await res.text()}`);
           process.exit(1);
         }
 
         const data = await res.json();
         const result = adapter.parseResponse(data);
-        console.log(`✓ Response: ${result.output}`);
-        console.log(`  Tokens: ${result.usage.promptTokens} prompt + ${result.usage.completionTokens} completion`);
+        
+        if (!opts.yes) {
+          s.stop('Test complete.');
+          outro(pc.green(`✓ Response: ${result.output}\n  Tokens: ${result.usage.promptTokens} prompt + ${result.usage.completionTokens} completion`));
+        } else {
+          console.log(`✓ Response: ${result.output}`);
+          console.log(`  Tokens: ${result.usage.promptTokens} prompt + ${result.usage.completionTokens} completion`);
+        }
       } catch (err) {
         console.error(`✗ Test failed: ${err instanceof Error ? err.message : err}`);
         process.exit(1);

@@ -1,113 +1,107 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as crypto from 'node:crypto';
-import * as zlib from 'node:zlib';
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-export interface PackageFile {
-  path: string;
-  content: Buffer;
-}
+import * as tar from 'tar';
+import ignore from 'ignore';
 
 // ---------------------------------------------------------------------------
 // Create a .skillpkg archive
 // ---------------------------------------------------------------------------
 
 /**
- * Reads a skill directory, bundles relevant files into a gzipped package,
- * and returns the buffer, file list, and overall checksum.
+ * Creates a tar.gz package from a directory (respecting .gitignore/.airignore)
+ * and writes it to outputPath. Returns the SHA256 checksum of the tarball.
  */
-export function createSkillPackage(dir: string): { buffer: Buffer; files: PackageFile[]; checksum: string } {
-  const files: PackageFile[] = [];
-  const requiredFiles = ['skill.yaml'];
-  const optionalFiles = ['README.md', 'CHANGELOG.md', 'workflow.yaml', 'agent.js', 'index.js'];
-  const optionalDirs = ['adapters', 'knowledge', 'tests'];
-
-  // Read required files
-  for (const file of requiredFiles) {
-    const filePath = path.join(dir, file);
-    if (!fs.existsSync(filePath)) {
-      throw new Error(`Required file missing: ${file}`);
-    }
-    files.push({ path: file, content: fs.readFileSync(filePath) });
+export async function createSkillPackage(dir: string, outputPath: string): Promise<string> {
+  // Setup the ignorer with critical defaults
+  const ig = ignore().add(['node_modules', '.git', '.DS_Store', 'dist', 'build', '.env', '.env.*', '.turbo']);
+  
+  // Add user ignores
+  const gitignorePath = path.join(dir, '.gitignore');
+  if (fs.existsSync(gitignorePath)) {
+    ig.add(fs.readFileSync(gitignorePath, 'utf8'));
+  }
+  const airignorePath = path.join(dir, '.airignore');
+  if (fs.existsSync(airignorePath)) {
+    ig.add(fs.readFileSync(airignorePath, 'utf8'));
   }
 
-  // Read optional files
-  for (const file of optionalFiles) {
-    const filePath = path.join(dir, file);
-    if (fs.existsSync(filePath)) {
-      files.push({ path: file, content: fs.readFileSync(filePath) });
-    }
+  // Get all valid files
+  const files: string[] = [];
+  readDirRecursive(dir, '', files, ig);
+
+  if (files.length === 0) {
+    throw new Error('No files found to package. Ensure your directory is not completely ignored.');
   }
 
-  // Read optional directories recursively
-  for (const dirName of optionalDirs) {
-    const dirPath = path.join(dir, dirName);
-    if (fs.existsSync(dirPath) && fs.statSync(dirPath).isDirectory()) {
-      readDirRecursive(dirPath, dirName, files);
-    }
-  }
+  // Stream tar creation directly to file
+  await tar.c(
+    {
+      gzip: true,
+      cwd: dir,
+      file: outputPath,
+      // Pass the relative paths we filtered above
+    },
+    files
+  );
 
-  // Compute per-file checksums and an overall hash
+  // Compute checksum of the final tarball
   const hash = crypto.createHash('sha256');
-  const manifestFiles = files.map(f => {
-    hash.update(f.path);
-    hash.update(f.content);
-    return {
-      path: f.path,
-      size: f.content.length,
-      checksum: `sha256:${crypto.createHash('sha256').update(f.content).digest('hex')}`,
-    };
+  const stream = fs.createReadStream(outputPath);
+  
+  return new Promise((resolve, reject) => {
+    stream.on('data', (chunk) => hash.update(chunk));
+    stream.on('end', () => resolve(`sha256:${hash.digest('hex')}`));
+    stream.on('error', reject);
   });
-  const checksum = `sha256:${hash.digest('hex')}`;
-
-  // Build a JSON manifest and append it to the file list
-  const manifest = JSON.stringify(
-    { files: manifestFiles, checksum, created: new Date().toISOString() },
-    null,
-    2,
-  );
-  files.push({ path: 'manifest.json', content: Buffer.from(manifest) });
-
-  // Serialize: JSON array of { path, content(base64) } → gzip
-  const serialized = JSON.stringify(
-    files.map(f => ({ path: f.path, content: f.content.toString('base64') })),
-  );
-  const buffer = zlib.gzipSync(Buffer.from(serialized));
-
-  return { buffer, files, checksum };
 }
 
 // ---------------------------------------------------------------------------
 // Extract a .skillpkg archive
 // ---------------------------------------------------------------------------
 
-export function extractSkillPackage(buffer: Buffer): Map<string, Buffer> {
-  const decompressed = zlib.gunzipSync(buffer);
-  const entries = JSON.parse(decompressed.toString()) as Array<{ path: string; content: string }>;
-  const files = new Map<string, Buffer>();
-  for (const entry of entries) {
-    files.set(entry.path, Buffer.from(entry.content, 'base64'));
+export async function extractSkillPackage(buffer: Buffer, targetDir: string): Promise<void> {
+  // Ensure target directory exists
+  if (!fs.existsSync(targetDir)) {
+    fs.mkdirSync(targetDir, { recursive: true });
   }
-  return files;
+
+  // Create a temporary file to hold the buffer so tar can stream it
+  const tmpPath = path.join(targetDir, '.tmp-pkg.tar.gz');
+  fs.writeFileSync(tmpPath, buffer);
+
+  try {
+    await tar.x({
+      file: tmpPath,
+      cwd: targetDir,
+    });
+  } finally {
+    if (fs.existsSync(tmpPath)) {
+      fs.unlinkSync(tmpPath);
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function readDirRecursive(dirPath: string, prefix: string, files: PackageFile[]): void {
+function readDirRecursive(dirPath: string, prefix: string, files: string[], ig: any): void {
   const entries = fs.readdirSync(dirPath, { withFileTypes: true });
   for (const entry of entries) {
     const fullPath = path.join(dirPath, entry.name);
-    const relativePath = `${prefix}/${entry.name}`;
+    // Standardize path for ignore matching (use forward slashes)
+    const relativePath = prefix ? `${prefix}/${entry.name}` : entry.name;
+    
+    // Check if ignored. The ignore package expects directory paths to end with a slash for dir-specific rules
+    if (ig.ignores(relativePath) || (entry.isDirectory() && ig.ignores(relativePath + '/'))) {
+      continue;
+    }
+
     if (entry.isFile()) {
-      files.push({ path: relativePath, content: fs.readFileSync(fullPath) });
+      files.push(relativePath);
     } else if (entry.isDirectory()) {
-      readDirRecursive(fullPath, relativePath, files);
+      readDirRecursive(fullPath, relativePath, files, ig);
     }
   }
 }

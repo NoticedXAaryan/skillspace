@@ -44,7 +44,7 @@ export function registerInfoCommand(program: Command): void {
 
         console.log('');
         console.log(`  Install:`);
-        console.log(`    skillspace install ${pkg.name}`);
+        console.log(`    air install ${pkg.name}`);
         console.log('');
       } catch (err) {
         console.error(`✗ ${err instanceof Error ? err.message : err}`);

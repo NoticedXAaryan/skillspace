@@ -44,7 +44,7 @@ agentCommand
   .description('Install an agent and its dependencies')
   .action(async (agentName) => {
     console.log(`To install an agent, use the unified install command:`);
-    console.log(`  skillspace install ${agentName}`);
+    console.log(`  air install ${agentName}`);
   });
 
 agentCommand

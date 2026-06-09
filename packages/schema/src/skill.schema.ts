@@ -140,6 +140,9 @@ export const SkillSchema = z.object({
     max_tokens: 4000,
     timeout_seconds: 30,
   }),
+
+  // Environment requirements
+  env: z.record(z.string()).default({}),
 });
 
 // ---------------------------------------------------------------------------

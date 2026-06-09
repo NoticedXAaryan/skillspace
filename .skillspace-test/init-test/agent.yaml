@@ -1,0 +1,8 @@
+name: my-test-agent
+version: 1.0.0
+description: An AIR agent
+author: notic
+type: agent
+instructions: You are an autonomous agent for my-test-agent.
+model: ollama/llama3.2
+skills: []
