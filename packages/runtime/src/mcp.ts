@@ -5,6 +5,21 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import type { Tool as McpTool } from '@modelcontextprotocol/sdk/types.js';
 
+function withTimeout<T>(promise: Promise<T>, ms: number, errorMessage = 'Operation timed out'): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(errorMessage)), ms);
+    promise
+      .then(value => {
+        clearTimeout(timer);
+        resolve(value);
+      })
+      .catch(err => {
+        clearTimeout(timer);
+        reject(err);
+      });
+  });
+}
+
 export interface McpServerConfig {
   name: string;
   version: string;
@@ -167,12 +182,21 @@ export class McpManager {
       { capabilities: {} }
     );
 
-    await client.connect(transport);
-    this.activeClients.set(name, client);
+    try {
+      // Health Check #1: Connection Timeout (15 seconds)
+      await withTimeout(client.connect(transport), 15000, `MCP Server "${name}" timed out during connection.`);
+      this.activeClients.set(name, client);
 
-    // Fetch and cache tools
-    const toolsResponse = await client.listTools();
-    this.availableTools.set(name, toolsResponse.tools);
+      // Health Check #2: List Tools Timeout (15 seconds)
+      const toolsResponse = await withTimeout(client.listTools(), 15000, `MCP Server "${name}" timed out while fetching tools.`);
+      this.availableTools.set(name, toolsResponse.tools);
+    } catch (err) {
+      // Graceful degradation: clean up transport and client so it doesn't leak memory
+      await client.close().catch(() => {});
+      this.activeClients.delete(name);
+      this.availableTools.delete(name);
+      throw err;
+    }
   }
 
   /**
@@ -208,23 +232,46 @@ export class McpManager {
   }
 
   /**
-   * Execute a tool on a specific server
+   * Execute a tool on a specific server (with 1 auto-healing retry)
    */
-  async callTool(serverName: string, toolName: string, args: Record<string, unknown>): Promise<string> {
+  async callTool(serverName: string, toolName: string, args: Record<string, unknown>, isRetry = false): Promise<string> {
     const client = this.activeClients.get(serverName);
     if (!client) {
       throw new Error(`MCP Server "${serverName}" is not running`);
     }
 
-    const result = await client.callTool({
-      name: toolName,
-      arguments: args
-    });
+    try {
+      // Also apply a timeout to tool execution (e.g., 60 seconds)
+      const result = await withTimeout(
+        client.callTool({
+          name: toolName,
+          arguments: args
+        }),
+        60000,
+        `Tool execution for "${toolName}" timed out after 60 seconds`
+      );
 
-    if (result.isError) {
-      throw new Error(`Tool execution error: ${JSON.stringify(result.content)}`);
+      if (result.isError) {
+        throw new Error(`Tool execution error: ${JSON.stringify(result.content)}`);
+      }
+
+      return JSON.stringify(result.content);
+    } catch (err) {
+      // If we haven't retried yet, attempt auto-healing
+      if (!isRetry) {
+        console.warn(`[WARN] MCP Server "${serverName}" encountered an error during callTool. Attempting auto-healing restart...`);
+        try {
+          await this.stopServer(serverName);
+          await this.startServer(serverName);
+          // Retry exactly once
+          return await this.callTool(serverName, toolName, args, true);
+        } catch (rebootErr) {
+          throw new Error(`Auto-healing failed for MCP Server "${serverName}": ${rebootErr instanceof Error ? rebootErr.message : String(rebootErr)}`);
+        }
+      }
+      
+      // If it fails on the retry (or was a non-recoverable error we decided to pass up)
+      throw err;
     }
-
-    return JSON.stringify(result.content);
   }
 }
