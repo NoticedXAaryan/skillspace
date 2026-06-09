@@ -1,5 +1,10 @@
 import { Command } from 'commander';
 import { AgentExecutor, ExecutionError } from '@skillspace/runtime';
+import { createLoader } from '../ui/states/loader.js';
+import { errorOperational } from '../ui/states/error.js';
+import { warn } from '../ui/states/warning.js';
+import { box } from '../ui/layout/box.js';
+import { c } from '../ui/tokens/colors.js';
 
 export const agentCommand = new Command('agent')
   .description('Manage and execute agents');
@@ -16,24 +21,28 @@ agentCommand
       input = input ? `${input} ${positionalInput.join(' ')}` : positionalInput.join(' ');
     }
     if (!input) {
-      console.error('Error: Must provide --input or --task');
+      errorOperational('Missing Input', { message: 'Must provide --input or --task' });
       process.exit(1);
     }
 
+    const loader = createLoader(`Starting agent "${agentName}"...`);
     try {
       const executor = new AgentExecutor();
+      loader.update('Executing task...');
       const result = await executor.run({
         agent: agentName,
         input: input,
         session_id: options.session,
       });
 
+      loader.succeed('Task completed');
       console.log(result.output);
     } catch (err) {
+      loader.fail('Agent execution failed');
       if (err instanceof ExecutionError) {
-        console.error(`Error: ${err.message}`);
+        errorOperational('Execution Error', { message: err.message });
       } else {
-        console.error('Unexpected error:', err);
+        errorOperational('System Error', { message: String(err) });
       }
       process.exit(1);
     }
@@ -43,8 +52,10 @@ agentCommand
   .command('install <agent>')
   .description('Install an agent and its dependencies')
   .action(async (agentName) => {
-    console.log(`To install an agent, use the unified install command:`);
-    console.log(`  air install ${agentName}`);
+    warn('Deprecated Command', [
+      'To install an agent, use the unified install command:',
+      `  ${c.brand(`air install ${agentName}`)}`
+    ]);
   });
 
 agentCommand
@@ -56,14 +67,16 @@ agentCommand
     const installed = cache.listInstalledAgents();
 
     if (installed.length === 0) {
-      console.log('No agents installed.');
+      console.log(box(['No agents installed.'], { colorFn: c.border }));
       return;
     }
 
-    console.log(`Installed agents (${installed.length}):\n`);
-
+    const rows: string[] = [];
     for (const pkg of installed) {
-      console.log(`  ${pkg.name}@${pkg.version}`);
-      console.log(`    Path: ${pkg.path}`);
+      rows.push(`${c.brand(pkg.name)} ${c.textFaint(`@${pkg.version}`)}`);
+      rows.push(`  ${c.textFaint('Path:')} ${c.textMuted(pkg.path)}`);
+      rows.push('');
     }
+
+    console.log(box(rows, { title: `Installed Agents (${installed.length})`, colorFn: c.successDim }));
   });

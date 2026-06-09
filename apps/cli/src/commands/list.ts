@@ -1,5 +1,7 @@
 import type { Command } from 'commander';
 import { SkillCache } from '@skillspace/runtime';
+import { box } from '../ui/layout/box.js';
+import { c } from '../ui/tokens/colors.js';
 
 export function registerListCommand(program: Command): void {
   program
@@ -11,16 +13,20 @@ export function registerListCommand(program: Command): void {
       const installed = cache.listInstalled();
 
       if (installed.length === 0) {
-        console.log('No packages installed.');
-        console.log('Run `air install <package>` to install one.');
+        console.log(box(['No packages installed.', 'Run `air install <package>` to install one.'], {
+          title: 'Installed Packages',
+          colorFn: c.border
+        }));
         return;
       }
 
-      console.log(`Installed packages (${installed.length}):\n`);
+      const rows = installed.map(pkg => 
+        `${c.brand(pkg.name)}@${c.textFaint(pkg.version)} | ${c.textMuted(pkg.path)}`
+      );
 
-      for (const pkg of installed) {
-        console.log(`  ${pkg.name}@${pkg.version}`);
-        console.log(`    Path: ${pkg.path}`);
-      }
+      console.log(box(rows, {
+        title: `Installed Packages (${installed.length})`,
+        colorFn: c.successDim
+      }));
     });
 }

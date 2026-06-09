@@ -1,5 +1,10 @@
 import { Command } from 'commander';
 import { McpManager } from '@skillspace/runtime';
+import { createLoader } from '../ui/states/loader.js';
+import { errorOperational } from '../ui/states/error.js';
+import { successStandard } from '../ui/states/success.js';
+import { box } from '../ui/layout/box.js';
+import { c } from '../ui/tokens/colors.js';
 
 export const mcpCommand = new Command('mcp')
   .description('Manage MCP servers');
@@ -10,12 +15,14 @@ mcpCommand
   .option('--from <path_or_url>', 'Install from a local file path or remote URL')
   .action(async (serverName, options) => {
     const manager = new McpManager();
-    console.log(`Installing MCP server "${serverName}"...`);
+    const loader = createLoader(`Installing MCP server "${serverName}"...`);
     try {
       await manager.installServer(serverName, options.from);
-      console.log(`✅ Successfully installed MCP server "${serverName}".`);
+      loader.succeed(`Installed ${serverName}`);
+      successStandard('MCP Server Installed', { Server: serverName });
     } catch (err) {
-      console.error(`❌ Failed to install MCP server: ${err instanceof Error ? err.message : String(err)}`);
+      loader.fail('Installation failed');
+      errorOperational('Install Error', { message: err instanceof Error ? err.message : String(err) });
       process.exit(1);
     }
   });
@@ -26,11 +33,20 @@ mcpCommand
   .action(() => {
     const manager = new McpManager();
     const servers = manager.listServers();
+    
     if (servers.length === 0) {
-      console.log('No MCP servers installed.');
-    } else {
-      console.table(servers, ['name', 'version', 'transport']);
+      console.log(box(['No MCP servers installed.'], { colorFn: c.border }));
+      return;
     }
+    
+    const rows: string[] = [];
+    for (const s of servers) {
+      rows.push(`${c.brand(s.name)} ${c.textFaint(`v${s.version || 'unknown'}`)}`);
+      rows.push(`  ${c.textFaint('Transport:')} ${c.text(s.transport)}`);
+      rows.push('');
+    }
+    
+    console.log(box(rows, { title: 'Installed MCP Servers', colorFn: c.successDim }));
   });
 
 mcpCommand
@@ -38,13 +54,14 @@ mcpCommand
   .description('Update an MCP server')
   .action(async (serverName) => {
     const manager = new McpManager();
-    console.log(`Updating MCP server "${serverName}"...`);
+    const loader = createLoader(`Updating MCP server "${serverName}"...`);
     try {
-      // Re-installing from the registry will fetch the latest config
       await manager.installServer(serverName);
-      console.log(`✅ Successfully updated MCP server "${serverName}".`);
+      loader.succeed(`Updated ${serverName}`);
+      successStandard('MCP Server Updated', { Server: serverName });
     } catch (err) {
-      console.error(`❌ Failed to update MCP server: ${err instanceof Error ? err.message : String(err)}`);
+      loader.fail('Update failed');
+      errorOperational('Update Error', { message: err instanceof Error ? err.message : String(err) });
       process.exit(1);
     }
   });

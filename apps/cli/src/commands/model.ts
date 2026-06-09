@@ -7,8 +7,14 @@ import {
   listConfiguredModels,
   adapterRegistry,
 } from '@skillspace/runtime';
-import { intro, password as passwordPrompt, isCancel, cancel, outro, spinner } from '@clack/prompts';
-import pc from 'picocolors';
+import { password as passwordPrompt, isCancel, cancel } from '@clack/prompts';
+import { intro } from '../ui/states/intro.js';
+import { outro } from '../ui/states/outro.js';
+import { successStandard } from '../ui/states/success.js';
+import { errorOperational } from '../ui/states/error.js';
+import { createLoader } from '../ui/states/loader.js';
+import { box } from '../ui/layout/box.js';
+import { c } from '../ui/tokens/colors.js';
 
 export function registerModelCommand(program: Command): void {
   const model = program
@@ -22,10 +28,14 @@ export function registerModelCommand(program: Command): void {
     .option('-u, --url <baseUrl>', 'Custom base URL for the provider')
     .option('-y, --yes', 'Headless mode')
     .action(async (provider: string, opts) => {
+      const startTime = Date.now();
       const providers = adapterRegistry.listProviders();
       if (!providers.includes(provider)) {
-        if (!opts.yes) cancel(`Unknown provider "${provider}". Available: ${providers.join(', ')}`);
-        else console.error(`✗ Unknown provider "${provider}". Available: ${providers.join(', ')}`);
+        if (!opts.yes) {
+          errorOperational('Unknown provider', { message: `Available providers: ${providers.join(', ')}` });
+        } else {
+          console.error(`✗ Unknown provider "${provider}". Available: ${providers.join(', ')}`);
+        }
         process.exit(1);
       }
 
@@ -33,7 +43,7 @@ export function registerModelCommand(program: Command): void {
       let url = opts.url;
 
       if (!opts.yes && !key && provider !== 'ollama') {
-        intro(pc.bgCyan(pc.black(` AIR Model Setup: ${provider} `)));
+        intro('model add', `AIR Model Setup: ${provider}`);
         
         const keyInput = await passwordPrompt({
           message: `API Key for ${provider}:`,
@@ -43,17 +53,22 @@ export function registerModelCommand(program: Command): void {
       }
 
       if (!key && provider !== 'ollama') {
-        if (!opts.yes) cancel('API key is required.');
-        else console.error('✗ API key is required.');
-        process.exit(1);
+        if (!opts.yes) {
+          errorOperational('API key missing', { message: 'API key is required for this provider.' });
+          process.exit(1);
+        } else {
+          console.error('✗ API key is required.');
+          process.exit(1);
+        }
       }
 
       setApiKey(provider, key || '', url);
       
       if (!opts.yes) {
-        let msg = `✓ Provider configured: "${provider}"`;
-        if (url) msg += `\n  Base URL: ${url}`;
-        outro(pc.green(msg));
+        const details: Record<string, string> = { Provider: provider };
+        if (url) details['Base URL'] = url;
+        successStandard('Provider Configured', details);
+        outro(Date.now() - startTime);
       } else {
         console.log(`✓ Provider configured: "${provider}"`);
         if (url) console.log(`  Base URL: ${url}`);
@@ -68,27 +83,28 @@ export function registerModelCommand(program: Command): void {
       const defaultModel = getDefaultModel();
 
       if (models.length === 0) {
-        console.log('No models configured. Run `air model add <provider> -k <key>`');
+        console.log(box(['No models configured.', 'Run `air model add <provider>`'], { colorFn: c.border }));
         return;
       }
 
-      console.log('Configured Models:');
-      console.log('─'.repeat(50));
+      const rows: string[] = [];
       for (const m of models) {
-        const isDefault = defaultModel.startsWith(m.provider) ? ' (default)' : '';
-        const keyStatus = m.hasKey ? '✓ key set' : '✗ no key';
-        console.log(`  ${m.provider}${isDefault}`);
-        console.log(`    Status: ${keyStatus}`);
-        if (m.baseUrl) console.log(`    URL: ${m.baseUrl}`);
+        const isDefault = defaultModel.startsWith(m.provider) ? c.success(' (default)') : '';
+        const keyStatus = m.hasKey ? c.success('✓ key set') : c.error('✗ no key');
+        rows.push(`${c.brand(m.provider)}${isDefault}`);
+        rows.push(`  ${c.textFaint('Status:')} ${keyStatus}`);
+        if (m.baseUrl) rows.push(`  ${c.textFaint('URL:')}    ${c.textMuted(m.baseUrl)}`);
+        rows.push('');
       }
 
-      // Always show Ollama (no key needed)
       if (!models.find((m) => m.provider === 'ollama')) {
-        const isDefault = defaultModel.startsWith('ollama') ? ' (default)' : '';
-        console.log(`  ollama${isDefault}`);
-        console.log('    Status: ✓ no key required');
-        console.log('    URL: http://localhost:11434');
+        const isDefault = defaultModel.startsWith('ollama') ? c.success(' (default)') : '';
+        rows.push(`${c.brand('ollama')}${isDefault}`);
+        rows.push(`  ${c.textFaint('Status:')} ${c.success('✓ no key required')}`);
+        rows.push(`  ${c.textFaint('URL:')}    ${c.textMuted('http://localhost:11434')}`);
       }
+
+      console.log(box(rows, { title: 'Configured Models', colorFn: c.successDim }));
     });
 
   model
@@ -98,9 +114,9 @@ export function registerModelCommand(program: Command): void {
       try {
         adapterRegistry.getAdapter(modelId);
         setDefaultModel(modelId);
-        console.log(`✓ Default model set to "${modelId}"`);
+        successStandard('Default Model Set', { Model: modelId });
       } catch (err) {
-        console.error(`✗ ${err instanceof Error ? err.message : err}`);
+        errorOperational('Invalid Model', { message: err instanceof Error ? err.message : String(err) });
         process.exit(1);
       }
     });
@@ -110,19 +126,23 @@ export function registerModelCommand(program: Command): void {
     .description('Test a model by sending a simple prompt')
     .option('-y, --yes', 'Headless mode')
     .action(async (modelId: string, opts) => {
+      const startTime = Date.now();
       try {
         const { adapter, modelName } = adapterRegistry.getAdapter(modelId);
         const provider = modelId.split('/')[0]!;
         const apiKey = getApiKey(provider) ?? '';
 
         if (!apiKey && provider !== 'ollama') {
-          console.error(`✗ No API key for "${provider}". Run \`air model add ${provider}\``);
+          if (!opts.yes) {
+            errorOperational('Missing API Key', { message: `No API key for "${provider}". Run \`air model add ${provider}\`` });
+          } else {
+            console.error(`✗ No API key for "${provider}".`);
+          }
           process.exit(1);
         }
 
-        const s = spinner();
-        if (!opts.yes) s.start(`Testing ${modelId}...`);
-        else console.log(`Testing ${modelId}...`);
+        const loader = !opts.yes ? createLoader(`Testing ${modelId}...`) : null;
+        if (opts.yes) console.log(`Testing ${modelId}...`);
 
         const testSkill = {
           name: 'test',
@@ -160,23 +180,27 @@ export function registerModelCommand(program: Command): void {
         });
 
         if (!res.ok) {
-          if (!opts.yes) s.stop('Test failed.');
-          console.error(`✗ API returned ${res.status}: ${await res.text()}`);
+          if (loader) loader.fail('Test failed.');
+          errorOperational('API Error', { message: `API returned ${res.status}: ${await res.text()}` });
           process.exit(1);
         }
 
         const data = await res.json();
         const result = adapter.parseResponse(data);
         
-        if (!opts.yes) {
-          s.stop('Test complete.');
-          outro(pc.green(`✓ Response: ${result.output}\n  Tokens: ${result.usage.promptTokens} prompt + ${result.usage.completionTokens} completion`));
+        if (loader) {
+          loader.succeed('Test complete');
+          successStandard('Model Response', {
+            Output: result.output,
+            Tokens: `${result.usage.promptTokens} prompt + ${result.usage.completionTokens} completion`
+          });
+          outro(Date.now() - startTime);
         } else {
           console.log(`✓ Response: ${result.output}`);
           console.log(`  Tokens: ${result.usage.promptTokens} prompt + ${result.usage.completionTokens} completion`);
         }
       } catch (err) {
-        console.error(`✗ Test failed: ${err instanceof Error ? err.message : err}`);
+        errorOperational('Test Failed', { message: err instanceof Error ? err.message : String(err) });
         process.exit(1);
       }
     });

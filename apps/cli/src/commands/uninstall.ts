@@ -5,8 +5,11 @@ import {
   writeLockFile,
   removeSkillFromLockFile,
 } from '@skillspace/runtime';
-import { intro, outro, cancel } from '@clack/prompts';
-import pc from 'picocolors';
+import { intro } from '../ui/states/intro.js';
+import { outro } from '../ui/states/outro.js';
+import { successStandard } from '../ui/states/success.js';
+import { errorOperational } from '../ui/states/error.js';
+import { warn } from '../ui/states/warning.js';
 
 export function registerUninstallCommand(program: Command): void {
   program
@@ -16,17 +19,22 @@ export function registerUninstallCommand(program: Command): void {
     .option('-v, --version <version>', 'Specific version to remove (removes all if omitted)')
     .option('-y, --yes', 'Headless mode')
     .action((pkgName: string, opts) => {
+      const startTime = Date.now();
       const cache = new SkillCache();
       const versions = cache.getInstalledVersions(pkgName);
 
       if (!opts.yes) {
-        intro(pc.bgCyan(pc.black(` AIR Uninstall: ${pkgName} `)));
+        intro('uninstall', 'AIR Package Removal');
       }
 
       if (versions.length === 0) {
-        if (!opts.yes) cancel(`Package "${pkgName}" is not installed.`);
-        else console.error(`✗ Package "${pkgName}" is not installed.`);
-        process.exit(1);
+        if (!opts.yes) {
+          errorOperational('Package not found', { message: `Package "${pkgName}" is not installed.` });
+          process.exit(1);
+        } else {
+          console.error(`✗ Package "${pkgName}" is not installed.`);
+          process.exit(1);
+        }
       }
 
       const versionsToRemove = opts.version ? [opts.version] : versions;
@@ -34,8 +42,11 @@ export function registerUninstallCommand(program: Command): void {
 
       for (const version of versionsToRemove) {
         if (!cache.isInstalled(pkgName, version)) {
-          if (!opts.yes) console.warn(pc.yellow(`⚠ ${pkgName}@${version} is not installed, skipping.`));
-          else console.warn(`⚠ ${pkgName}@${version} is not installed, skipping.`);
+          if (!opts.yes) {
+            warn('Version not found', [`Version ${version} of ${pkgName} is not installed, skipping.`]);
+          } else {
+            console.warn(`⚠ ${pkgName}@${version} is not installed, skipping.`);
+          }
           continue;
         }
 
@@ -53,8 +64,15 @@ export function registerUninstallCommand(program: Command): void {
       }
 
       if (!opts.yes) {
-        if (removedCount > 0) outro(pc.green(`✓ Removed ${removedCount} version(s) of ${pkgName}`));
-        else outro('Nothing was removed.');
+        if (removedCount > 0) {
+          successStandard('Uninstalled Successfully', {
+            Package: pkgName,
+            Versions: removedCount.toString()
+          });
+          outro(Date.now() - startTime);
+        } else {
+          warn('Nothing was removed', ['No matching versions were found to remove.']);
+        }
       }
     });
 }

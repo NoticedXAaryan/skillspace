@@ -4,19 +4,26 @@ import { Command } from 'commander';
 import { Executor, AgentExecutor } from '@skillspace/runtime';
 import { validateBenchmark } from '@skillspace/schema';
 import * as YAML from 'yaml';
+import { createLoader } from '../ui/states/loader.js';
+import { errorOperational } from '../ui/states/error.js';
+import { successStandard } from '../ui/states/success.js';
+import { box } from '../ui/layout/box.js';
+import { c } from '../ui/tokens/colors.js';
 
 export function registerBenchmarkCommand(program: Command): void {
   program
     .command('benchmark <suite_path>')
     .description('Run a benchmark test suite against a package')
     .action(async (suitePath: string) => {
+      const loader = createLoader(`Loading benchmark suite from ${suitePath}...`);
       const fullPath = path.resolve(process.cwd(), suitePath);
+      
       if (!fs.existsSync(fullPath)) {
-        console.error(`❌ Benchmark suite not found at ${fullPath}`);
+        loader.fail('Suite not found');
+        errorOperational('File Error', { message: `Benchmark suite not found at ${fullPath}` });
         process.exit(1);
       }
 
-      console.log(`Loading benchmark suite from ${suitePath}...`);
       const raw = fs.readFileSync(fullPath, 'utf-8');
       
       let parsed: unknown;
@@ -26,22 +33,27 @@ export function registerBenchmarkCommand(program: Command): void {
         try {
           parsed = JSON.parse(raw);
         } catch {
-          console.error(`❌ Benchmark suite must be valid YAML or JSON`);
+          loader.fail('Invalid format');
+          errorOperational('Parse Error', { message: 'Benchmark suite must be valid YAML or JSON' });
           process.exit(1);
         }
       }
 
       const validation = validateBenchmark(parsed);
       if (!validation.success) {
-        console.error(`❌ Invalid benchmark schema:`);
+        loader.fail('Schema validation failed');
+        errorOperational('Validation Error', { message: 'Invalid benchmark schema' });
         console.error(validation.errors.issues);
         process.exit(1);
       }
 
       const suite = validation.data;
-      console.log(`\n🏃 Running Benchmark: ${suite.name}@${suite.version}`);
-      console.log(`Target Package: ${suite.target_package}`);
-      console.log(`Test Cases: ${suite.tests.length}\n`);
+      loader.succeed(`Loaded ${suite.name}@${suite.version}`);
+      
+      console.log(box([
+        `${c.textFaint('Target Package:')} ${c.brand(suite.target_package)}`,
+        `${c.textFaint('Test Cases:')}     ${c.text(suite.tests.length.toString())}`
+      ], { title: `Running Benchmark: ${suite.name}`, colorFn: c.successDim }));
 
       const skillExecutor = new Executor();
       const agentExecutor = new AgentExecutor();
@@ -51,7 +63,7 @@ export function registerBenchmarkCommand(program: Command): void {
 
       for (let i = 0; i < suite.tests.length; i++) {
         const test = suite.tests[i]!;
-        console.log(`Test [${i + 1}/${suite.tests.length}]: ${test.id}`);
+        const testLoader = createLoader(`Test [${i + 1}/${suite.tests.length}]: ${test.id}`);
         
         let output = '';
         const startTime = Date.now();
@@ -62,7 +74,6 @@ export function registerBenchmarkCommand(program: Command): void {
             const res = await skillExecutor.run({ skill: suite.target_package, input: test.input, model: 'ollama/llama3.2' });
             output = res.output;
           } catch (e) {
-            // Fallback to agent if it's an agent package
             const res = await agentExecutor.run({ agent: suite.target_package, input: test.input });
             output = res.output;
           }
@@ -74,8 +85,10 @@ export function registerBenchmarkCommand(program: Command): void {
         let passed = false;
 
         if (error) {
-          console.log(`  ❌ Failed (Execution Error) in ${duration}ms`);
-          console.log(`     Error: ${error instanceof Error ? error.message : String(error)}`);
+          testLoader.fail(`Failed (Execution Error) in ${duration}ms`);
+          console.log(box([
+            `${c.error('Error:')} ${error instanceof Error ? error.message : String(error)}`
+          ], { colorFn: c.error }));
         } else if (test.match_type === 'exact') {
           passed = output.trim() === test.expected_output?.trim();
         } else if (test.match_type === 'contains') {
@@ -83,7 +96,6 @@ export function registerBenchmarkCommand(program: Command): void {
         } else if (test.match_type === 'json_schema') {
           try {
             const json = JSON.parse(output);
-            // Basic heuristic check for now
             passed = typeof json === 'object' && json !== null;
           } catch {
             passed = false;
@@ -92,26 +104,31 @@ export function registerBenchmarkCommand(program: Command): void {
 
         if (passed) {
           passedCount++;
-          console.log(`  ✅ Passed in ${duration}ms`);
+          testLoader.succeed(`Passed in ${duration}ms`);
         } else if (!error) {
-          console.log(`  ❌ Failed (Mismatch) in ${duration}ms`);
-          console.log(`     Expected: ${test.expected_output?.substring(0, 50)}...`);
-          console.log(`     Received: ${output.substring(0, 50)}...`);
+          testLoader.fail(`Failed (Mismatch) in ${duration}ms`);
+          console.log(box([
+            `${c.textFaint('Expected:')} ${c.textMuted(test.expected_output?.substring(0, 50))}...`,
+            `${c.textFaint('Received:')} ${c.text(output.substring(0, 50))}...`
+          ], { colorFn: c.warning }));
         }
       }
 
       totalScore = (passedCount / suite.tests.length) * 100;
       
-      console.log(`\n📊 Benchmark Results`);
-      console.log(`----------------------------------------`);
-      console.log(`Score: ${totalScore.toFixed(1)}%`);
-      console.log(`Passed: ${passedCount} / ${suite.tests.length}`);
-
-      // Future: send this to the registry
-      console.log(`\n(Publishing to registry not yet implemented)`);
+      const scoreStr = `${totalScore.toFixed(1)}%`;
+      const passRateStr = `${passedCount} / ${suite.tests.length}`;
       
       if (totalScore < 100) {
+        errorOperational('Benchmark Failed', {
+          message: `Score: ${scoreStr}\nPassed: ${passRateStr}`
+        });
         process.exit(1);
+      } else {
+        successStandard('Benchmark Passed', {
+          Score: scoreStr,
+          Passed: passRateStr
+        });
       }
     });
 }
