@@ -5,6 +5,7 @@ import * as os from 'node:os';
 import YAML from 'yaml';
 import { SkillCache } from '../src/cache.js';
 import { SkillResolver, SkillNotFoundError, VersionNotFoundError } from '../src/resolver.js';
+import { mockInstallPackage } from './test-utils.js';
 
 describe('SkillResolver', () => {
   let tempDir: string;
@@ -37,7 +38,7 @@ describe('SkillResolver', () => {
       });
       const files = new Map<string, Buffer>();
       files.set('skill.yaml', Buffer.from(skillYaml));
-      await cache.installPackage('test-skill', version, files);
+      await mockInstallPackage(cache, 'test-skill', version, files);
     }
   });
 

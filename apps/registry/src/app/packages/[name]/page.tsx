@@ -1,7 +1,7 @@
 import styles from '../../page.module.css';
 import VersionPicker from '@/components/VersionPicker';
 import InstallCard from '@/components/InstallCard';
-import { Shield, Download, Clock, User, Box } from 'lucide-react';
+import { Shield, Download, Clock, User, Box, Terminal } from 'lucide-react';
 import Link from 'next/link';
 import prisma from '@/lib/prisma';
 import PackageTabs from './PackageTabs';
@@ -176,6 +176,15 @@ export default async function PackagePage({ params }: { params: Promise<{ name: 
                 />
               )}
             </div>
+            
+            {/* Quick Install CLI Block */}
+            <div style={{ marginTop: '2.5rem', background: 'rgba(5, 5, 5, 0.8)', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-lg)', padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.5)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontFamily: 'var(--font-mono)', fontSize: '0.9rem', color: 'var(--text-primary)' }}>
+                <Terminal size={16} color="var(--accent)" />
+                <span>air install <span style={{ color: 'var(--accent)' }}>{pkg.name}</span></span>
+              </div>
+              <InstallCard pkgName={pkg.name} />
+            </div>
           </div>
 
           <PackageTabs 
@@ -238,7 +247,7 @@ export default async function PackagePage({ params }: { params: Promise<{ name: 
 
         {/* Sidebar */}
         <aside className={styles.sidebar}>
-          <InstallCard pkgName={pkg.name}>
+          <div className="card" style={{ padding: '1.5rem', background: 'var(--bg-surface)' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <Box size={20} color="var(--text-muted)" />
@@ -274,7 +283,7 @@ export default async function PackagePage({ params }: { params: Promise<{ name: 
                 </div>
               </div>
             </div>
-          </InstallCard>
+          </div>
 
           {latestVersion?.checksum && (
             <div className="card" style={{ marginTop: '1.5rem' }}>

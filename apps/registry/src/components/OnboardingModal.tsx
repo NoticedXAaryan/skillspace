@@ -15,7 +15,7 @@ export default function OnboardingModal() {
 
   useEffect(() => {
     // Check local storage for onboarding state
-    const hasSeen = localStorage.getItem('hasSeenOnboarding');
+    const hasSeen = localStorage.getItem('skillspace_onboarding_completed');
     if (!hasSeen) {
       setVisible(true);
     }
@@ -30,7 +30,7 @@ export default function OnboardingModal() {
   };
 
   const finishOnboarding = () => {
-    localStorage.setItem('hasSeenOnboarding', 'true');
+    localStorage.setItem('skillspace_onboarding_completed', 'true');
     setVisible(false);
     
     // Attempt to sync with db if logged in

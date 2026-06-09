@@ -45,17 +45,16 @@ export default function Navbar() {
         </div>
 
         <div className="desktopNav" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-6)' }}>
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+          <form onSubmit={(e) => { e.preventDefault(); if (searchQuery.trim()) router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`); setMobileMenuOpen(false); }} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
             <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', color: 'var(--text-muted)' }} />
             <input 
               className="input" 
               placeholder="Search packages..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={handleSearch}
               style={{ paddingLeft: 'calc(var(--space-6) + var(--space-2))', width: '200px' }}
             />
-          </div>
+          </form>
           <div className="navLinks">
             <Link href="/packages" className={pathname === '/packages' ? 'active' : ''}>Explore</Link>
             <Link href="/docs" className={pathname.startsWith('/docs') ? 'active' : ''}>Docs</Link>
@@ -90,17 +89,16 @@ export default function Navbar() {
           background: 'var(--bg-base)', zIndex: 40, padding: 'var(--space-6)',
           display: 'flex', flexDirection: 'column', gap: 'var(--space-4)'
         }}>
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
+          <form onSubmit={(e) => { e.preventDefault(); if (searchQuery.trim()) router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`); setMobileMenuOpen(false); }} style={{ position: 'relative', display: 'flex', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
             <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', color: 'var(--text-muted)' }} />
             <input 
               className="input" 
               placeholder="Search packages..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={handleSearch}
               style={{ paddingLeft: 'calc(var(--space-6) + var(--space-2))', width: '100%' }}
             />
-          </div>
+          </form>
           <Link href="/packages" onClick={toggleMenu} className={pathname === '/packages' ? 'active' : ''} style={{ fontSize: 'var(--text-lg)' }}>Explore</Link>
           <Link href="/docs" onClick={toggleMenu} className={pathname.startsWith('/docs') ? 'active' : ''} style={{ fontSize: 'var(--text-lg)' }}>Docs</Link>
           {isAuth ? (

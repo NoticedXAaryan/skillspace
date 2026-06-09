@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, StopCircle, RefreshCw, Terminal, Sparkles } from 'lucide-react';
+import { Play, StopCircle, RefreshCw, Terminal, Sparkles, Copy, CheckCircle2 } from 'lucide-react';
 
 interface SkillOption { name: string; description: string; }
 
@@ -11,6 +11,7 @@ export default function PlaygroundClient({ initialSkills }: { initialSkills: Ski
   const [output, setOutput] = useState('');
   const [status, setStatus] = useState<'idle' | 'running' | 'done' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
+  const [copiedCli, setCopiedCli] = useState(false);
   const outputRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -64,6 +65,14 @@ export default function PlaygroundClient({ initialSkills }: { initialSkills: Ski
     }
   };
 
+  const handleExportCli = () => {
+    if (!selectedSkill) return;
+    const cmd = `air run ${selectedSkill} --input "${input.replace(/"/g, '\\"')}"`;
+    navigator.clipboard.writeText(cmd);
+    setCopiedCli(true);
+    setTimeout(() => setCopiedCli(false), 2000);
+  };
+
   return (
     <div className="container" style={{ padding: '3rem 1.5rem' }}>
       <div style={{ marginBottom: '2rem' }}>
@@ -76,7 +85,7 @@ export default function PlaygroundClient({ initialSkills }: { initialSkills: Ski
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem', minHeight: '600px' }}>
-        <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', background: 'rgba(15, 15, 15, 0.4)', backdropFilter: 'blur(20px)', border: '1px solid var(--border-subtle)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)' }}>
           <div style={{ marginBottom: '1.5rem' }}>
             <label style={{ display: 'block', color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: 600 }}>Select Skill</label>
             <select 
@@ -92,12 +101,17 @@ export default function PlaygroundClient({ initialSkills }: { initialSkills: Ski
             <label style={{ display: 'block', color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: 600 }}>Input Context</label>
             <textarea
               value={input} onChange={(e) => setInput(e.target.value)}
-              placeholder="Provide the input parameters or context..."
+              placeholder={selectedSkill ? `Example context for ${selectedSkill}:\n{"text": "your input here"}` : "Choose a skill first to see example input..."}
               style={{ flex: 1, width: '100%', padding: '1rem', borderRadius: 'var(--radius-sm)', background: 'var(--bg-input)', border: '1px solid var(--border)', color: '#fff', resize: 'none', fontFamily: 'var(--font-mono)' }}
             />
           </div>
 
-          <div style={{ marginTop: '1.5rem', textAlign: 'right' }}>
+          <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <button className="btn btnSecondary" onClick={handleExportCli} disabled={!selectedSkill} style={{ fontSize: '0.8rem', padding: '0.5rem 1rem' }}>
+              {copiedCli ? <CheckCircle2 size={16} color="var(--success)" /> : <Copy size={16} />} 
+              {copiedCli ? 'Copied' : 'Export to CLI'}
+            </button>
+            
             {status === 'running' ? (
               <button className="btn btnSecondary" onClick={() => abortControllerRef.current?.abort()} style={{ color: 'var(--error)', borderColor: 'var(--error)' }}>
                 <StopCircle size={18} /> Stop
@@ -110,8 +124,8 @@ export default function PlaygroundClient({ initialSkills }: { initialSkills: Ski
           </div>
         </div>
 
-        <div className="codeBlock" style={{ display: 'flex', flexDirection: 'column', padding: 0, background: '#000' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', borderBottom: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
+        <div className="codeBlock" style={{ display: 'flex', flexDirection: 'column', padding: 0, background: 'rgba(5, 5, 5, 0.8)', backdropFilter: 'blur(10px)', border: '1px solid var(--border-subtle)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', borderBottom: '1px solid var(--border-subtle)', background: 'rgba(15, 15, 15, 0.5)' }}>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'var(--error)' }} />
               <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'var(--warning)' }} />

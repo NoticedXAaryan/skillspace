@@ -2,6 +2,7 @@ import styles from './Analytics.module.css';
 import { Activity, TrendingUp, Users, Package, Code } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
+import { ExecutionBarChart, TypePieChart } from './AnalyticsCharts';
 
 export const dynamic = 'force-dynamic';
 
@@ -65,14 +66,7 @@ export default async function AnalyticsPage() {
             <h3>Monthly Executions</h3>
             <TrendingUp size={16} style={{ color: 'var(--success)' }} />
           </div>
-          <div className={styles.barChart}>
-            {[30, 45, 60, 50, 75, 90].map((h, i) => (
-              <div key={i} className={styles.barWrapper}>
-                <div className={styles.bar} style={{ height: `${h}%` }}></div>
-                <div className={styles.barLabel}>{['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'][i]}</div>
-              </div>
-            ))}
-          </div>
+          <ExecutionBarChart />
         </div>
 
         {/* Chart 2: Top Languages / Types */}
@@ -81,28 +75,7 @@ export default async function AnalyticsPage() {
             <h3>Skill Types</h3>
             <Code size={16} style={{ color: 'var(--accent)' }} />
           </div>
-          <div className={styles.listChart}>
-            <div className={styles.listItem}>
-              <span className={styles.listLabel}>Agents</span>
-              <div className={styles.listBarWrap}><div className={styles.listBar} style={{ width: '80%', background: '#3b82f6' }}></div></div>
-              <span className={styles.listVal}>45%</span>
-            </div>
-            <div className={styles.listItem}>
-              <span className={styles.listLabel}>Workflows</span>
-              <div className={styles.listBarWrap}><div className={styles.listBar} style={{ width: '60%', background: '#10b981' }}></div></div>
-              <span className={styles.listVal}>30%</span>
-            </div>
-            <div className={styles.listItem}>
-              <span className={styles.listLabel}>Tools</span>
-              <div className={styles.listBarWrap}><div className={styles.listBar} style={{ width: '35%', background: '#f59e0b' }}></div></div>
-              <span className={styles.listVal}>15%</span>
-            </div>
-            <div className={styles.listItem}>
-              <span className={styles.listLabel}>Models</span>
-              <div className={styles.listBarWrap}><div className={styles.listBar} style={{ width: '25%', background: '#8b5cf6' }}></div></div>
-              <span className={styles.listVal}>10%</span>
-            </div>
-          </div>
+          <TypePieChart />
         </div>
       </div>
 

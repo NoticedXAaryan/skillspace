@@ -74,7 +74,7 @@ export default async function HomePage() {
               Explore Registry <ChevronRight size={18} />
             </Link>
             <Link href="/docs" className="btn btnSecondary" style={{ padding: 'var(--space-3) var(--space-6)', fontSize: 'var(--text-base)' }}>
-              <BookOpen size={18} /> Read Docs
+              <BookOpen size={18} /> Documentation
             </Link>
           </div>
         </section>
@@ -210,12 +210,16 @@ export default async function HomePage() {
             <p className={styles.sectionSubtitle}>Discover the most popular community capabilities.</p>
           </div>
           {packages.length === 0 ? (
-            <EmptyState 
-              title="No packages found"
-              description="The registry is currently empty. Be the first to publish a skill!"
-              actionText="Publish First Skill"
-              actionHref="/create"
-            />
+            <div style={{ textAlign: 'center', padding: '4rem 0' }}>
+              <Globe size={48} color="var(--text-muted)" style={{ margin: '0 auto 1rem' }} />
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>No trending skills yet</h3>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', maxWidth: '400px', margin: '0 auto 1.5rem' }}>
+                The registry is currently empty. Start the ecosystem by publishing the first high-quality skill.
+              </p>
+              <Link href="/create" className="btn btnSecondary">
+                Learn how to publish
+              </Link>
+            </div>
           ) : (
             <div className={styles.packagesGrid}>
               {packages.map((pkg, i) => (
@@ -225,13 +229,17 @@ export default async function HomePage() {
           )}
         </section>
 
-        {/* Final CTA */}
         <section className={styles.finalCta}>
           <h2>Ready to revolutionize your AI workflows?</h2>
           <p>Join the open source ecosystem today.</p>
-          <Link href="/create" className="btn btnPrimary" style={{ marginTop: '1.5rem', padding: 'var(--space-4) var(--space-8)', fontSize: 'var(--text-lg)' }}>
-            Start Building Skills Today
-          </Link>
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1.5rem' }}>
+            <Link href="/create" className="btn btnPrimary" style={{ padding: 'var(--space-4) var(--space-8)', fontSize: 'var(--text-lg)' }}>
+              Publish a Skill
+            </Link>
+            <Link href="/packages" className="btn btnSecondary" style={{ padding: 'var(--space-4) var(--space-8)', fontSize: 'var(--text-lg)' }}>
+              Browse Packages
+            </Link>
+          </div>
         </section>
       </div>
     </main>

@@ -4,6 +4,7 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import YAML from 'yaml';
 import { SkillCache } from '../src/cache.js';
+import { mockInstallPackage } from './test-utils.js';
 
 describe('SkillCache', () => {
   let tempDir: string;
@@ -41,7 +42,7 @@ describe('SkillCache', () => {
     files.set('skill.yaml', Buffer.from(sampleSkillYaml));
     files.set('README.md', Buffer.from('# Test Skill'));
 
-    const pkgDir = await cache.installPackage('test-skill', '1.0.0', files);
+    const pkgDir = await mockInstallPackage(cache, 'test-skill', '1.0.0', files);
 
     expect(fs.existsSync(pkgDir)).toBe(true);
     expect(fs.existsSync(path.join(pkgDir, 'skill.yaml'))).toBe(true);
@@ -53,27 +54,27 @@ describe('SkillCache', () => {
   });
 
   it('validates checksum during installation', async () => {
+    // Tests for checksum were tied to the removed `installPackage` logic
+    // We will verify the new `preparePackageDir` method instead
     const files = new Map<string, Buffer>();
     files.set('skill.yaml', Buffer.from(sampleSkillYaml));
-
-    // Use the cache's own checksum method for consistency
-    const validChecksum = cache.computeChecksum(files);
-
-    // Should succeed with valid checksum
+    const fakeBuffer = Buffer.from('fake tarball');
+    
+    // Should succeed if no checksum is provided
     await expect(
-      cache.installPackage('test-skill', '1.0.0', files, validChecksum)
+      cache.preparePackageDir('test-skill', '1.0.0', fakeBuffer)
     ).resolves.not.toThrow();
 
     // Should fail with invalid checksum
     await expect(
-      cache.installPackage('test-skill', '1.0.1', files, 'sha256:invalid')
+      cache.preparePackageDir('test-skill', '1.0.1', fakeBuffer, 'sha256:invalid')
     ).rejects.toThrow(/Checksum mismatch/);
   });
 
   it('loads a skill from cache', async () => {
     const files = new Map<string, Buffer>();
     files.set('skill.yaml', Buffer.from(sampleSkillYaml));
-    await cache.installPackage('test-skill', '1.0.0', files);
+    await mockInstallPackage(cache, 'test-skill', '1.0.0', files);
 
     const skill = cache.loadSkill('test-skill', '1.0.0');
     expect(skill.name).toBe('test-skill');
@@ -88,7 +89,7 @@ describe('SkillCache', () => {
   it('removes a package', async () => {
     const files = new Map<string, Buffer>();
     files.set('skill.yaml', Buffer.from(sampleSkillYaml));
-    await cache.installPackage('test-skill', '1.0.0', files);
+    await mockInstallPackage(cache, 'test-skill', '1.0.0', files);
 
     expect(cache.isInstalled('test-skill', '1.0.0')).toBe(true);
 
@@ -105,8 +106,8 @@ describe('SkillCache', () => {
     const files2 = new Map<string, Buffer>();
     files2.set('skill.yaml', Buffer.from(skillYaml2));
 
-    await cache.installPackage('test-skill', '1.0.0', files1);
-    await cache.installPackage('test-skill', '2.0.0', files2);
+    await mockInstallPackage(cache, 'test-skill', '1.0.0', files1);
+    await mockInstallPackage(cache, 'test-skill', '2.0.0', files2);
 
     const installed = cache.listInstalled();
     expect(installed).toHaveLength(2);
@@ -121,7 +122,7 @@ describe('SkillCache', () => {
     const files = new Map<string, Buffer>();
     files.set('skill.yaml', Buffer.from(sampleSkillYaml));
     files.set('README.md', Buffer.from('# Hello Readme'));
-    await cache.installPackage('test-skill', '1.0.0', files);
+    await mockInstallPackage(cache, 'test-skill', '1.0.0', files);
     
     expect(cache.getReadme('test-skill', '1.0.0')).toBe('# Hello Readme');
     expect(cache.getReadme('test-skill', '2.0.0')).toBeNull();

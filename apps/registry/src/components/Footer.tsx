@@ -26,18 +26,18 @@ export default function Footer() {
         <div>
           <h3 style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginBottom: 'var(--space-4)', fontWeight: 'var(--weight-semibold)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Registry</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-            <Link href="/packages" style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>/packages</Link>
-            <Link href="/search" style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>/search</Link>
-            <Link href="/analytics" style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>/analytics</Link>
+            <Link href="/packages" style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>Browse Packages</Link>
+            <Link href="/search" style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>Search Skills</Link>
+            <Link href="/analytics" style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>Registry Analytics</Link>
           </div>
         </div>
 
         <div>
           <h3 style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginBottom: 'var(--space-4)', fontWeight: 'var(--weight-semibold)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Resources</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-            <Link href="/docs" style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>/docs</Link>
+            <Link href="/docs" style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>Documentation</Link>
             <Link href="/docs#cli-reference" style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>CLI Reference</Link>
-            <Link href="/playground" style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>/playground</Link>
+            <Link href="/playground" style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>Playground Terminal</Link>
           </div>
         </div>
 

@@ -6,6 +6,7 @@ import YAML from 'yaml';
 import { Executor, ExecutionError } from '../src/executor.js';
 import { SkillResolver } from '../src/resolver.js';
 import { SkillCache } from '../src/cache.js';
+import { mockInstallPackage } from './test-utils.js';
 
 describe('Executor', () => {
   let tempDir: string;
@@ -42,7 +43,7 @@ describe('Executor', () => {
 
     const files = new Map<string, Buffer>();
     files.set('skill.yaml', Buffer.from(skillYaml));
-    await cache.installPackage('test-skill', '1.0.0', files);
+    await mockInstallPackage(cache, 'test-skill', '1.0.0', files);
     
     // Mock config load to provide dummy API keys
     vi.mock('../src/config.js', async (importOriginal) => {
@@ -100,6 +101,9 @@ describe('Executor', () => {
     // Write a dummy file to read
     const inputFile = path.join(tempDir, 'input.txt');
     fs.writeFileSync(inputFile, 'File content');
+
+    // Mock CWD so FileSystemSandbox allows reading from tempDir
+    vi.spyOn(process, 'cwd').mockReturnValue(tempDir);
 
     (global.fetch as Mock).mockResolvedValueOnce({
       ok: true,

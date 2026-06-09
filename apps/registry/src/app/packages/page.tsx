@@ -23,6 +23,7 @@ function PackagesContent() {
 
   const q = searchParams.get('q') || '';
   const typeParam = searchParams.get('type') || 'all';
+  const sortParam = searchParams.get('sort') || 'popular';
   const pageParam = parseInt(searchParams.get('page') || '1', 10);
 
   const [query, setQuery] = useState(q);
@@ -53,7 +54,7 @@ function PackagesContent() {
       setLoading(true);
       try {
         const offset = (pageParam - 1) * limit;
-        let url = `/api/packages?limit=${limit}&offset=${offset}`;
+        let url = `/api/packages?limit=${limit}&offset=${offset}&sort=${sortParam}`;
         if (debouncedQuery) url += `&search=${encodeURIComponent(debouncedQuery)}`;
         if (typeParam !== 'all') url += `&type=${typeParam}`;
         
@@ -73,12 +74,20 @@ function PackagesContent() {
       }
     }
     fetchData();
-  }, [debouncedQuery, typeParam, pageParam]);
+  }, [debouncedQuery, typeParam, sortParam, pageParam]);
 
   const handleTypeChange = (newType: string) => {
     const params = new URLSearchParams(searchParams.toString());
     if (newType !== 'all') params.set('type', newType);
     else params.delete('type');
+    params.set('page', '1');
+    router.push(`/packages?${params.toString()}`);
+  };
+
+  const handleSortChange = (newSort: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (newSort !== 'popular') params.set('sort', newSort);
+    else params.delete('sort');
     params.set('page', '1');
     router.push(`/packages?${params.toString()}`);
   };
@@ -125,9 +134,15 @@ function PackagesContent() {
           </div>
           <div className={styles.filterGroup}>
             <span className={styles.filterLabel}>Sort:</span>
-            <button className={`${styles.filterPill} ${styles.filterPillActive}`}>Popular</button>
-            <button className={styles.filterPill}>Recent</button>
-            <button className={styles.filterPill}>Name A–Z</button>
+            {['popular', 'recent', 'name'].map(s => (
+              <button
+                key={s}
+                onClick={() => handleSortChange(s)}
+                className={`${styles.filterPill} ${sortParam === s ? styles.filterPillActive : ''}`}
+              >
+                {s === 'name' ? 'Name A-Z' : s.charAt(0).toUpperCase() + s.slice(1)}
+              </button>
+            ))}
           </div>
         </div>
       </div>
@@ -145,13 +160,31 @@ function PackagesContent() {
           ))}
         </div>
       ) : packages.length === 0 ? (
-        <EmptyState
-          icon={<PackageSearch size={32} style={{ color: 'var(--text-muted)' }} />}
-          title="No capabilities found"
-          description="We couldn't find any packages matching your search criteria."
-          actionText="Clear filters"
-          onAction={() => { setQuery(''); handleTypeChange('all'); }}
-        />
+        query || typeParam !== 'all' ? (
+          <EmptyState
+            icon={<PackageSearch size={32} style={{ color: 'var(--text-muted)' }} />}
+            title="No packages match your search"
+            description="We couldn't find any capabilities matching your current filters and query."
+            actionText="Clear all filters"
+            onAction={() => { 
+              setQuery(''); 
+              const params = new URLSearchParams(searchParams.toString());
+              params.delete('q');
+              params.delete('type');
+              params.delete('sort');
+              params.set('page', '1');
+              router.push(`/packages?${params.toString()}`);
+            }}
+          />
+        ) : (
+          <EmptyState
+            icon={<PackageSearch size={32} style={{ color: 'var(--text-muted)' }} />}
+            title="The registry is empty"
+            description="Be the first to publish an AI skill, agent, or workflow to the ecosystem."
+            actionText="Learn to publish"
+            actionHref="/create"
+          />
+        )
       ) : (
         <div className={styles.grid}>
           {packages.map((pkg, i) => (

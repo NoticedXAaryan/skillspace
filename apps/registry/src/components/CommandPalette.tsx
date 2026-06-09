@@ -3,12 +3,13 @@
 import { useEffect, useState } from 'react';
 import { Command } from 'cmdk';
 import { useRouter } from 'next/navigation';
-import { Search, Package, Book, User, Terminal } from 'lucide-react';
+import { Search, Package, Book, User, Terminal, Copy, CheckCircle2 } from 'lucide-react';
 import styles from './CommandPalette.module.css';
 
 export default function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [copiedCmd, setCopiedCmd] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -27,6 +28,15 @@ export default function CommandPalette() {
       router.push(`/search?q=${encodeURIComponent(query)}`);
       setOpen(false);
     }
+  };
+
+  const handleCopyCommand = (cmd: string) => {
+    navigator.clipboard.writeText(cmd);
+    setCopiedCmd(cmd);
+    setTimeout(() => {
+      setCopiedCmd(null);
+      setOpen(false);
+    }, 1000);
   };
 
   return (
@@ -85,6 +95,27 @@ export default function CommandPalette() {
               <Package size={14} /> Browse Registry
             </Command.Item>
           </Command.Group>
+
+          {/* Dynamic CLI Bridge */}
+          {(query.toLowerCase().includes('install') || query.toLowerCase().includes('run') || query.toLowerCase().includes('publish') || query.toLowerCase().startsWith('air')) && (
+            <Command.Group heading="CLI Commands (Click to copy)">
+              <Command.Item onSelect={() => handleCopyCommand('air install @core/agent')} className={styles.item}>
+                {copiedCmd === 'air install @core/agent' ? <CheckCircle2 size={14} color="var(--success)" /> : <Terminal size={14} color="var(--accent)" />}
+                <span>air install <span style={{ color: 'var(--text-secondary)' }}>@core/agent</span></span>
+                <Copy size={12} style={{ marginLeft: 'auto', opacity: 0.5 }} />
+              </Command.Item>
+              <Command.Item onSelect={() => handleCopyCommand('air run @core/summary')} className={styles.item}>
+                {copiedCmd === 'air run @core/summary' ? <CheckCircle2 size={14} color="var(--success)" /> : <Terminal size={14} color="var(--accent)" />}
+                <span>air run <span style={{ color: 'var(--text-secondary)' }}>@core/summary</span></span>
+                <Copy size={12} style={{ marginLeft: 'auto', opacity: 0.5 }} />
+              </Command.Item>
+              <Command.Item onSelect={() => handleCopyCommand('air publish')} className={styles.item}>
+                {copiedCmd === 'air publish' ? <CheckCircle2 size={14} color="var(--success)" /> : <Terminal size={14} color="var(--accent)" />}
+                <span>air publish</span>
+                <Copy size={12} style={{ marginLeft: 'auto', opacity: 0.5 }} />
+              </Command.Item>
+            </Command.Group>
+          )}
 
           <Command.Group heading="Documentation">
             <Command.Item onSelect={() => { router.push('/docs/getting-started'); setOpen(false); }} className={styles.item}>

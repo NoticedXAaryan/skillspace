@@ -9,6 +9,7 @@ import { storePackage } from '@/lib/storage';
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const type = url.searchParams.get('type') || undefined;
+  const sort = url.searchParams.get('sort') || 'popular';
   let page = parseInt(url.searchParams.get('page') || '1');
   if (isNaN(page)) page = 1;
   page = Math.max(1, page);
@@ -20,12 +21,16 @@ export async function GET(req: NextRequest) {
   const skip = (page - 1) * limit;
 
   const where = type ? { type } : {};
+  let orderBy: any = { downloads: 'desc' };
+  if (sort === 'recent') orderBy = { createdAt: 'desc' };
+  if (sort === 'name') orderBy = { name: 'asc' };
+
   const [packages, total] = await Promise.all([
     prisma.package.findMany({
       where,
       skip,
       take: limit,
-      orderBy: { downloads: 'desc' },
+      orderBy,
       include: { versions: { orderBy: { publishedAt: 'desc' }, take: 1 } },
     }),
     prisma.package.count({ where }),

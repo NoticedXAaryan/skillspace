@@ -5,6 +5,7 @@ import * as os from 'node:os';
 import YAML from 'yaml';
 import { AgentResolver, AgentNotFoundError } from '../src/agent-resolver.js';
 import { SkillCache } from '../src/cache.js';
+import { mockInstallPackage } from './test-utils.js';
 
 describe('AgentResolver', () => {
   let tempDir: string;
@@ -31,7 +32,7 @@ describe('AgentResolver', () => {
 
     const skillFiles = new Map<string, Buffer>();
     skillFiles.set('skill.yaml', Buffer.from(skillYaml));
-    await cache.installPackage('test-skill', '1.0.0', skillFiles);
+    await mockInstallPackage(cache, 'test-skill', '1.0.0', skillFiles);
 
     // Install a mock agent
     const agentYaml = YAML.stringify({
@@ -46,7 +47,7 @@ describe('AgentResolver', () => {
 
     const agentFiles = new Map<string, Buffer>();
     agentFiles.set('agent.yaml', Buffer.from(agentYaml));
-    await cache.installPackage('test-agent', '1.0.0', agentFiles);
+    await mockInstallPackage(cache, 'test-agent', '1.0.0', agentFiles);
     
     // Install a newer version of the agent
     const agentYamlV2 = YAML.stringify({
@@ -60,7 +61,7 @@ describe('AgentResolver', () => {
     });
     const agentFilesV2 = new Map<string, Buffer>();
     agentFilesV2.set('agent.yaml', Buffer.from(agentYamlV2));
-    await cache.installPackage('test-agent', '2.0.0', agentFilesV2);
+    await mockInstallPackage(cache, 'test-agent', '2.0.0', agentFilesV2);
   });
 
   afterEach(() => {
