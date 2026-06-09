@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import styles from './page.module.css';
 import Link from 'next/link';
 import PackageCard from '@/components/PackageCard';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface UserProfile {
   id: string;
@@ -79,17 +80,17 @@ export default function ProfilePage() {
   }
 
   if (loading) {
-    return <main className={styles.loading}>Loading profile...</main>;
+    return <main className="flex min-h-[60vh] items-center justify-center text-muted-foreground">Loading profile...</main>;
   }
 
   if (error) {
     return (
-      <main className={styles.profilePage}>
-        <div className={styles.error}>{error}</div>
-        <div style={{ textAlign: 'center' }}>
-          <button onClick={handleLogout} className="btn btnSecondary">
+      <main className="container mx-auto px-4 py-12">
+        <div className="mb-6 rounded-md bg-destructive/15 p-4 text-center font-medium text-destructive">{error}</div>
+        <div className="text-center">
+          <Button variant="secondary" onClick={handleLogout}>
             Sign out and try again
-          </button>
+          </Button>
         </div>
       </main>
     );
@@ -98,60 +99,65 @@ export default function ProfilePage() {
   if (!profile) return null;
 
   return (
-    <main className={`${styles.profilePage} fadeInUp`}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>Welcome back, {profile.username}</h1>
-        <p className={styles.subtitle}>Manage your packages and account settings</p>
+    <main className="container mx-auto px-4 py-12 animate-in fade-in duration-500">
+      <div className="mb-10 text-center md:text-left">
+        <h1 className="mb-2 text-3xl font-bold tracking-tight text-foreground">Welcome back, {profile.username}</h1>
+        <p className="text-lg text-muted-foreground">Manage your packages and account settings</p>
       </div>
 
-      <div className={styles.grid}>
-        <aside className={styles.sidebar}>
-          <div className="card">
-            <h2 className={styles.sectionTitle}>Account Info</h2>
-            <div className={styles.infoItem}>
-              <span className={styles.infoLabel}>Username</span>
-              <span className={styles.infoValue}>@{profile.username}</span>
-            </div>
-            <div className={styles.infoItem}>
-              <span className={styles.infoLabel}>Email</span>
-              <span className={styles.infoValue}>{profile.email}</span>
-            </div>
-            <div className={styles.infoItem}>
-              <span className={styles.infoLabel}>Plan</span>
-              <span className={styles.infoValue} style={{ textTransform: 'capitalize' }}>
-                {profile.plan}
-              </span>
-            </div>
-            <div className={styles.infoItem}>
-              <span className={styles.infoLabel}>Status</span>
-              <span className={styles.infoValue}>
-                {profile.verified ? (
-                  <span className="tag" style={{ color: 'var(--success)' }}>Verified</span>
-                ) : (
-                  <span className="tag" style={{ color: 'var(--warning)' }}>Unverified</span>
-                )}
-              </span>
-            </div>
-            <div className={styles.infoItem}>
-              <span className={styles.infoLabel}>Joined</span>
-              <span className={styles.infoValue}>{new Date(profile.createdAt).toLocaleDateString()}</span>
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-[300px_1fr]">
+        <aside className="flex flex-col gap-6">
+          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+            <h2 className="mb-6 border-b border-border pb-2 text-xl font-bold text-foreground">Account Info</h2>
+            
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1">
+                <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Username</span>
+                <span className="font-medium text-foreground">@{profile.username}</span>
+              </div>
+              
+              <div className="flex flex-col gap-1">
+                <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Email</span>
+                <span className="font-medium text-foreground">{profile.email}</span>
+              </div>
+              
+              <div className="flex flex-col gap-1">
+                <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Plan</span>
+                <span className="font-medium capitalize text-foreground">{profile.plan}</span>
+              </div>
+              
+              <div className="flex flex-col gap-1">
+                <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Status</span>
+                <span>
+                  {profile.verified ? (
+                    <Badge className="bg-green-500/10 text-green-500 hover:bg-green-500/20 border-green-500/20 border">Verified</Badge>
+                  ) : (
+                    <Badge variant="secondary" className="text-amber-500 border-amber-500/20">Unverified</Badge>
+                  )}
+                </span>
+              </div>
+              
+              <div className="flex flex-col gap-1">
+                <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Joined</span>
+                <span className="font-medium text-foreground">{new Date(profile.createdAt).toLocaleDateString()}</span>
+              </div>
             </div>
             
-            <button 
+            <Button 
+              variant="secondary" 
               onClick={handleLogout} 
-              className="btn btnSecondary" 
-              style={{ width: '100%', marginTop: '1.5rem', justifyContent: 'center' }}
+              className="mt-8 w-full"
             >
               Sign Out
-            </button>
+            </Button>
           </div>
         </aside>
 
-        <div className={styles.mainContent}>
-          <div className="card">
-            <h2 className={styles.sectionTitle}>Your Packages</h2>
+        <div className="flex min-w-0 flex-col gap-8">
+          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+            <h2 className="mb-6 border-b border-border pb-2 text-xl font-bold text-foreground">Your Packages</h2>
             {profile.packages.length > 0 ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1rem' }}>
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
                 {profile.packages.map((pkg: any, i: number) => {
                   const enrichedPkg = {
                     ...pkg,
@@ -163,28 +169,28 @@ export default function ProfilePage() {
                 })}
               </div>
             ) : (
-              <p style={{ color: 'var(--text-secondary)' }}>You haven&apos;t published any packages yet.</p>
+              <p className="text-muted-foreground">You haven&apos;t published any packages yet.</p>
             )}
           </div>
 
-          <div className="card">
-            <h2 className={styles.sectionTitle}>Organizations</h2>
+          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+            <h2 className="mb-6 border-b border-border pb-2 text-xl font-bold text-foreground">Organizations</h2>
             {profile.orgMemberships.length > 0 ? (
-              <div className={styles.orgList}>
+              <div className="flex flex-col gap-3">
                 {profile.orgMemberships.map((membership) => (
-                  <div key={membership.id} className={styles.orgCard}>
+                  <div key={membership.id} className="flex items-center justify-between rounded-lg border border-border bg-muted/30 p-4 transition-colors hover:bg-muted/50">
                     <div>
-                      <div className={styles.orgName}>{membership.organization.name}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                        @{membership.organization.slug} • {membership.organization.plan} plan
+                      <div className="font-semibold text-foreground">{membership.organization.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        @{membership.organization.slug} • <span className="capitalize">{membership.organization.plan}</span> plan
                       </div>
                     </div>
-                    <div className={styles.orgRole}>{membership.role}</div>
+                    <Badge variant="outline" className="capitalize">{membership.role}</Badge>
                   </div>
                 ))}
               </div>
             ) : (
-              <p style={{ color: 'var(--text-secondary)' }}>You are not a member of any organizations.</p>
+              <p className="text-muted-foreground">You are not a member of any organizations.</p>
             )}
           </div>
         </div>

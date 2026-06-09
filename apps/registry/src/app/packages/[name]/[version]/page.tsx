@@ -1,9 +1,9 @@
-import styles from '../../../page.module.css';
 import VersionPicker from '@/components/VersionPicker';
 import InstallCard from '@/components/InstallCard';
 import { Shield, Download, Clock, User, Box } from 'lucide-react';
 import Link from 'next/link';
 import prisma from '@/lib/prisma';
+import { Badge } from '@/components/ui/badge';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,8 +39,8 @@ function renderMarkdown(text: string) {
     if (line.trim().startsWith('```')) {
       if (inCodeBlock) {
         elements.push(
-          <div key={`code-${i}`} className="codeBlock" style={{ marginBottom: '1.5rem', marginTop: '0.5rem' }}>
-            <pre style={{ margin: 0 }}><code>{codeContent.join('\n')}</code></pre>
+          <div key={`code-${i}`} className="my-6 overflow-x-auto rounded-md bg-zinc-950 p-4 font-mono text-sm shadow-sm">
+            <pre className="m-0 text-zinc-300"><code>{codeContent.join('\n')}</code></pre>
           </div>
         );
         codeContent = [];
@@ -57,29 +57,29 @@ function renderMarkdown(text: string) {
     }
 
     if (line.startsWith('### ')) {
-      elements.push(<h4 key={i} style={{ color: '#fff', marginTop: '1.5rem', marginBottom: '0.75rem' }}>{line.slice(4)}</h4>);
+      elements.push(<h4 key={i} className="mt-6 mb-3 text-lg font-semibold text-foreground">{line.slice(4)}</h4>);
       continue;
     }
     if (line.startsWith('## ')) {
-      elements.push(<h3 key={i} style={{ color: '#fff', marginTop: '2rem', marginBottom: '1rem' }}>{line.slice(3)}</h3>);
+      elements.push(<h3 key={i} className="mt-8 mb-4 text-xl font-bold text-foreground">{line.slice(3)}</h3>);
       continue;
     }
     if (line.startsWith('# ')) {
-      elements.push(<h2 key={i} style={{ color: '#fff', marginTop: '2.5rem', marginBottom: '1.25rem', fontSize: '1.5rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem' }}>{line.slice(2)}</h2>);
+      elements.push(<h2 key={i} className="mt-10 mb-5 border-b border-border pb-2 text-2xl font-bold text-foreground">{line.slice(2)}</h2>);
       continue;
     }
     if (line.trim() === '') {
-      elements.push(<div key={i} style={{ height: '0.75rem' }} />);
+      elements.push(<div key={i} className="h-3" />);
       continue;
     }
     
     // Inline code replacement
     const parts = line.split(/(`[^`]+`)/g);
     elements.push(
-      <p key={i} style={{ marginBottom: '0.5rem', lineHeight: '1.6' }}>
+      <p key={i} className="mb-2 leading-relaxed text-muted-foreground">
         {parts.map((part, j) => 
           part.startsWith('`') && part.endsWith('`') ? 
-            <code key={j} style={{ background: 'var(--bg-elevated)', padding: '2px 4px', borderRadius: '4px', fontFamily: 'var(--font-mono)', fontSize: '0.85em', color: 'var(--text-primary)' }}>{part.slice(1, -1)}</code> 
+            <code key={j} className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.85em] text-foreground">{part.slice(1, -1)}</code> 
           : part
         )}
       </p>
@@ -101,12 +101,12 @@ export default async function PackageVersionPage({ params }: { params: Promise<{
 
   if (!pkg) {
     return (
-      <main className="container" style={{ padding: '8rem 1.5rem', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: '#fff' }}>Package Not Found</h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
-          The capability &quot;{name}&quot; doesn&apos;t exist in the registry.
+      <main className="container mx-auto px-4 py-32 text-center">
+        <h1 className="mb-4 text-4xl font-bold text-foreground">Package Not Found</h1>
+        <p className="text-lg text-muted-foreground">
+          The capability "{name}" doesn't exist in the registry.
         </p>
-        <Link href="/" className="btn btnPrimary" style={{ marginTop: '2rem' }}>
+        <Link href="/" className="mt-8 inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
           ← Back to Registry
         </Link>
       </main>
@@ -117,12 +117,12 @@ export default async function PackageVersionPage({ params }: { params: Promise<{
 
   if (!targetVersion) {
     return (
-      <main className="container" style={{ padding: '8rem 1.5rem', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: '#fff' }}>Version Not Found</h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
-          Version &quot;{version}&quot; for &quot;{name}&quot; doesn&apos;t exist.
+      <main className="container mx-auto px-4 py-32 text-center">
+        <h1 className="mb-4 text-4xl font-bold text-foreground">Version Not Found</h1>
+        <p className="text-lg text-muted-foreground">
+          Version "{version}" for "{name}" doesn't exist.
         </p>
-        <Link href={`/packages/${name}`} className="btn btnPrimary" style={{ marginTop: '2rem' }}>
+        <Link href={`/packages/${name}`} className="mt-8 inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
           ← View Latest Version
         </Link>
       </main>
@@ -143,35 +143,39 @@ export default async function PackageVersionPage({ params }: { params: Promise<{
   const readme = targetVersion.manifest ? extractReadme(targetVersion.manifest as string) : null;
 
   return (
-    <main className="container" style={{ padding: '2rem 1.5rem 6rem' }}>
+    <main className="container mx-auto px-4 py-12 pb-24">
       {!isLatest && (
-        <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ color: '#f59e0b', fontSize: '0.9rem' }}>
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-md border border-amber-500/30 bg-amber-500/10 p-4">
+          <span className="text-sm font-medium text-amber-600">
             <strong>Note:</strong> You are viewing an older version of this package.
           </span>
-          <Link href={`/packages/${name}`} className="btn btnSecondary" style={{ padding: '0.25rem 0.75rem', fontSize: '0.85rem' }}>
+          <Link href={`/packages/${name}`} className="inline-flex h-9 items-center justify-center rounded-md bg-secondary px-4 text-xs font-medium text-secondary-foreground transition-colors hover:bg-secondary/80">
             Go to latest (v{allVersions[0]?.version})
           </Link>
         </div>
       )}
 
-      <div className={styles.layout} style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '2rem' }}>
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-[1fr_300px]">
         {/* Main Content */}
-        <div className={styles.mainContent}>
-          <div className="card" style={{ padding: '2.5rem', borderTop: '4px solid var(--text-primary)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+        <div className="min-w-0">
+          <div className="rounded-xl border border-border bg-card p-8 shadow-sm border-t-4 border-t-foreground">
+            <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <h1 style={{ fontSize: '2.5rem', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>
-                  {pkg.name} <span style={{ fontSize: '1.25rem', color: 'var(--text-muted)', fontWeight: 400 }}>v{version}</span>
+                <h1 className="mb-2 text-4xl font-extrabold tracking-tight text-foreground">
+                  {pkg.name} <span className="text-2xl font-normal text-muted-foreground">v{version}</span>
                 </h1>
-                <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', lineHeight: '1.6', maxWidth: '600px' }}>
+                <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">
                   {pkg.description}
                 </p>
-                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+                <div className="mt-6 flex flex-wrap gap-2">
                   {tags.map((tag: string) => (
-                    <span key={tag} className="tag">{tag}</span>
+                    <Badge key={tag} variant="secondary">{tag}</Badge>
                   ))}
-                  {(pkg as any).type && <span className="tag" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.2)' }}>{(pkg as any).type}</span>}
+                  {(pkg as any).type && (
+                    <Badge className="bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 border-amber-500/20 border">
+                      {(pkg as any).type}
+                    </Badge>
+                  )}
                 </div>
               </div>
               
@@ -188,24 +192,24 @@ export default async function PackageVersionPage({ params }: { params: Promise<{
             </div>
           </div>
 
-          <div className="card" style={{ marginTop: '2rem', padding: '2.5rem' }}>
-            <h2 style={{ fontSize: '1.5rem', color: '#fff', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
+          <div className="mt-8 rounded-xl border border-border bg-card p-8 shadow-sm">
+            <h2 className="mb-6 border-b border-border pb-4 text-2xl font-bold text-foreground">
               Documentation
             </h2>
-            <div style={{ color: 'var(--text-secondary)', lineHeight: '1.8' }}>
+            <div className="text-muted-foreground">
               {readme ? (
                 renderMarkdown(readme)
               ) : (
                 <>
                   <p>{pkg.description}</p>
                   
-                  <h3 style={{ color: '#fff', marginTop: '2rem', marginBottom: '1rem' }}>Installation</h3>
-                  <div className="codeBlock">
+                  <h3 className="mb-4 mt-8 text-xl font-bold text-foreground">Installation</h3>
+                  <div className="rounded-md bg-zinc-950 p-4 font-mono text-sm text-zinc-300 shadow-sm">
                     <code>skillspace install {pkg.name}@{version}</code>
                   </div>
 
-                  <h3 style={{ color: '#fff', marginTop: '2rem', marginBottom: '1rem' }}>Usage</h3>
-                  <div className="codeBlock">
+                  <h3 className="mb-4 mt-8 text-xl font-bold text-foreground">Usage</h3>
+                  <div className="rounded-md bg-zinc-950 p-4 font-mono text-sm text-zinc-300 shadow-sm">
                     <code>skillspace run {pkg.name}@{version} --input ./src</code>
                   </div>
                 </>
@@ -215,38 +219,38 @@ export default async function PackageVersionPage({ params }: { params: Promise<{
         </div>
 
         {/* Sidebar */}
-        <aside className={styles.sidebar}>
+        <aside className="sticky top-24 h-max w-full">
           <InstallCard pkgName={`${pkg.name}@${version}`}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <Box size={20} color="var(--text-muted)" />
+            <div className="flex flex-col gap-5 mt-6 border-t border-border pt-6">
+              <div className="flex items-center gap-4">
+                <Box className="h-5 w-5 text-muted-foreground" />
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Version</div>
-                  <div style={{ color: '#fff', fontWeight: 600 }}>{version}</div>
+                  <div className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Version</div>
+                  <div className="font-semibold text-foreground">{version}</div>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <User size={20} color="var(--text-muted)" />
+              <div className="flex items-center gap-4">
+                <User className="h-5 w-5 text-muted-foreground" />
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Author</div>
-                  <div style={{ color: '#fff', fontWeight: 600 }}>{pkg.owner?.username || 'skillspace'}</div>
+                  <div className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Author</div>
+                  <div className="font-semibold text-foreground">{pkg.owner?.username || 'skillspace'}</div>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <Download size={20} color="var(--text-muted)" />
+              <div className="flex items-center gap-4">
+                <Download className="h-5 w-5 text-muted-foreground" />
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Downloads</div>
-                  <div style={{ color: '#fff', fontWeight: 600 }}>{pkg.downloads?.toLocaleString()}</div>
+                  <div className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Downloads</div>
+                  <div className="font-semibold text-foreground">{pkg.downloads?.toLocaleString()}</div>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <Clock size={20} color="var(--text-muted)" />
+              <div className="flex items-center gap-4">
+                <Clock className="h-5 w-5 text-muted-foreground" />
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Published</div>
-                  <div style={{ color: '#fff', fontWeight: 600 }}>
+                  <div className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Published</div>
+                  <div className="font-semibold text-foreground">
                     {targetVersion?.publishedAt ? new Date(targetVersion.publishedAt).toLocaleDateString() : 'N/A'}
                   </div>
                 </div>
@@ -255,14 +259,14 @@ export default async function PackageVersionPage({ params }: { params: Promise<{
           </InstallCard>
 
           {targetVersion?.checksum && (
-            <div className="card" style={{ marginTop: '1.5rem' }}>
-              <h3 style={{ color: '#fff', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Shield size={18} color="var(--success)" /> Integrity
+            <div className="mt-6 rounded-xl border border-border bg-card p-6 shadow-sm">
+              <h3 className="mb-4 flex items-center gap-2 font-bold text-foreground">
+                <Shield className="h-5 w-5 text-green-500" /> Integrity
               </h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>
+              <p className="mb-3 text-sm text-muted-foreground">
                 Cryptographic hash ensuring package contents have not been modified.
               </p>
-              <div className="codeBlock" style={{ fontSize: '0.75rem', wordBreak: 'break-all' }}>
+              <div className="break-all rounded-md bg-zinc-950 p-3 font-mono text-xs text-zinc-300">
                 <code>{targetVersion.checksum}</code>
               </div>
             </div>

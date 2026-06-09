@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import styles from '../login/page.module.css';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export default function RegisterPage() {
   const [username, setUsername] = useState('');
@@ -15,9 +16,9 @@ export default function RegisterPage() {
 
   const getPasswordStrength = (pwd: string) => {
     if (!pwd) return { label: '', color: 'transparent', width: '0%' };
-    if (pwd.length < 8) return { label: 'Weak', color: 'var(--error)', width: '33%' };
-    if (pwd.length >= 8 && /[A-Z]/.test(pwd) && /[0-9]/.test(pwd) && /[^A-Za-z0-9]/.test(pwd)) return { label: 'Strong', color: 'var(--success)', width: '100%' };
-    return { label: 'Medium', color: 'var(--warning)', width: '66%' };
+    if (pwd.length < 8) return { label: 'Weak', color: '#ef4444', width: '33%' };
+    if (pwd.length >= 8 && /[A-Z]/.test(pwd) && /[0-9]/.test(pwd) && /[^A-Za-z0-9]/.test(pwd)) return { label: 'Strong', color: '#22c55e', width: '100%' };
+    return { label: 'Medium', color: '#f59e0b', width: '66%' };
   };
   const strength = getPasswordStrength(password);
 
@@ -47,19 +48,18 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className={styles.authPage}>
-      <div className={styles.authCard}>
-        <h1 className={styles.authTitle}>Create your account</h1>
-        <p className={styles.authSubtitle}>Start publishing and installing AI capabilities</p>
+    <main className="flex min-h-[80vh] items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md rounded-xl border border-border bg-card p-8 shadow-sm">
+        <h1 className="mb-2 text-center text-2xl font-bold tracking-tight text-foreground">Create your account</h1>
+        <p className="mb-8 text-center text-sm text-muted-foreground">Start publishing and installing AI capabilities</p>
 
-        {error && <div className={styles.error}>{error}</div>}
+        {error && <div className="mb-6 rounded-md bg-destructive/15 p-3 text-center text-sm font-medium text-destructive">{error}</div>}
 
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.field}>
-            <label className={styles.label}>Username</label>
-            <input
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium leading-none text-foreground">Username</label>
+            <Input
               type="text"
-              className="input"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="your-username"
@@ -67,22 +67,20 @@ export default function RegisterPage() {
               required
             />
           </div>
-          <div className={styles.field}>
-            <label className={styles.label}>Email</label>
-            <input
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium leading-none text-foreground">Email</label>
+            <Input
               type="email"
-              className="input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
             />
           </div>
-          <div className={styles.field}>
-            <label className={styles.label}>Password</label>
-            <input
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium leading-none text-foreground">Password</label>
+            <Input
               type="password"
-              className="input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
@@ -90,28 +88,28 @@ export default function RegisterPage() {
               required
             />
             {password && (
-              <div style={{ marginTop: '0.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
+              <div className="mt-2">
+                <div className="mb-1 flex justify-between text-xs text-muted-foreground">
                   <span>Password strength:</span>
                   <span style={{ color: strength.color, fontWeight: 'bold' }}>{strength.label}</span>
                 </div>
-                <div style={{ height: '4px', background: 'var(--bg-elevated)', borderRadius: '2px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: strength.width, background: strength.color, transition: 'all 0.3s ease' }} />
+                <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
+                  <div className="h-full transition-all duration-300 ease-in-out" style={{ width: strength.width, backgroundColor: strength.color }} />
                 </div>
               </div>
             )}
           </div>
-          <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginBottom: '1rem', lineHeight: 1.5 }}>
-            By creating an account, you agree to our <Link href="/terms" style={{ color: 'var(--text-primary)', textDecoration: 'underline' }}>Terms of Service</Link> and <Link href="/privacy" style={{ color: 'var(--text-primary)', textDecoration: 'underline' }}>Privacy Policy</Link>.
+          <div className="mb-4 text-sm leading-relaxed text-muted-foreground">
+            By creating an account, you agree to our <Link href="/terms" className="text-foreground hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-foreground hover:underline">Privacy Policy</Link>.
           </div>
-          <button type="submit" className="btn btnPrimary" style={{ width: '100%', justifyContent: 'center' }} disabled={loading}>
+          <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Creating account...' : 'Create Account'}
-          </button>
+          </Button>
         </form>
 
-        <p className={styles.authFooter}>
+        <p className="mt-8 text-center text-sm text-muted-foreground">
           Already have an account?{' '}
-          <Link href="/login">Sign in</Link>
+          <Link href="/login" className="font-medium text-foreground hover:underline">Sign in</Link>
         </p>
       </div>
     </main>

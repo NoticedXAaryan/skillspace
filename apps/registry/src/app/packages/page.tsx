@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Search, PackageSearch } from 'lucide-react';
 import PackageCard from '@/components/PackageCard';
 import EmptyState from '@/components/EmptyState';
-import styles from './page.module.css';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface PackageData {
   name: string;
@@ -101,44 +102,54 @@ function PackagesContent() {
   const totalPages = Math.ceil(total / limit);
 
   return (
-    <div className="container">
-      <div className={styles.header}>
-        <h1 className={styles.title}>Browse Registry</h1>
-        <p className={styles.subtitle}>Discover AI skills, agents, and workflows.</p>
+    <div className="container mx-auto px-4 py-12">
+      <div className="mb-8 text-center">
+        <h1 className="mb-2 text-3xl font-semibold tracking-tight">Browse Registry</h1>
+        <p className="text-lg text-muted-foreground">Discover AI skills, agents, and workflows.</p>
       </div>
 
-      <div className={styles.searchSection}>
-        <div className={styles.searchContainer}>
-          <Search size={20} className={styles.searchIcon} />
+      <div className="mx-auto mb-8 flex max-w-3xl flex-col gap-4">
+        <div className="relative w-full">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
           <input
             type="text"
-            className={`input ${styles.searchInput}`}
+            className="w-full rounded-xl border border-input bg-background py-3 pl-12 pr-4 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             placeholder="Search capabilities..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
 
-        <div className={styles.filtersRow}>
-          <div className={styles.filterGroup}>
-            <span className={styles.filterLabel}>Type:</span>
+        <div className="flex flex-wrap items-center justify-between gap-6">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="mr-2 text-sm font-medium text-muted-foreground">Type:</span>
             {['all', 'skill', 'agent', 'workflow'].map(t => (
               <button
                 key={t}
                 onClick={() => handleTypeChange(t)}
-                className={`${styles.filterPill} ${typeParam === t ? styles.filterPillActive : ''}`}
+                className={cn(
+                  "rounded-full border px-3 py-1 text-sm font-medium transition-colors",
+                  typeParam === t 
+                    ? "bg-foreground text-background border-foreground" 
+                    : "bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                )}
               >
                 {t.charAt(0).toUpperCase() + t.slice(1)}
               </button>
             ))}
           </div>
-          <div className={styles.filterGroup}>
-            <span className={styles.filterLabel}>Sort:</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="mr-2 text-sm font-medium text-muted-foreground">Sort:</span>
             {['popular', 'recent', 'name'].map(s => (
               <button
                 key={s}
                 onClick={() => handleSortChange(s)}
-                className={`${styles.filterPill} ${sortParam === s ? styles.filterPillActive : ''}`}
+                className={cn(
+                  "rounded-full border px-3 py-1 text-sm font-medium transition-colors",
+                  sortParam === s 
+                    ? "bg-foreground text-background border-foreground" 
+                    : "bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                )}
               >
                 {s === 'name' ? 'Name A-Z' : s.charAt(0).toUpperCase() + s.slice(1)}
               </button>
@@ -147,22 +158,22 @@ function PackagesContent() {
         </div>
       </div>
 
-      <div className={styles.resultsHeader}>
-        <div className={styles.resultsCount}>
+      <div className="mb-6 flex items-center justify-between border-b pb-2">
+        <div className="text-sm text-muted-foreground">
           {loading ? 'Searching...' : `${total} capabilities found`}
         </div>
       </div>
 
       {loading ? (
-        <div className={styles.grid}>
+        <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className={styles.skeletonCard} />
+            <div key={i} className="h-[180px] animate-pulse rounded-md border bg-muted" />
           ))}
         </div>
       ) : packages.length === 0 ? (
         query || typeParam !== 'all' ? (
           <EmptyState
-            icon={<PackageSearch size={32} style={{ color: 'var(--text-muted)' }} />}
+            icon={<PackageSearch size={32} className="text-muted-foreground" />}
             title="No packages match your search"
             description="We couldn't find any capabilities matching your current filters and query."
             actionText="Clear all filters"
@@ -178,7 +189,7 @@ function PackagesContent() {
           />
         ) : (
           <EmptyState
-            icon={<PackageSearch size={32} style={{ color: 'var(--text-muted)' }} />}
+            icon={<PackageSearch size={32} className="text-muted-foreground" />}
             title="The registry is empty"
             description="Be the first to publish an AI skill, agent, or workflow to the ecosystem."
             actionText="Learn to publish"
@@ -186,7 +197,7 @@ function PackagesContent() {
           />
         )
       ) : (
-        <div className={styles.grid}>
+        <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {packages.map((pkg, i) => (
             <PackageCard key={pkg.name} pkg={pkg} index={i} />
           ))}
@@ -194,24 +205,24 @@ function PackagesContent() {
       )}
 
       {!loading && totalPages > 1 && (
-        <div className={styles.pagination}>
-          <button
-            className="btn btnSecondary"
+        <div className="mt-8 flex items-center justify-center gap-4">
+          <Button
+            variant="outline"
             disabled={pageParam <= 1}
             onClick={() => handlePageChange(pageParam - 1)}
           >
             Previous
-          </button>
-          <span className={styles.pageInfo}>
+          </Button>
+          <span className="text-sm font-medium tabular-nums text-muted-foreground">
             Page {pageParam} of {totalPages}
           </span>
-          <button
-            className="btn btnSecondary"
+          <Button
+            variant="outline"
             disabled={pageParam >= totalPages}
             onClick={() => handlePageChange(pageParam + 1)}
           >
             Next
-          </button>
+          </Button>
         </div>
       )}
     </div>
@@ -220,8 +231,8 @@ function PackagesContent() {
 
 export default function PackagesPage() {
   return (
-    <main className={styles.main}>
-      <Suspense fallback={<div className="container" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>}>
+    <main className="min-h-screen">
+      <Suspense fallback={<div className="container mx-auto flex min-h-[60vh] items-center justify-center">Loading...</div>}>
         <PackagesContent />
       </Suspense>
     </main>

@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { Star, MessageSquare, BookOpen, Activity } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 export default function PackageTabs({ 
   readmeContent, 
@@ -13,57 +15,61 @@ export default function PackageTabs({
   const [activeTab, setActiveTab] = useState<'readme' | 'reviews' | 'discussions' | 'analytics'>('readme');
 
   return (
-    <div className="card" style={{ marginTop: '2rem', padding: '0', overflow: 'hidden' }}>
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-elevated)' }}>
+    <div className="mt-8 overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+      <div className="flex border-b border-border bg-muted/50">
         <button 
           onClick={() => setActiveTab('readme')}
-          style={{
-            flex: 1, padding: '1rem', background: 'transparent', border: 'none', color: activeTab === 'readme' ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: activeTab === 'readme' ? 600 : 400, cursor: 'pointer', borderBottom: activeTab === 'readme' ? '2px solid var(--accent)' : '2px solid transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
-          }}
+          className={cn(
+            "flex flex-1 items-center justify-center gap-2 border-b-2 p-4 text-sm font-medium transition-colors hover:text-foreground",
+            activeTab === 'readme' ? "border-primary text-foreground" : "border-transparent text-muted-foreground"
+          )}
         >
-          <BookOpen size={16} /> Readme
+          <BookOpen className="h-4 w-4" /> Readme
         </button>
         <button 
           onClick={() => setActiveTab('reviews')}
-          style={{
-            flex: 1, padding: '1rem', background: 'transparent', border: 'none', color: activeTab === 'reviews' ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: activeTab === 'reviews' ? 600 : 400, cursor: 'pointer', borderBottom: activeTab === 'reviews' ? '2px solid var(--accent)' : '2px solid transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
-          }}
+          className={cn(
+            "flex flex-1 items-center justify-center gap-2 border-b-2 p-4 text-sm font-medium transition-colors hover:text-foreground",
+            activeTab === 'reviews' ? "border-primary text-foreground" : "border-transparent text-muted-foreground"
+          )}
         >
-          <Star size={16} /> Reviews
+          <Star className="h-4 w-4" /> Reviews
         </button>
         <button 
           onClick={() => setActiveTab('discussions')}
-          style={{
-            flex: 1, padding: '1rem', background: 'transparent', border: 'none', color: activeTab === 'discussions' ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: activeTab === 'discussions' ? 600 : 400, cursor: 'pointer', borderBottom: activeTab === 'discussions' ? '2px solid var(--accent)' : '2px solid transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
-          }}
+          className={cn(
+            "flex flex-1 items-center justify-center gap-2 border-b-2 p-4 text-sm font-medium transition-colors hover:text-foreground",
+            activeTab === 'discussions' ? "border-primary text-foreground" : "border-transparent text-muted-foreground"
+          )}
         >
-          <MessageSquare size={16} /> Discussions
+          <MessageSquare className="h-4 w-4" /> Discussions
         </button>
         <button 
           onClick={() => setActiveTab('analytics')}
-          style={{
-            flex: 1, padding: '1rem', background: 'transparent', border: 'none', color: activeTab === 'analytics' ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: activeTab === 'analytics' ? 600 : 400, cursor: 'pointer', borderBottom: activeTab === 'analytics' ? '2px solid var(--accent)' : '2px solid transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
-          }}
+          className={cn(
+            "flex flex-1 items-center justify-center gap-2 border-b-2 p-4 text-sm font-medium transition-colors hover:text-foreground",
+            activeTab === 'analytics' ? "border-primary text-foreground" : "border-transparent text-muted-foreground"
+          )}
         >
-          <Activity size={16} /> Analytics
+          <Activity className="h-4 w-4" /> Analytics
         </button>
       </div>
 
-      <div style={{ padding: '2.5rem' }}>
+      <div className="p-8">
         {activeTab === 'readme' && (
-          <div style={{ color: 'var(--text-secondary)', lineHeight: '1.8' }}>
+          <div className="prose prose-invert max-w-none text-muted-foreground">
             {readmeContent}
           </div>
         )}
 
         {activeTab === 'reviews' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-              <h2 style={{ fontSize: '1.5rem', color: '#fff' }}>Community Reviews</h2>
-              <button className="btn btnPrimary">Write a Review</button>
+            <div className="mb-8 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-foreground">Community Reviews</h2>
+              <Button>Write a Review</Button>
             </div>
             
-            <div style={{ background: 'var(--bg-elevated)', padding: '2rem', borderRadius: 'var(--radius-md)', textAlign: 'center', color: 'var(--text-muted)' }}>
+            <div className="rounded-lg bg-muted/50 p-12 text-center text-muted-foreground">
               No reviews yet. Be the first to review {pkgName}!
             </div>
           </div>
@@ -71,12 +77,12 @@ export default function PackageTabs({
 
         {activeTab === 'discussions' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-              <h2 style={{ fontSize: '1.5rem', color: '#fff' }}>Discussions</h2>
-              <button className="btn btnPrimary">New Topic</button>
+            <div className="mb-8 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-foreground">Discussions</h2>
+              <Button>New Topic</Button>
             </div>
             
-            <div style={{ background: 'var(--bg-elevated)', padding: '2rem', borderRadius: 'var(--radius-md)', textAlign: 'center', color: 'var(--text-muted)' }}>
+            <div className="rounded-lg bg-muted/50 p-12 text-center text-muted-foreground">
               No active discussions. Start a thread!
             </div>
           </div>
@@ -84,31 +90,31 @@ export default function PackageTabs({
 
         {activeTab === 'analytics' && (
           <div>
-            <h2 style={{ fontSize: '1.5rem', color: '#fff', marginBottom: '2rem' }}>Package Analytics</h2>
+            <h2 className="mb-8 text-2xl font-bold text-foreground">Package Analytics</h2>
             
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-              <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '1.5rem' }}>
-                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>Total Executions</div>
-                <div style={{ fontSize: 'var(--text-3xl)', fontWeight: 'bold', color: 'var(--text-primary)' }}>12.4K</div>
+            <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
+                <div className="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">Total Executions</div>
+                <div className="text-3xl font-bold text-foreground">12.4K</div>
               </div>
-              <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '1.5rem' }}>
-                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>Growth Rate</div>
-                <div style={{ fontSize: 'var(--text-3xl)', fontWeight: 'bold', color: 'var(--success)' }}>+24%</div>
+              <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
+                <div className="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">Growth Rate</div>
+                <div className="text-3xl font-bold text-green-500">+24%</div>
               </div>
-              <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '1.5rem' }}>
-                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>Avg Runtime</div>
-                <div style={{ fontSize: 'var(--text-3xl)', fontWeight: 'bold', color: 'var(--text-primary)' }}>450ms</div>
+              <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
+                <div className="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">Avg Runtime</div>
+                <div className="text-3xl font-bold text-foreground">450ms</div>
               </div>
             </div>
 
-            <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '1.5rem' }}>
-              <h3 style={{ fontSize: '1rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>Install Trend (Last 7 Days)</h3>
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '4px', height: '150px' }}>
+            <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
+              <h3 className="mb-6 text-base font-medium text-muted-foreground">Install Trend (Last 7 Days)</h3>
+              <div className="flex h-[150px] items-end gap-1">
                 {[40, 65, 45, 80, 55, 90, 75].map((h, i) => (
-                  <div key={i} style={{ flex: 1, height: `${h}%`, background: 'var(--accent)', borderRadius: '4px 4px 0 0', opacity: 0.8 }} title={`${h} installs`} />
+                  <div key={i} className="flex-1 rounded-t-sm bg-primary opacity-80" style={{ height: `${h}%` }} title={`${h} installs`} />
                 ))}
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+              <div className="mt-3 flex justify-between text-xs text-muted-foreground">
                 <span>7 days ago</span>
                 <span>Today</span>
               </div>

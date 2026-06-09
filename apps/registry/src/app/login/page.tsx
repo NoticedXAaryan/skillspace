@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import styles from './page.module.css';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -38,47 +39,45 @@ export default function LoginPage() {
   }
 
   return (
-    <main className={styles.authPage}>
-      <div className={styles.authCard}>
-        <h1 className={styles.authTitle}>Welcome back</h1>
-        <p className={styles.authSubtitle}>Sign in to your SkillSpace account</p>
+    <main className="flex min-h-[80vh] items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md rounded-xl border border-border bg-card p-8 shadow-sm">
+        <h1 className="mb-2 text-center text-2xl font-bold tracking-tight text-foreground">Welcome back</h1>
+        <p className="mb-8 text-center text-sm text-muted-foreground">Sign in to your SkillSpace account</p>
 
-        {error && <div className={styles.error}>{error}</div>}
+        {error && <div className="mb-6 rounded-md bg-destructive/15 p-3 text-center text-sm font-medium text-destructive">{error}</div>}
 
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.field}>
-            <label className={styles.label}>Email</label>
-            <input
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium leading-none text-foreground">Email</label>
+            <Input
               type="email"
-              className="input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
             />
           </div>
-          <div className={styles.field}>
-            <label className={styles.label}>Password</label>
-            <input
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium leading-none text-foreground">Password</label>
+            <Input
               type="password"
-              className="input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
             />
           </div>
-          <div style={{ textAlign: 'right', marginTop: '-0.5rem', marginBottom: '1rem' }}>
-            <Link href="/forgot-password" style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>Forgot password?</Link>
+          <div className="-mt-2 mb-2 text-right">
+            <Link href="/forgot-password" className="text-sm text-muted-foreground hover:text-foreground">Forgot password?</Link>
           </div>
-          <button type="submit" className="btn btnPrimary" style={{ width: '100%', justifyContent: 'center' }} disabled={loading}>
+          <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Signing in...' : 'Sign In'}
-          </button>
+          </Button>
         </form>
 
-        <p className={styles.authFooter}>
+        <p className="mt-8 text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{' '}
-          <Link href="/register">Create one</Link>
+          <Link href="/register" className="font-medium text-foreground hover:underline">Create one</Link>
         </p>
       </div>
     </main>

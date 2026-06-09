@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import styles from './page.module.css';
+import { cn } from '@/lib/utils';
 
 export default function DocsSidebar() {
   const pathname = usePathname();
@@ -42,18 +42,23 @@ export default function DocsSidebar() {
   ];
 
   return (
-    <aside className={styles.sidebar}>
+    <aside className="static md:sticky md:top-[100px] h-auto md:h-[calc(100vh-120px)] md:overflow-y-auto border-b md:border-b-0 md:border-r border-border pb-6 md:pb-0 md:pr-6">
       {nav.map((group, i) => (
-        <div key={i} className={styles.navGroup}>
-          <div className={styles.navTitle}>{group.title}</div>
-          <ul className={styles.navList}>
+        <div key={i} className="mb-6">
+          <div className="mb-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase">{group.title}</div>
+          <ul className="flex flex-col gap-1">
             {group.items.map((item, j) => {
               const isActive = pathname === item.href || (pathname === '/docs' && item.href === '/docs/getting-started');
               return (
                 <li key={j}>
                   <Link 
                     href={item.href} 
-                    className={`${styles.navLink} ${isActive ? styles.navLinkActive : ''}`}
+                    className={cn(
+                      "block -ml-2 rounded-sm px-2 py-1 text-sm transition-colors",
+                      isActive 
+                        ? "bg-amber-500/10 font-medium text-amber-600" 
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    )}
                   >
                     {item.label}
                   </Link>

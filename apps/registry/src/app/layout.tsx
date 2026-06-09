@@ -1,5 +1,12 @@
 import type { Metadata } from 'next';
+import { Inter as FontSans } from 'next/font/google';
+import { cn } from '@/lib/utils';
 import './globals.css';
+
+const fontSans = FontSans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+});
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import CommandPalette from '@/components/CommandPalette';
@@ -16,8 +23,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <body className={cn("min-h-screen bg-background font-sans antialiased", fontSans.variable)}>
         <Navbar />
         {children}
         <Footer />

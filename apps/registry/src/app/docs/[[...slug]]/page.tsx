@@ -4,7 +4,6 @@ import { notFound } from 'next/navigation';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import CodeBlock from '@/components/CodeBlock';
 import ArchitectureDiagram from '@/components/ArchitectureDiagram';
-import styles from '../page.module.css';
 
 const components = {
   pre: CodeBlock,
@@ -44,13 +43,13 @@ export default async function DocPage({ params }: { params: Promise<{ slug?: str
     return (
       <>
         {title && (
-          <div className={styles.header}>
-            <h1 className={styles.title}>{title}</h1>
-            {description && <p className={styles.subtitle}>{description}</p>}
+          <div className="mb-10">
+            <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground">{title}</h1>
+            {description && <p className="text-lg leading-relaxed text-muted-foreground">{description}</p>}
           </div>
         )}
         
-        <div id="mdx-wrapper" className={styles.mdxContent}>
+        <div id="mdx-wrapper" className="prose prose-invert max-w-none text-muted-foreground prose-headings:text-foreground prose-a:text-primary hover:prose-a:underline prose-code:rounded prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:font-mono prose-code:text-[0.9em] prose-code:text-foreground">
           <MDXRemote source={content} components={components} />
         </div>
       </>

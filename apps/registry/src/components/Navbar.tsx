@@ -4,6 +4,9 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Search, Menu, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 export default function Navbar() {
   const [isAuth, setIsAuth] = useState(false);
@@ -22,8 +25,9 @@ export default function Navbar() {
     router.push('/');
   };
 
-  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && searchQuery.trim()) {
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
       router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
       setMobileMenuOpen(false);
     }
@@ -33,101 +37,75 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="navbar">
-        <Link href="/" className="navLogo">
+      <nav className="sticky top-0 z-50 flex h-14 items-center justify-between border-b bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
           SkillSpace
         </Link>
         
-        {/* Desktop Links & Search */}
-        <div className="navLinks" style={{ display: 'none' }}>
-          {/* We will handle responsiveness via an inline style hack or a generic class. 
-              Let's add a style block at the bottom to handle the media queries properly. */}
-        </div>
-
-        <div className="desktopNav" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-6)' }}>
-          <form onSubmit={(e) => { e.preventDefault(); if (searchQuery.trim()) router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`); setMobileMenuOpen(false); }} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', color: 'var(--text-muted)' }} />
-            <input 
-              className="input" 
+        <div className="hidden items-center gap-6 md:flex">
+          <form onSubmit={handleSearch} className="relative flex items-center">
+            <Search className="absolute left-2.5 h-4 w-4 text-muted-foreground" />
+            <Input 
+              type="search"
               placeholder="Search packages..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ paddingLeft: 'calc(var(--space-6) + var(--space-2))', width: '200px' }}
+              className="w-[200px] pl-9 lg:w-[300px]"
             />
           </form>
-          <div className="navLinks">
-            <Link href="/packages" className={pathname === '/packages' ? 'active' : ''}>Explore</Link>
-            <Link href="/docs" className={pathname.startsWith('/docs') ? 'active' : ''}>Docs</Link>
+          <div className="flex items-center gap-4 text-sm font-medium">
+            <Link href="/packages" className={cn("transition-colors hover:text-foreground", pathname === '/packages' ? 'text-foreground' : 'text-muted-foreground')}>Explore</Link>
+            <Link href="/docs" className={cn("transition-colors hover:text-foreground", pathname.startsWith('/docs') ? 'text-foreground' : 'text-muted-foreground')}>Docs</Link>
             {isAuth ? (
               <>
-                <Link href="/profile" className={pathname === '/profile' ? 'active' : ''}>Profile</Link>
-                <button onClick={handleSignOut} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)' }}>
-                  Sign Out
-                </button>
+                <Link href="/profile" className={cn("transition-colors hover:text-foreground", pathname === '/profile' ? 'text-foreground' : 'text-muted-foreground')}>Profile</Link>
+                <Button variant="ghost" onClick={handleSignOut}>Sign Out</Button>
               </>
             ) : (
               <>
-                <Link href="/login" className={pathname === '/login' ? 'active' : ''}>Sign In</Link>
-                <Link href="/register" className="btn btnPrimary">
-                  Get Started
+                <Link href="/login" className={cn("transition-colors hover:text-foreground", pathname === '/login' ? 'text-foreground' : 'text-muted-foreground')}>Sign In</Link>
+                <Link href="/register">
+                  <Button>Get Started</Button>
                 </Link>
               </>
             )}
           </div>
         </div>
 
-        {/* Mobile Hamburger */}
-        <button className="mobileMenuBtn" onClick={toggleMenu} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}>
-          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        <button className="md:hidden" onClick={toggleMenu}>
+          {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </nav>
 
-      {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="mobileMenu" style={{
-          position: 'fixed', top: '48px', left: 0, right: 0, bottom: 0,
-          background: 'var(--bg-base)', zIndex: 40, padding: 'var(--space-6)',
-          display: 'flex', flexDirection: 'column', gap: 'var(--space-4)'
-        }}>
-          <form onSubmit={(e) => { e.preventDefault(); if (searchQuery.trim()) router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`); setMobileMenuOpen(false); }} style={{ position: 'relative', display: 'flex', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
-            <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', color: 'var(--text-muted)' }} />
-            <input 
-              className="input" 
+        <div className="fixed inset-0 top-14 z-40 flex flex-col gap-4 bg-background p-6 md:hidden">
+          <form onSubmit={handleSearch} className="relative flex items-center">
+            <Search className="absolute left-2.5 h-4 w-4 text-muted-foreground" />
+            <Input 
+              type="search"
               placeholder="Search packages..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ paddingLeft: 'calc(var(--space-6) + var(--space-2))', width: '100%' }}
+              className="w-full pl-9"
             />
           </form>
-          <Link href="/packages" onClick={toggleMenu} className={pathname === '/packages' ? 'active' : ''} style={{ fontSize: 'var(--text-lg)' }}>Explore</Link>
-          <Link href="/docs" onClick={toggleMenu} className={pathname.startsWith('/docs') ? 'active' : ''} style={{ fontSize: 'var(--text-lg)' }}>Docs</Link>
+          <Link href="/packages" onClick={toggleMenu} className={cn("text-lg font-medium", pathname === '/packages' ? 'text-foreground' : 'text-muted-foreground')}>Explore</Link>
+          <Link href="/docs" onClick={toggleMenu} className={cn("text-lg font-medium", pathname.startsWith('/docs') ? 'text-foreground' : 'text-muted-foreground')}>Docs</Link>
           {isAuth ? (
             <>
-              <Link href="/profile" onClick={toggleMenu} className={pathname === '/profile' ? 'active' : ''} style={{ fontSize: 'var(--text-lg)' }}>Profile</Link>
-              <button onClick={() => { handleSignOut(); toggleMenu(); }} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: 'var(--text-lg)', fontWeight: 'var(--weight-medium)', textAlign: 'left', padding: 0 }}>
-                Sign Out
-              </button>
+              <Link href="/profile" onClick={toggleMenu} className={cn("text-lg font-medium", pathname === '/profile' ? 'text-foreground' : 'text-muted-foreground')}>Profile</Link>
+              <Button variant="ghost" onClick={() => { handleSignOut(); toggleMenu(); }} className="justify-start px-0 text-lg">Sign Out</Button>
             </>
           ) : (
             <>
-              <Link href="/login" onClick={toggleMenu} className={pathname === '/login' ? 'active' : ''} style={{ fontSize: 'var(--text-lg)' }}>Sign In</Link>
-              <Link href="/register" onClick={toggleMenu} className="btn btnPrimary" style={{ justifyContent: 'center', marginTop: 'var(--space-4)' }}>
-                Get Started
+              <Link href="/login" onClick={toggleMenu} className={cn("text-lg font-medium", pathname === '/login' ? 'text-foreground' : 'text-muted-foreground')}>Sign In</Link>
+              <Link href="/register" onClick={toggleMenu} className="mt-4">
+                <Button className="w-full">Get Started</Button>
               </Link>
             </>
           )}
         </div>
       )}
-
-      <style jsx>{`
-        @media (max-width: 768px) {
-          .desktopNav { display: none !important; }
-        }
-        @media (min-width: 769px) {
-          .mobileMenuBtn { display: none !important; }
-          .mobileMenu { display: none !important; }
-        }
-      `}</style>
     </>
   );
 }

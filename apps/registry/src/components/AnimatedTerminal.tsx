@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Terminal, Copy, Check } from 'lucide-react';
-import styles from './AnimatedTerminal.module.css';
+import { Button } from '@/components/ui/button';
 
 const COMMANDS = [
   'skillspace search summarizer',
@@ -29,20 +29,20 @@ export default function AnimatedTerminal() {
   };
 
   return (
-    <div className={styles.terminalContainer}>
-      <div className={styles.terminalHeader}>
-        <div className={styles.dots}>
-          <div className={styles.dot} style={{ background: '#FF5F56' }} />
-          <div className={styles.dot} style={{ background: '#FFBD2E' }} />
-          <div className={styles.dot} style={{ background: '#27C93F' }} />
+    <div className="mx-auto w-full max-w-2xl overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 shadow-2xl backdrop-blur-xl">
+      <div className="flex h-12 items-center justify-between border-b border-zinc-800 bg-zinc-900/50 px-4">
+        <div className="flex gap-2">
+          <div className="h-3 w-3 rounded-full bg-red-500" />
+          <div className="h-3 w-3 rounded-full bg-amber-500" />
+          <div className="h-3 w-3 rounded-full bg-green-500" />
         </div>
-        <button className={styles.copyBtn} onClick={handleCopy}>
-          {copied ? <Check size={14} className={styles.checkIcon} /> : <Copy size={14} />}
-        </button>
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-50" onClick={handleCopy}>
+          {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+        </Button>
       </div>
-      <div className={styles.terminalBody}>
-        <div className={styles.promptLine}>
-          <Terminal size={14} className={styles.promptIcon} />
+      <div className="flex min-h-[120px] items-center p-6 font-mono text-sm sm:text-base">
+        <div className="flex w-full items-center gap-3 text-zinc-300">
+          <Terminal className="h-5 w-5 text-primary" />
           <AnimatePresence mode="wait">
             <motion.div
               key={cmdIndex}
@@ -50,7 +50,7 @@ export default function AnimatedTerminal() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
-              className={styles.commandText}
+              className="flex-1"
             >
               {COMMANDS[cmdIndex]}
             </motion.div>
@@ -58,7 +58,7 @@ export default function AnimatedTerminal() {
           <motion.div
             animate={{ opacity: [1, 0] }}
             transition={{ repeat: Infinity, duration: 0.8 }}
-            className={styles.cursor}
+            className="h-5 w-2 bg-zinc-400"
           />
         </div>
       </div>

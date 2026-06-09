@@ -1,7 +1,6 @@
 'use client';
 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import styles from './Analytics.module.css';
 
 const MOCK_EXECUTIONS = [
   { name: 'Jan', value: 1200 },
@@ -21,17 +20,17 @@ const MOCK_TYPES = [
 
 export function ExecutionBarChart() {
   return (
-    <div style={{ width: '100%', height: 250, marginTop: '1rem' }}>
+    <div className="mt-4 h-[250px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={MOCK_EXECUTIONS}>
-          <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
-          <YAxis stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value / 1000}k`} />
+          <XAxis dataKey="name" stroke="currentColor" className="text-muted-foreground" fontSize={12} tickLine={false} axisLine={false} />
+          <YAxis stroke="currentColor" className="text-muted-foreground" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value / 1000}k`} />
           <Tooltip 
-            cursor={{ fill: 'var(--bg-elevated)' }}
-            contentStyle={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)' }}
-            itemStyle={{ color: 'var(--text-primary)' }}
+            cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
+            contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius)' }}
+            itemStyle={{ color: 'hsl(var(--foreground))' }}
           />
-          <Bar dataKey="value" fill="var(--accent)" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -40,7 +39,7 @@ export function ExecutionBarChart() {
 
 export function TypePieChart() {
   return (
-    <div style={{ width: '100%', height: 250, marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div className="mt-4 flex h-[250px] w-full items-center justify-center">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
@@ -58,8 +57,8 @@ export function TypePieChart() {
             ))}
           </Pie>
           <Tooltip 
-            contentStyle={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)' }}
-            itemStyle={{ color: 'var(--text-primary)' }}
+            contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius)' }}
+            itemStyle={{ color: 'hsl(var(--foreground))' }}
             formatter={(value) => [`${value}%`, 'Share']}
           />
         </PieChart>

@@ -1,83 +1,61 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Database, Server, Terminal, Box, Cog, Network } from 'lucide-react';
-import styles from './ArchitectureDiagram.module.css';
+import { Database, Server, Terminal, Box, Cog } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ArchitectureDiagramProps {
   type: 'full' | 'runtime' | 'workflow';
 }
 
+const Node = ({ icon: Icon, label, className }: { icon: any, label: string, className?: string }) => (
+  <div className={cn("flex flex-col items-center justify-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 text-sm font-medium shadow-sm backdrop-blur-sm transition-colors hover:border-zinc-700", className)}>
+    <Icon className="h-8 w-8 text-zinc-400" />
+    <span className="text-zinc-300">{label}</span>
+  </div>
+);
+
+const Connector = ({ horizontal = true }: { horizontal?: boolean }) => (
+  <div className={cn("relative overflow-hidden bg-zinc-800/50", horizontal ? "h-0.5 w-16" : "h-16 w-0.5")}>
+    <motion.div 
+      className={cn("absolute bg-primary", horizontal ? "inset-y-0 h-full w-1/2" : "inset-x-0 h-1/2 w-full")}
+      animate={horizontal ? { x: ['-100%', '200%'] } : { y: ['-100%', '200%'] }}
+      transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
+    />
+  </div>
+);
+
 export default function ArchitectureDiagram({ type }: ArchitectureDiagramProps) {
   if (type === 'runtime') {
     return (
-      <div className={styles.diagramWrapper}>
+      <div className="flex w-full items-center justify-center py-12">
         <motion.div 
-          className={styles.container}
+          className="flex flex-col items-center"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className={styles.node} style={{ gridColumn: '2', gridRow: '1' }}>
-            <Box className={styles.icon} />
-            <span>Sandbox Environment</span>
-          </div>
-          
-          <div className={styles.connectorVertical} style={{ gridColumn: '2', gridRow: '2' }}>
-            <motion.div 
-              className={styles.flowLine}
-              animate={{ y: ['-100%', '100%'] }}
-              transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }}
-            />
-          </div>
-
-          <div className={styles.node} style={{ gridColumn: '2', gridRow: '3', borderColor: 'var(--accent)' }}>
-            <Cog className={styles.icon} style={{ color: 'var(--accent)' }} />
-            <span>Execution Engine</span>
-          </div>
+          <Node icon={Box} label="Sandbox Environment" />
+          <Connector horizontal={false} />
+          <Node icon={Cog} label="Execution Engine" className="border-primary/50 [&>svg]:text-primary" />
         </motion.div>
       </div>
     );
   }
 
   return (
-    <div className={styles.diagramWrapper}>
+    <div className="flex w-full items-center justify-center overflow-x-auto py-12">
       <motion.div 
-        className={styles.container}
+        className="flex min-w-max items-center px-4"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <div className={styles.node} style={{ gridColumn: '1', gridRow: '2' }}>
-          <Terminal className={styles.icon} />
-          <span>Developer CLI</span>
-        </div>
-
-        <div className={styles.connectorHorizontal} style={{ gridColumn: '2', gridRow: '2' }}>
-          <motion.div 
-            className={styles.flowLineRight}
-            animate={{ x: ['-100%', '100%'] }}
-            transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
-          />
-        </div>
-
-        <div className={styles.node} style={{ gridColumn: '3', gridRow: '2', borderColor: 'var(--accent)' }}>
-          <Server className={styles.icon} style={{ color: 'var(--accent)' }} />
-          <span>Global Registry</span>
-        </div>
-
-        <div className={styles.connectorHorizontal} style={{ gridColumn: '4', gridRow: '2' }}>
-          <motion.div 
-            className={styles.flowLineRight}
-            animate={{ x: ['-100%', '100%'] }}
-            transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
-          />
-        </div>
-
-        <div className={styles.node} style={{ gridColumn: '5', gridRow: '2' }}>
-          <Database className={styles.icon} />
-          <span>Neon Postgres</span>
-        </div>
+        <Node icon={Terminal} label="Developer CLI" />
+        <Connector />
+        <Node icon={Server} label="Global Registry" className="border-primary/50 [&>svg]:text-primary" />
+        <Connector />
+        <Node icon={Database} label="Neon Postgres" />
       </motion.div>
     </div>
   );

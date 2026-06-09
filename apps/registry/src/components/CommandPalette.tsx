@@ -1,10 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Command } from 'cmdk';
 import { useRouter } from 'next/navigation';
 import { Search, Package, Book, User, Terminal, Copy, CheckCircle2 } from 'lucide-react';
-import styles from './CommandPalette.module.css';
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 export default function CommandPalette() {
   const [open, setOpen] = useState(false);
@@ -40,117 +48,110 @@ export default function CommandPalette() {
   };
 
   return (
-    <Command.Dialog open={open} onOpenChange={setOpen} className={styles.dialogWrapper} label="Global Command Menu">
-      <div className={styles.dialog}>
-        <div className={styles.inputWrapper}>
-          <Search size={18} className={styles.searchIcon} />
-          <Command.Input 
-            value={query}
-            onValueChange={setQuery}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleSearchSubmit();
-            }}
-            placeholder="Search packages, docs, or commands..." 
-            className={styles.input} 
-          />
-        </div>
-        <Command.List className={styles.list}>
-          <Command.Empty className={styles.empty}>
-            <p>No results found for "{query}".</p>
-            <button className="btn btnSecondary" onClick={handleSearchSubmit} style={{ marginTop: '1rem' }}>
-              Search Registry
-            </button>
-          </Command.Empty>
+    <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandInput 
+        placeholder="Search packages, docs, or commands..." 
+        value={query}
+        onValueChange={setQuery}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') handleSearchSubmit();
+        }}
+      />
+      <CommandList>
+        <CommandEmpty className="py-6 text-center text-sm">
+          <p>No results found for "{query}".</p>
+          <Button variant="secondary" onClick={handleSearchSubmit} className="mt-4">
+            Search Registry
+          </Button>
+        </CommandEmpty>
 
-          {!query && (
-            <Command.Group heading="Trending Searches">
-              <Command.Item onSelect={() => { router.push('/search?q=summarize'); setOpen(false); }} className={styles.item}>
-                <Search size={14} style={{ color: 'var(--text-muted)' }} /> summarize
-              </Command.Item>
-              <Command.Item onSelect={() => { router.push('/search?q=vision'); setOpen(false); }} className={styles.item}>
-                <Search size={14} style={{ color: 'var(--text-muted)' }} /> vision
-              </Command.Item>
-              <Command.Item onSelect={() => { router.push('/search?q=agent'); setOpen(false); }} className={styles.item}>
-                <Search size={14} style={{ color: 'var(--text-muted)' }} /> agent
-              </Command.Item>
-            </Command.Group>
-          )}
+        {!query && (
+          <CommandGroup heading="Trending Searches">
+            <CommandItem onSelect={() => { router.push('/search?q=summarize'); setOpen(false); }}>
+              <Search className="mr-2 h-4 w-4 text-muted-foreground" /> summarize
+            </CommandItem>
+            <CommandItem onSelect={() => { router.push('/search?q=vision'); setOpen(false); }}>
+              <Search className="mr-2 h-4 w-4 text-muted-foreground" /> vision
+            </CommandItem>
+            <CommandItem onSelect={() => { router.push('/search?q=agent'); setOpen(false); }}>
+              <Search className="mr-2 h-4 w-4 text-muted-foreground" /> agent
+            </CommandItem>
+          </CommandGroup>
+        )}
 
-          {!query && (
-            <Command.Group heading="Popular Tags">
-              <div style={{ display: 'flex', gap: '8px', padding: '8px 16px', flexWrap: 'wrap' }}>
-                <span className="tag" onClick={() => { router.push('/search?q=nlp'); setOpen(false); }} style={{ cursor: 'pointer' }}>nlp</span>
-                <span className="tag" onClick={() => { router.push('/search?q=computer-vision'); setOpen(false); }} style={{ cursor: 'pointer' }}>computer-vision</span>
-                <span className="tag" onClick={() => { router.push('/search?q=data-processing'); setOpen(false); }} style={{ cursor: 'pointer' }}>data-processing</span>
-                <span className="tag" onClick={() => { router.push('/search?q=workflow'); setOpen(false); }} style={{ cursor: 'pointer' }}>workflow</span>
-              </div>
-            </Command.Group>
-          )}
+        {!query && (
+          <CommandGroup heading="Popular Tags">
+            <div className="flex flex-wrap gap-2 p-2">
+              <Badge variant="secondary" className="cursor-pointer" onClick={() => { router.push('/search?q=nlp'); setOpen(false); }}>nlp</Badge>
+              <Badge variant="secondary" className="cursor-pointer" onClick={() => { router.push('/search?q=computer-vision'); setOpen(false); }}>computer-vision</Badge>
+              <Badge variant="secondary" className="cursor-pointer" onClick={() => { router.push('/search?q=data-processing'); setOpen(false); }}>data-processing</Badge>
+              <Badge variant="secondary" className="cursor-pointer" onClick={() => { router.push('/search?q=workflow'); setOpen(false); }}>workflow</Badge>
+            </div>
+          </CommandGroup>
+        )}
 
-          <Command.Group heading="Navigation">
-            <Command.Item onSelect={() => { router.push('/'); setOpen(false); }} className={styles.item}>
-              <Terminal size={14} /> Home
-            </Command.Item>
-            <Command.Item onSelect={() => { router.push('/packages'); setOpen(false); }} className={styles.item}>
-              <Package size={14} /> Browse Registry
-            </Command.Item>
-          </Command.Group>
+        <CommandGroup heading="Navigation">
+          <CommandItem onSelect={() => { router.push('/'); setOpen(false); }}>
+            <Terminal className="mr-2 h-4 w-4" /> Home
+          </CommandItem>
+          <CommandItem onSelect={() => { router.push('/packages'); setOpen(false); }}>
+            <Package className="mr-2 h-4 w-4" /> Browse Registry
+          </CommandItem>
+        </CommandGroup>
 
-          {/* Dynamic CLI Bridge */}
-          {(query.toLowerCase().includes('install') || query.toLowerCase().includes('run') || query.toLowerCase().includes('publish') || query.toLowerCase().startsWith('air')) && (
-            <Command.Group heading="CLI Commands (Click to copy)">
-              <Command.Item onSelect={() => handleCopyCommand('air install @core/agent')} className={styles.item}>
-                {copiedCmd === 'air install @core/agent' ? <CheckCircle2 size={14} color="var(--success)" /> : <Terminal size={14} color="var(--accent)" />}
-                <span>air install <span style={{ color: 'var(--text-secondary)' }}>@core/agent</span></span>
-                <Copy size={12} style={{ marginLeft: 'auto', opacity: 0.5 }} />
-              </Command.Item>
-              <Command.Item onSelect={() => handleCopyCommand('air run @core/summary')} className={styles.item}>
-                {copiedCmd === 'air run @core/summary' ? <CheckCircle2 size={14} color="var(--success)" /> : <Terminal size={14} color="var(--accent)" />}
-                <span>air run <span style={{ color: 'var(--text-secondary)' }}>@core/summary</span></span>
-                <Copy size={12} style={{ marginLeft: 'auto', opacity: 0.5 }} />
-              </Command.Item>
-              <Command.Item onSelect={() => handleCopyCommand('air publish')} className={styles.item}>
-                {copiedCmd === 'air publish' ? <CheckCircle2 size={14} color="var(--success)" /> : <Terminal size={14} color="var(--accent)" />}
-                <span>air publish</span>
-                <Copy size={12} style={{ marginLeft: 'auto', opacity: 0.5 }} />
-              </Command.Item>
-            </Command.Group>
-          )}
+        {(query.toLowerCase().includes('install') || query.toLowerCase().includes('run') || query.toLowerCase().includes('publish') || query.toLowerCase().startsWith('air')) && (
+          <CommandGroup heading="CLI Commands (Click to copy)">
+            <CommandItem onSelect={() => handleCopyCommand('air install @core/agent')}>
+              {copiedCmd === 'air install @core/agent' ? <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> : <Terminal className="mr-2 h-4 w-4 text-primary" />}
+              <span>air install <span className="text-muted-foreground">@core/agent</span></span>
+              <Copy className="ml-auto h-3 w-3 opacity-50" />
+            </CommandItem>
+            <CommandItem onSelect={() => handleCopyCommand('air run @core/summary')}>
+              {copiedCmd === 'air run @core/summary' ? <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> : <Terminal className="mr-2 h-4 w-4 text-primary" />}
+              <span>air run <span className="text-muted-foreground">@core/summary</span></span>
+              <Copy className="ml-auto h-3 w-3 opacity-50" />
+            </CommandItem>
+            <CommandItem onSelect={() => handleCopyCommand('air publish')}>
+              {copiedCmd === 'air publish' ? <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> : <Terminal className="mr-2 h-4 w-4 text-primary" />}
+              <span>air publish</span>
+              <Copy className="ml-auto h-3 w-3 opacity-50" />
+            </CommandItem>
+          </CommandGroup>
+        )}
 
-          <Command.Group heading="Documentation">
-            <Command.Item onSelect={() => { router.push('/docs/getting-started'); setOpen(false); }} className={styles.item}>
-              <Book size={14} /> Getting Started
-            </Command.Item>
-            <Command.Item onSelect={() => { router.push('/docs/concepts'); setOpen(false); }} className={styles.item}>
-              <Book size={14} /> Core Concepts
-            </Command.Item>
-            <Command.Item onSelect={() => { router.push('/docs/architecture'); setOpen(false); }} className={styles.item}>
-              <Book size={14} /> Architecture
-            </Command.Item>
-            <Command.Item onSelect={() => { router.push('/docs/cli'); setOpen(false); }} className={styles.item}>
-              <Terminal size={14} /> CLI Reference
-            </Command.Item>
-            <Command.Item onSelect={() => { router.push('/docs/sdk'); setOpen(false); }} className={styles.item}>
-              <Terminal size={14} /> TypeScript SDK
-            </Command.Item>
-            <Command.Item onSelect={() => { router.push('/docs/security'); setOpen(false); }} className={styles.item}>
-              <Book size={14} /> Security & Sandbox
-            </Command.Item>
-            <Command.Item onSelect={() => { router.push('/docs/agents'); setOpen(false); }} className={styles.item}>
-              <Book size={14} /> Building Agents
-            </Command.Item>
-            <Command.Item onSelect={() => { router.push('/docs/workflows'); setOpen(false); }} className={styles.item}>
-              <Book size={14} /> Chaining Workflows
-            </Command.Item>
-          </Command.Group>
+        <CommandGroup heading="Documentation">
+          <CommandItem onSelect={() => { router.push('/docs/getting-started'); setOpen(false); }}>
+            <Book className="mr-2 h-4 w-4" /> Getting Started
+          </CommandItem>
+          <CommandItem onSelect={() => { router.push('/docs/concepts'); setOpen(false); }}>
+            <Book className="mr-2 h-4 w-4" /> Core Concepts
+          </CommandItem>
+          <CommandItem onSelect={() => { router.push('/docs/architecture'); setOpen(false); }}>
+            <Book className="mr-2 h-4 w-4" /> Architecture
+          </CommandItem>
+          <CommandItem onSelect={() => { router.push('/docs/cli'); setOpen(false); }}>
+            <Terminal className="mr-2 h-4 w-4" /> CLI Reference
+          </CommandItem>
+          <CommandItem onSelect={() => { router.push('/docs/sdk'); setOpen(false); }}>
+            <Terminal className="mr-2 h-4 w-4" /> TypeScript SDK
+          </CommandItem>
+          <CommandItem onSelect={() => { router.push('/docs/security'); setOpen(false); }}>
+            <Book className="mr-2 h-4 w-4" /> Security & Sandbox
+          </CommandItem>
+          <CommandItem onSelect={() => { router.push('/docs/agents'); setOpen(false); }}>
+            <Book className="mr-2 h-4 w-4" /> Building Agents
+          </CommandItem>
+          <CommandItem onSelect={() => { router.push('/docs/workflows'); setOpen(false); }}>
+            <Book className="mr-2 h-4 w-4" /> Chaining Workflows
+          </CommandItem>
+        </CommandGroup>
 
-          <Command.Group heading="Account">
-            <Command.Item onSelect={() => { router.push('/profile'); setOpen(false); }} className={styles.item}>
-              <User size={14} /> My Profile
-            </Command.Item>
-          </Command.Group>
-        </Command.List>
-      </div>
-    </Command.Dialog>
+        <CommandGroup heading="Account">
+          <CommandItem onSelect={() => { router.push('/profile'); setOpen(false); }}>
+            <User className="mr-2 h-4 w-4" /> My Profile
+          </CommandItem>
+        </CommandGroup>
+      </CommandList>
+    </CommandDialog>
   );
 }

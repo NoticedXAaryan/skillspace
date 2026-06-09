@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import styles from './TableOfContents.module.css';
+import { cn } from '@/lib/utils';
 
 interface Heading {
   id: string;
@@ -14,11 +14,9 @@ export default function TableOfContents() {
   const [activeId, setActiveId] = useState<string>('');
 
   useEffect(() => {
-    // We add a slight delay to allow MDX to render
     const timeout = setTimeout(() => {
       const elements = Array.from(document.querySelectorAll('#mdx-wrapper h2, #mdx-wrapper h3'));
       const parsedHeadings = elements.map((el) => {
-        // If rehype-slug wasn't configured properly, fallback to generating ID
         if (!el.id) {
           el.id = el.textContent?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || '';
         }
@@ -58,13 +56,17 @@ export default function TableOfContents() {
   if (headings.length === 0) return null;
 
   return (
-    <div className={styles.tocContainer}>
-      <div className={styles.tocTitle}>On this page</div>
-      <ul className={styles.tocList}>
+    <div className="sticky top-20 flex flex-col gap-4">
+      <div className="text-sm font-semibold">On this page</div>
+      <ul className="flex flex-col gap-2.5 text-sm">
         {headings.map((h) => (
           <li 
             key={h.id} 
-            className={`${styles.tocItem} ${h.level === 3 ? styles.tocItemIndented : ''} ${activeId === h.id ? styles.tocItemActive : ''}`}
+            className={cn(
+              "transition-colors hover:text-foreground",
+              h.level === 3 ? "pl-4" : "",
+              activeId === h.id ? "font-medium text-foreground" : "text-muted-foreground"
+            )}
           >
             <a href={`#${h.id}`}>{h.text}</a>
           </li>
