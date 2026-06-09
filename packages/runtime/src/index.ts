@@ -21,6 +21,7 @@ export { McpManager, type McpServerConfig } from './mcp.js';
 export { WorkflowResolver } from './workflow-resolver.js';
 export { WorkflowEngine, type WorkflowRunOptions } from './workflow.js';
 export * from './env.js';
+export * from './sandbox.js';
 
 // Permissions
 export { PermissionEnforcer, PermissionDeniedError } from './permissions.js';

@@ -8,6 +8,7 @@ import type { RuntimeConfig } from './adapters/base.js';
 import { SessionManager } from './session.js';
 import { McpManager } from './mcp.js';
 import { TelemetryClient } from './telemetry.js';
+import { FileSystemSandbox, NetworkSandbox } from './sandbox.js';
 import { type Tool, type ChatMessage, type ExecutionResult } from '@skillspace/schema';
 
 export interface AgentRunOptions {
@@ -69,7 +70,8 @@ export class AgentExecutor {
     };
     console.error(`[AgentExecutor] Provider: ${provider}, BaseURL: ${runtimeConfig.baseUrl}, from config: ${JSON.stringify(loadConfig())}`);
 
-    const input = this.resolveInput(options.input, enforcer);
+    const fsSandbox = new FileSystemSandbox();
+    const input = this.resolveInput(options.input, enforcer, fsSandbox);
 
     // 4. Session memory
     let messages: ChatMessage[] = [];
@@ -180,15 +182,15 @@ export class AgentExecutor {
               // Built-in tools
               if (tc.function.name === 'builtin_filesystem_read') {
                 enforcer.check('filesystem.read');
-                const content = fs.readFileSync(args.path, 'utf-8');
+                const content = fsSandbox.readFileSync(args.path, 'utf-8');
                 messages.push({ role: 'tool', tool_call_id: tc.id, content });
               } else if (tc.function.name === 'builtin_filesystem_write') {
                 enforcer.check('filesystem.write');
-                fs.writeFileSync(args.path, args.content, 'utf-8');
+                fsSandbox.writeFileSync(args.path, args.content, 'utf-8');
                 messages.push({ role: 'tool', tool_call_id: tc.id, content: `Successfully wrote to ${args.path}` });
               } else if (tc.function.name === 'builtin_network_fetch') {
                 enforcer.check('network.fetch');
-                const res = await fetch(args.url);
+                const res = await NetworkSandbox.fetch(args.url);
                 const text = await res.text();
                 messages.push({ role: 'tool', tool_call_id: tc.id, content: text });
               } else {
@@ -285,11 +287,11 @@ export class AgentExecutor {
     }
   }
 
-  private resolveInput(input: string, _enforcer: PermissionEnforcer): string {
-    if (fs.existsSync(input)) {
-      const stat = fs.statSync(input);
+  private resolveInput(input: string, _enforcer: PermissionEnforcer, fsSandbox: FileSystemSandbox): string {
+    if (fsSandbox.existsSync(input)) {
+      const stat = fsSandbox.statSync(input);
       if (stat.isFile()) {
-        return fs.readFileSync(input, 'utf-8');
+        return fsSandbox.readFileSync(input, 'utf-8');
       }
     }
     return input;

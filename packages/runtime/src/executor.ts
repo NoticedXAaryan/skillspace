@@ -1,4 +1,3 @@
-import * as fs from 'node:fs';
 import type { ExecutionResult, RunOptions } from '@skillspace/schema';
 import { SkillResolver } from './resolver.js';
 import { PermissionEnforcer } from './permissions.js';
@@ -8,6 +7,7 @@ import type { RuntimeConfig } from './adapters/base.js';
 import { TelemetryClient } from './telemetry.js';
 import { LocalModelScreener } from './firewall/LocalModelScreener.js';
 import { McpRegistry } from './mcp/McpRegistry.js';
+import { FileSystemSandbox } from './sandbox.js';
 import type { Tool, ChatMessage } from '@skillspace/schema';
 
 // ---------------------------------------------------------------------------
@@ -58,7 +58,8 @@ export class Executor {
 
     // 2. Determine required permissions and enforce
     const enforcer = new PermissionEnforcer(skill.name, skill.permissions);
-    this.enforceInputPermissions(enforcer, options);
+    const fsSandbox = new FileSystemSandbox();
+    this.enforceInputPermissions(enforcer, options, fsSandbox);
 
     // 3. Resolve model and adapter
     const modelId = options.model || loadConfig().default_model || 'ollama/llama3.2';
@@ -85,7 +86,7 @@ export class Executor {
     };
 
     // 6. Read input (file path or string)
-    const input = this.resolveInput(options.input, enforcer);
+    const input = this.resolveInput(options.input, enforcer, fsSandbox);
 
     // Firewall Screening
     if (process.env.FIREWALL_ENABLED === 'true') {
@@ -213,7 +214,7 @@ export class Executor {
       // 11. Write output to file if specified
       if (options.output) {
         enforcer.check('filesystem.write');
-        fs.writeFileSync(options.output, result.output, 'utf-8');
+        fsSandbox.writeFileSync(options.output, result.output, 'utf-8');
       }
 
       TelemetryClient.sendEventSafe({
@@ -248,7 +249,8 @@ export class Executor {
 
     // 2. Enforce permissions
     const enforcer = new PermissionEnforcer(skill.name, skill.permissions);
-    this.enforceInputPermissions(enforcer, options);
+    const fsSandbox = new FileSystemSandbox();
+    this.enforceInputPermissions(enforcer, options, fsSandbox);
 
     // 3. Resolve model and adapter
     const modelId = options.model || loadConfig().default_model || 'ollama/llama3.2';
@@ -274,7 +276,7 @@ export class Executor {
       baseUrl: getBaseUrl(provider),
     };
 
-    const input = this.resolveInput(options.input, enforcer);
+    const input = this.resolveInput(options.input, enforcer, fsSandbox);
 
     // Firewall Screening
     if (process.env.FIREWALL_ENABLED === 'true') {
@@ -389,9 +391,9 @@ export class Executor {
   /**
    * Check permissions for the input type.
    */
-  private enforceInputPermissions(enforcer: PermissionEnforcer, options: RunOptions): void {
+  private enforceInputPermissions(enforcer: PermissionEnforcer, options: RunOptions, fsSandbox: FileSystemSandbox): void {
     // If input looks like a file path and file exists, require filesystem.read
-    if (options.input && fs.existsSync(options.input)) {
+    if (options.input && fsSandbox.existsSync(options.input)) {
       enforcer.check('filesystem.read');
     }
     if (options.output) {
@@ -402,15 +404,15 @@ export class Executor {
   /**
    * Resolve input — if it's a file path, read the file contents.
    */
-  private resolveInput(input: string, _enforcer: PermissionEnforcer): string {
-    if (fs.existsSync(input)) {
-      const stat = fs.statSync(input);
+  private resolveInput(input: string, _enforcer: PermissionEnforcer, fsSandbox: FileSystemSandbox): string {
+    if (fsSandbox.existsSync(input)) {
+      const stat = fsSandbox.statSync(input);
       if (stat.isFile()) {
-        return fs.readFileSync(input, 'utf-8');
+        return fsSandbox.readFileSync(input, 'utf-8');
       }
       if (stat.isDirectory()) {
         // Read all files in directory (shallow)
-        return this.readDirectoryContents(input);
+        return this.readDirectoryContents(input, fsSandbox);
       }
     }
     return input;
@@ -419,15 +421,15 @@ export class Executor {
   /**
    * Read all text files in a directory for input.
    */
-  private readDirectoryContents(dirPath: string): string {
-    const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+  private readDirectoryContents(dirPath: string, fsSandbox: FileSystemSandbox): string {
+    const entries = fsSandbox.readdirSync(dirPath, { withFileTypes: true });
     const contents: string[] = [];
 
     for (const entry of entries) {
       if (!entry.isFile()) continue;
       const filePath = `${dirPath}/${entry.name}`;
       try {
-        const content = fs.readFileSync(filePath, 'utf-8');
+        const content = fsSandbox.readFileSync(filePath, 'utf-8');
         contents.push(`--- ${entry.name} ---\n${content}`);
       } catch {
         // Skip binary / unreadable files
