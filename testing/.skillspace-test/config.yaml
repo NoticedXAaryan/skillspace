@@ -1,5 +1,0 @@
-registry_url: http://127.0.0.1:3001
-models:
-  ollama:
-    api_key: dummy
-    base_url: http://127.0.0.1:3005
