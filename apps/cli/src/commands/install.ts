@@ -167,7 +167,8 @@ export function registerInstallCommand(program: Command): void {
             // --------------------------------
 
             if (parsed.type === 'agent' || path.basename(manifestPath) === 'agent.yaml') {
-              const agent = cache.loadAgent(name, version);
+              const agent: any = cache.loadAgent(name, version);
+              // Support v1 agents that have a skills array
               if (agent.skills && agent.skills.length > 0) {
                 for (const skillDep of agent.skills) {
                   await installRecursively(skillDep.name, skillDep.version.replace('^', '').replace('~', ''));

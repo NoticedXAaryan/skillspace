@@ -1,161 +1,42 @@
-import { z } from 'zod';
+import { z } from 'zod'
+import { PersonaSchema, SCHEMA_VERSION } from './persona.schema.js'
 
-// ---------------------------------------------------------------------------
-// Permission types
-// ---------------------------------------------------------------------------
-export const VALID_PERMISSIONS = [
-  'filesystem.read',
-  'filesystem.write',
-  'network.fetch',
-  'tools.browser',
-  'tools.terminal',
-] as const;
-
-export const PermissionSchema = z.enum(VALID_PERMISSIONS);
-
-// ---------------------------------------------------------------------------
-// Output format
-// ---------------------------------------------------------------------------
-export const OutputFormatSchema = z.enum(['json', 'text', 'markdown']);
-
-// ---------------------------------------------------------------------------
-// Category
-// ---------------------------------------------------------------------------
-export const CategorySchema = z.enum([
-  'code',
-  'writing',
-  'analysis',
-  'security',
-  'devops',
-  'other',
-]);
-
-// ---------------------------------------------------------------------------
-// Sub-schemas
-// ---------------------------------------------------------------------------
-const InstructionsSchema = z.object({
-  system: z.string().min(1, 'System prompt is required'),
-  user_template: z
-    .string()
-    .min(1, 'User template is required')
-    .refine((t) => t.includes('{{input}}'), {
-      message: 'User template must contain {{input}} placeholder',
-    }),
-  output_format: OutputFormatSchema.default('text'),
-  output_schema: z.record(z.unknown()).optional(),
-});
-
-const ExampleSchema = z.object({
-  input: z.string(),
-  expected_output: z.union([z.string(), z.record(z.unknown())]),
-  model: z.string().optional(),
-});
-
-const EvaluationSchema = z.object({
-  benchmark_dataset: z.string().optional(),
-  passing_threshold: z.number().min(0).max(1).optional(),
-});
-
-const CompatibilityModelSchema = z.object({
-  id: z.string(),
-});
-
-const CompatibilitySchema = z.object({
-  models: z.array(CompatibilityModelSchema).optional(),
-  min_context_tokens: z.number().int().positive().optional(),
-});
-
-const SkillConfigSchema = z.object({
-  temperature: z.number().min(0).max(2).default(0.3),
-  max_tokens: z.number().int().positive().default(4000),
-  timeout_seconds: z.number().int().positive().default(30),
-});
-
-const McpServerRef = z.object({
-  name: z.string(),
-  transport: z.enum(['stdio', 'http']),
-  command: z.string().optional(),
-  url: z.string().url().optional(),
-  requiredScopes: z.array(z.string()),
-});
-
-// ---------------------------------------------------------------------------
-// Kebab-case name validation
-// ---------------------------------------------------------------------------
-const kebabCaseRegex = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
-
-// ---------------------------------------------------------------------------
-// Main Skill Schema
-// ---------------------------------------------------------------------------
+/**
+ * SkillSchema v2 — a versioned, publishable Persona Blueprint.
+ *
+ * A Skill is the unit of publication in the SkillSpace registry for personas.
+ * It is portable across any model via the MAL.
+ * It deliberately has NO tools, NO sub_agents, and NO memory.
+ * If you need those, you want an Agent.
+ */
 export const SkillSchema = z.object({
-  // Required fields
+  schemaVersion: z.literal(SCHEMA_VERSION),
   name: z
     .string()
-    .min(1)
-    .max(214)
-    .regex(kebabCaseRegex, 'Name must be kebab-case (e.g., my-skill-name)'),
+    .regex(/^@[\w-]+\/[\w-]+$/, 'Must be a scoped package name: @scope/name'),
   version: z
     .string()
-    .regex(
-      /^\d+\.\d+\.\d+$/,
-      'Version must be valid semver (MAJOR.MINOR.PATCH)',
-    ),
-  description: z.string().min(1).max(200),
-  author: z.string().min(1),
-  license: z.string().min(1),
+    .regex(/^\d+\.\d+\.\d+/, 'Must be valid semver: MAJOR.MINOR.PATCH'),
+  description: z.string().optional(),
+  author: z.string().optional(),
+  license: z.string().default('MIT'),
+  tags: z.array(z.string()).default([]),
+  persona: PersonaSchema,
+})
 
-  // Capability definition
-  instructions: InstructionsSchema,
+export type Skill = z.infer<typeof SkillSchema>
 
-  // Metadata
-  tags: z.array(z.string()).max(10).default([]),
-  category: CategorySchema.default('other'),
-
-  // Examples
-  examples: z.array(ExampleSchema).default([]),
-
-  // Evaluation
-  evaluation: EvaluationSchema.optional(),
-
-  // Permissions
-  permissions: z.array(PermissionSchema).default([]),
-
-  // MCP Servers
-  mcpServers: z.array(McpServerRef).optional().default([]),
-
-  // Dependencies
-  dependencies: z
-    .object({
-      skills: z.record(z.string()).optional(),
-      knowledge: z.record(z.string()).optional(),
-    })
-    .optional(),
-
-  // Compatibility
-  compatibility: CompatibilitySchema.optional(),
-
-  // Configuration
-  config: SkillConfigSchema.default({
-    temperature: 0.3,
-    max_tokens: 4000,
-    timeout_seconds: 30,
-  }),
-
-  // Environment requirements
-  env: z.record(z.string()).default({}),
-});
-
-// ---------------------------------------------------------------------------
-// Validation function
-// ---------------------------------------------------------------------------
-export type SkillValidationResult =
-  | { success: true; data: z.infer<typeof SkillSchema> }
-  | { success: false; errors: z.ZodError };
-
-export function validateSkill(data: unknown): SkillValidationResult {
-  const result = SkillSchema.safeParse(data);
-  if (result.success) {
-    return { success: true, data: result.data };
-  }
-  return { success: false, errors: result.error };
+/**
+ * Guard to detect legacy v1 skill.json files at CLI runtime.
+ * Used by `skillspace migrate` and `skillspace run` to give clear error messages.
+ */
+export function isLegacyV1Skill(raw: unknown): boolean {
+  if (typeof raw !== 'object' || raw === null) return false
+  const obj = raw as Record<string, unknown>
+  return (
+    !('schemaVersion' in obj) ||
+    (typeof obj.schemaVersion === 'number' && obj.schemaVersion < 2) ||
+    'instructions' in obj ||
+    'entrypoint' in obj
+  )
 }

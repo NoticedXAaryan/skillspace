@@ -1,4 +1,6 @@
-import type { Skill, ModelRequest, ExecutionResult } from '@skillspace/schema';
+import type { ModelRequest, ExecutionResult } from '@skillspace/schema';
+// NOTE: buildRequest() accepts a v1 Skill shape (with instructions, config).
+// The v2 schema has a different Skill shape. The type is `any` here for compat.
 
 // ---------------------------------------------------------------------------
 // Model Adapter Interface
@@ -23,7 +25,7 @@ export interface ModelAdapter {
    * Build a model-specific API request from skill instructions and user input.
    */
   buildRequest(
-    skill: Skill,
+    skill: any,
     input: string,
     config: RuntimeConfig,
   ): ModelRequest;

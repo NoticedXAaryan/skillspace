@@ -17,6 +17,8 @@ import { orgCommand } from './commands/org.js';
 import { envCommand } from './commands/environment.js';
 import { registerBenchmarkCommand } from './commands/benchmark.js';
 import { registerHelpCommand } from './commands/help.js';
+import { registerMigrateCommand } from './commands/migrate.js';
+import { registerExportCommand } from './commands/export.js';
 
 import chalk from 'chalk';
 import { c } from './ui/tokens/colors.js';
@@ -80,6 +82,8 @@ registerListCommand(program);
 registerUninstallCommand(program);
 registerInfoCommand(program);
 registerBenchmarkCommand(program);
+registerMigrateCommand(program);
+registerExportCommand(program);
 
 program.addCommand(agentCommand);
 program.addCommand(mcpCommand);

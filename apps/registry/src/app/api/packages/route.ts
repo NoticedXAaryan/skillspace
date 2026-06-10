@@ -86,7 +86,30 @@ export async function POST(req: NextRequest) {
       return error('VALIDATION_ERROR', 'Invalid metadata', 400, parsed.error.flatten());
     }
 
-    const { name, version, description, type, tags, isPrivate } = parsed.data;
+    const { name, version, description, type, tags, isPrivate, manifest } = parsed.data;
+
+    // --- SECURITY SCANNING ---
+    // Enforce prompt injection firewall at publish time for v2 Skills
+    if (type === 'skill' && manifest && 'persona' in manifest) {
+      const { scanPersona } = await import('@skillspace/runtime');
+      const persona = manifest.persona as any;
+      const scan = scanPersona({
+        system_prompt: persona?.system_prompt || '',
+        behavioral_guidelines: persona?.behavioral_guidelines || []
+      });
+
+      if (scan.status === 'BLOCKED') {
+        return error(
+          'SECURITY_BLOCKED', 
+          'Package blocked: Critical prompt injection patterns detected in persona', 
+          403, 
+          scan.findings
+        );
+      }
+      // Note: WARNING level findings are allowed through but could be flagged 
+      // in a future registry schema update.
+    }
+    // -------------------------
 
     // Read file buffer
     const arrayBuffer = await file.arrayBuffer();

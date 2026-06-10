@@ -1,8 +1,8 @@
 import * as fs from 'node:fs';
 import YAML from 'yaml';
 import * as semver from 'semver';
-import { type Agent, type Skill, AgentSchema } from '@skillspace/schema';
-import { SkillResolver } from './resolver.js';
+import { type Agent, AgentSchema } from '@skillspace/schema';
+
 import { SkillCache } from './cache.js';
 
 // ---------------------------------------------------------------------------
@@ -24,11 +24,10 @@ export class AgentNotFoundError extends Error {
 
 export class AgentResolver {
   private cache: SkillCache;
-  private skillResolver: SkillResolver;
 
-  constructor(cache?: SkillCache, skillResolver?: SkillResolver) {
+
+  constructor(cache?: SkillCache) {
     this.cache = cache ?? new SkillCache();
-    this.skillResolver = skillResolver ?? new SkillResolver(this.cache);
   }
 
   /**
@@ -75,17 +74,14 @@ export class AgentResolver {
   }
 
   /**
-   * Resolves the agent and all its skill dependencies.
+   * Resolves the agent. In v2, agents embed personas directly or by ref,
+   * rather than declaring a skills dependency array.
+   * This method is preserved for backward compatibility.
    */
-  resolveWithDependencies(name: string, versionRange?: string): { agent: Agent; skills: Skill[] } {
+  resolveWithDependencies(name: string, versionRange?: string): { agent: Agent; skills: any[] } {
     const agent = this.resolve(name, versionRange);
-    const resolvedSkills: Skill[] = [];
-
-    for (const skillRef of agent.skills) {
-      const skill = this.skillResolver.resolve(skillRef.name, skillRef.version);
-      resolvedSkills.push(skill);
-    }
-
-    return { agent, skills: resolvedSkills };
+    // v2 agents no longer have a skills array — they embed personas via ref or inline
+    return { agent, skills: [] };
   }
 }
+

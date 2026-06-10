@@ -63,3 +63,36 @@ export {
   type FirewallContext,
   type InjectionFirewall,
 } from './firewall/injectionFirewall.js';
+
+// v2 Persona Firewall
+export {
+  scanPersona,
+  type ScanResult,
+  type ScanFinding,
+  type ScanSeverity,
+  type ScanStatus,
+} from './firewall/persona-firewall.js';
+
+// v2 Model Resolver
+export {
+  resolveModel,
+  readUserConfig,
+  assertApiKey,
+  type ResolvedModel,
+  type UserConfig,
+  type Provider,
+} from './model-resolver.js';
+
+// v2 REPL Executor
+export {
+  startPersonaREPL,
+  composeSystemPrompt,
+  type REPLOptions,
+} from './repl-executor.js';
+
+// v2 Agent Orchestrator
+export {
+  buildExecutionPlan,
+  applyInputMapping,
+  type OrchestratorContext,
+} from './agent-orchestrator.js';

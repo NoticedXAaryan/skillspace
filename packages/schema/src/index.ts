@@ -1,8 +1,11 @@
 // @skillspace/schema — Shared types and validators
 
-// Schemas
-export { SkillSchema, PermissionSchema, OutputFormatSchema, CategorySchema, VALID_PERMISSIONS } from './skill.schema.js';
-export { AgentSchema } from './agent.schema.js';
+// v2 Schemas
+export { PersonaSchema, PersonaRefSchema, SCHEMA_VERSION } from './persona.schema.js';
+export { SkillSchema, isLegacyV1Skill } from './skill.schema.js';
+export { AgentSchema, SubAgentRefSchema, MCPRefSchema } from './agent.schema.js';
+
+// Other Schemas
 export { LockFileSchema } from './lockfile.schema.js';
 export { ManifestSchema } from './manifest.schema.js';
 export { WorkflowSchema } from './workflow.schema.js';
@@ -34,14 +37,15 @@ export {
 
 // Types
 export type {
+  Persona,
+  PersonaRef,
   Skill,
   Agent,
+  SubAgentRef,
+  MCPRef,
   Workflow,
   LockFile,
   Manifest,
-  Permission,
-  OutputFormat,
-  Category,
   PackageType,
   SkillConfig,
   ExecutionResult,

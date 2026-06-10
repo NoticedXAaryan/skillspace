@@ -34,12 +34,13 @@ export class AgentExecutor {
     const startTime = Date.now();
 
     // 1. Resolve agent
-    const { agent, skills } = this.resolver.resolveWithDependencies(options.agent);
+    // Cast to any for backward compatibility with v1 agent field access
+    const { agent, skills } = this.resolver.resolveWithDependencies(options.agent) as { agent: any; skills: any[] };
 
     // 2. Determine permissions and enforce for input reading
-    const combinedPermissions = new Set(agent.permissions);
+    const combinedPermissions = new Set(agent.permissions || []);
     for (const skill of skills) {
-      for (const p of skill.permissions) {
+      for (const p of (skill.permissions || [])) {
         combinedPermissions.add(p);
       }
     }
@@ -47,7 +48,7 @@ export class AgentExecutor {
     this.enforceInputPermissions(enforcer, options);
 
     // 3. Resolve model and adapter
-    const modelId = agent.model.id || loadConfig().default_model || 'ollama/llama3.2';
+    const modelId = agent.model?.id || loadConfig().default_model || 'ollama/llama3.2';
     const { adapter, modelName } = adapterRegistry.getAdapter(modelId);
 
     if (!adapter.buildChatRequest) {
@@ -63,8 +64,8 @@ export class AgentExecutor {
     const runtimeConfig: RuntimeConfig = {
       apiKey,
       modelId: modelName,
-      temperature: agent.model.config?.temperature ?? 0.7,
-      maxTokens: agent.model.config?.max_tokens ?? 4000,
+      temperature: agent.model?.config?.temperature ?? 0.7,
+      maxTokens: agent.model?.config?.max_tokens ?? 4000,
       timeoutSeconds: 60,
       baseUrl: getBaseUrl(provider),
     };
@@ -92,7 +93,7 @@ export class AgentExecutor {
     });
 
     // 5. Start declared MCP servers
-    for (const srv of agent.mcp_servers || []) {
+    for (const srv of agent.mcp_servers || agent.mcps || []) {
       try {
         await this.mcpManager.startServer(srv.name);
       } catch (err) {

@@ -1,5 +1,6 @@
 import type { Command } from 'commander';
-import { Executor, AgentExecutor, AgentResolver, resolveEnvForPackage } from '@skillspace/runtime';
+import { Executor, AgentExecutor, AgentResolver, SkillResolver, resolveEnvForPackage, startPersonaREPL } from '@skillspace/runtime';
+import { isLegacyV1Skill } from '@skillspace/schema';
 import { text, isCancel } from '@clack/prompts';
 import { intro } from '../ui/states/intro.js';
 import { createLoader } from '../ui/states/loader.js';
@@ -9,45 +10,80 @@ import { c } from '../ui/tokens/colors.js';
 
 export function registerRunCommand(program: Command): void {
   program
-    .command('run <skill>')
-    .description('Execute a skill or agent against an input')
-    .option('-i, --input <input>', 'Input text or file path')
+    .command('run <package>')
+    .description('Execute a Skill or Agent')
+    .option('-i, --input <input>', 'Input text or file path (v1 skills and agents only)')
     .option('-m, --model <model>', 'Model to use (e.g., ollama/llama3.2)')
-    .option('-o, --output <file>', 'Write output to file')
+    .option('-o, --output <file>', 'Write output to file (v1 skills and agents only)')
     .option('-t, --temperature <temp>', 'Override temperature', parseFloat)
     .option('--max-tokens <tokens>', 'Override max tokens', parseInt)
-    .option('--stream', 'Stream output in real-time')
+    .option('--stream', 'Stream output in real-time (v1 skills only)')
     .option('-y, --yes', 'Headless mode (strictly bypass interactive prompts)')
-    .action(async (skillName: string, opts) => {
-      const executor = new Executor();
+    .action(async (packageName: string, opts) => {
+      // --- ENVIRONMENT INJECTION ---
+      const pkgEnv = resolveEnvForPackage(packageName);
+      Object.assign(process.env, pkgEnv);
 
+      // --- RESOLUTION & ROUTING ---
+      let resolvedPackage: any;
+      let packageType: 'agent' | 'v1-skill' | 'v2-skill' = 'v1-skill';
+
+      try {
+        const agentResolver = new AgentResolver();
+        resolvedPackage = agentResolver.resolve(packageName);
+        packageType = 'agent';
+      } catch {
+        try {
+          const skillResolver = new SkillResolver();
+          resolvedPackage = skillResolver.resolve(packageName);
+          packageType = isLegacyV1Skill(resolvedPackage) ? 'v1-skill' : 'v2-skill';
+        } catch (err) {
+          errorOperational('Package not found', {
+            message: `Could not resolve "${packageName}" as a skill or agent.`,
+            hint: 'Run `skillspace list` to see installed packages.'
+          });
+          process.exit(1);
+        }
+      }
+
+      // --- ROUTE: V2 SKILL (REPL) ---
+      if (packageType === 'v2-skill') {
+        if (opts.yes || opts.input) {
+          errorOperational('Unsupported mode', {
+            message: 'v2 Skills are personas that run in an interactive REPL.',
+            hint: 'Remove --yes and --input flags to start the session.'
+          });
+          process.exit(1);
+        }
+
+        await startPersonaREPL(resolvedPackage, {
+          modelOverride: opts.model,
+          stream: opts.stream !== false,
+        });
+        return; // REPL handles its own exit
+      }
+
+      // --- ROUTE: AGENT OR V1 SKILL (Single-shot / Batch) ---
       let input = opts.input;
       const isInteractive = !input;
 
       if (isInteractive && opts.yes) {
         errorOperational('Input required', {
-          message: `Input is required for "${skillName}" in headless mode.`,
+          message: `Input is required for "${packageName}" in headless mode.`,
           hint: 'Use --input "your input".'
         });
         process.exit(1);
       }
 
       if (isInteractive) {
-        intro('run', skillName);
+        intro('run', packageName);
         console.log(c.textFaint('Type "exit" or "quit" to stop.\n'));
       }
-
-      // --- ENVIRONMENT INJECTION ---
-      const pkgEnv = resolveEnvForPackage(skillName);
-      Object.assign(process.env, pkgEnv);
-      // -----------------------------
 
       try {
         do {
           if (isInteractive) {
-            const inputPrompt = await text({
-              message: c.brand('❯'),
-            });
+            const inputPrompt = await text({ message: c.brand('❯') });
             if (isCancel(inputPrompt)) { 
               errorInline('Session ended.'); 
               process.exit(0); 
@@ -62,7 +98,7 @@ export function registerRunCommand(program: Command): void {
           }
 
           const runOptions = {
-            skill: skillName,
+            skill: packageName,
             input: input,
             model: opts.model,
             output: opts.output,
@@ -72,18 +108,8 @@ export function registerRunCommand(program: Command): void {
             },
           };
 
-          // Determine if this is an agent or a skill
-          let isAgent = false;
-          try {
-            const agentResolver = new AgentResolver();
-            agentResolver.resolve(skillName);
-            isAgent = true;
-          } catch {
-            // Not an agent — will run as skill
-          }
-
           if (opts.stream || isInteractive) {
-            if (isAgent) {
+            if (packageType === 'agent') {
               if (isInteractive) {
                 errorInline(`Streaming mode is not yet supported for agents.`);
               } else {
@@ -91,7 +117,8 @@ export function registerRunCommand(program: Command): void {
               }
               process.exit(1);
             }
-            // Streaming mode
+            // Streaming mode for v1-skill
+            const executor = new Executor();
             for await (const chunk of executor.runStream(runOptions)) {
               process.stdout.write(chunk);
             }
@@ -99,15 +126,13 @@ export function registerRunCommand(program: Command): void {
           } else {
             // Normal mode
             let result;
-            const loader = !opts.yes ? createLoader(`Executing ${skillName}`) : null;
+            const loader = !opts.yes ? createLoader(`Executing ${packageName}`) : null;
 
-            if (isAgent) {
+            if (packageType === 'agent') {
               const agentExecutor = new AgentExecutor();
-              result = await agentExecutor.run({
-                agent: skillName,
-                input: input,
-              });
+              result = await agentExecutor.run({ agent: packageName, input: input });
             } else {
+              const executor = new Executor();
               result = await executor.run(runOptions);
             }
 
@@ -134,3 +159,4 @@ export function registerRunCommand(program: Command): void {
       }
     });
 }
+

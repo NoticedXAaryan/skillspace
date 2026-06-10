@@ -1,4 +1,4 @@
-import type { Skill, ModelRequest, ExecutionResult } from '@skillspace/schema';
+import type { ModelRequest, ExecutionResult } from '@skillspace/schema';
 import type { ModelAdapter, RuntimeConfig } from './base.js';
 
 /**
@@ -11,7 +11,7 @@ export class GeminiAdapter implements ModelAdapter {
   readonly providerName = 'Google Gemini';
   readonly supportsStreaming = true;
 
-  buildRequest(skill: Skill, input: string, config: RuntimeConfig): ModelRequest {
+  buildRequest(skill: any, input: string, config: RuntimeConfig): ModelRequest {
     const userMessage = skill.instructions.user_template.replace('{{input}}', input);
     const modelId = config.modelId;
     const baseUrl =

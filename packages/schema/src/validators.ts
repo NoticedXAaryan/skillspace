@@ -1,22 +1,78 @@
 import YAML from 'yaml';
-import { ZodError, ZodIssueCode } from 'zod';
-import { validateSkill, type SkillValidationResult } from './skill.schema.js';
-import { validateAgent, type AgentValidationResult } from './agent.schema.js';
-import { validateLockFile, type LockFileValidationResult } from './lockfile.schema.js';
-import { validateManifest, type ManifestValidationResult } from './manifest.schema.js';
-import { validateWorkflow, type WorkflowValidationResult } from './workflow.schema.js';
+import { z, ZodError, ZodIssueCode } from 'zod';
+import { SkillSchema } from './skill.schema.js';
+import { AgentSchema } from './agent.schema.js';
+import { LockFileSchema } from './lockfile.schema.js';
+import { ManifestSchema } from './manifest.schema.js';
+import { WorkflowSchema } from './workflow.schema.js';
 
-// Re-export all validation functions
-export { validateSkill, validateAgent, validateLockFile, validateManifest, validateWorkflow };
+// ---------------------------------------------------------------------------
+// Validation result types
+// ---------------------------------------------------------------------------
 
-// Re-export result types
-export type {
-  SkillValidationResult,
-  AgentValidationResult,
-  LockFileValidationResult,
-  ManifestValidationResult,
-  WorkflowValidationResult,
-};
+export type SkillValidationResult =
+  | { success: true; data: z.infer<typeof SkillSchema> }
+  | { success: false; errors: ZodError };
+
+export type AgentValidationResult =
+  | { success: true; data: z.infer<typeof AgentSchema> }
+  | { success: false; errors: ZodError };
+
+export type LockFileValidationResult =
+  | { success: true; data: z.infer<typeof LockFileSchema> }
+  | { success: false; errors: ZodError };
+
+export type ManifestValidationResult =
+  | { success: true; data: z.infer<typeof ManifestSchema> }
+  | { success: false; errors: ZodError };
+
+export type WorkflowValidationResult =
+  | { success: true; data: z.infer<typeof WorkflowSchema> }
+  | { success: false; errors: ZodError };
+
+// ---------------------------------------------------------------------------
+// Validation functions
+// ---------------------------------------------------------------------------
+
+export function validateSkill(data: unknown): SkillValidationResult {
+  const result = SkillSchema.safeParse(data);
+  if (result.success) {
+    return { success: true, data: result.data };
+  }
+  return { success: false, errors: result.error };
+}
+
+export function validateAgent(data: unknown): AgentValidationResult {
+  const result = AgentSchema.safeParse(data);
+  if (result.success) {
+    return { success: true, data: result.data };
+  }
+  return { success: false, errors: result.error };
+}
+
+export function validateLockFile(data: unknown): LockFileValidationResult {
+  const result = LockFileSchema.safeParse(data);
+  if (result.success) {
+    return { success: true, data: result.data };
+  }
+  return { success: false, errors: result.error };
+}
+
+export function validateManifest(data: unknown): ManifestValidationResult {
+  const result = ManifestSchema.safeParse(data);
+  if (result.success) {
+    return { success: true, data: result.data };
+  }
+  return { success: false, errors: result.error };
+}
+
+export function validateWorkflow(data: unknown): WorkflowValidationResult {
+  const result = WorkflowSchema.safeParse(data);
+  if (result.success) {
+    return { success: true, data: result.data };
+  }
+  return { success: false, errors: result.error };
+}
 
 // ---------------------------------------------------------------------------
 // Helper to create a ZodError for YAML parse failures

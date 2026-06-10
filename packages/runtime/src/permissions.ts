@@ -1,4 +1,12 @@
-import { VALID_PERMISSIONS } from '@skillspace/schema';
+// v2 uses freeform permission strings. This list is kept for backward compatibility
+// with v1 skills that declare permissions from this fixed set.
+const VALID_PERMISSIONS = [
+  'filesystem.read',
+  'filesystem.write',
+  'network.fetch',
+  'tools.browser',
+  'tools.terminal',
+] as const;
 
 // ---------------------------------------------------------------------------
 // Error types

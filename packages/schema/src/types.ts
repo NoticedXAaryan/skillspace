@@ -1,18 +1,24 @@
 import { z } from 'zod';
-import { SkillSchema } from './skill.schema.js';
-import { AgentSchema } from './agent.schema.js';
 import { LockFileSchema } from './lockfile.schema.js';
 import { ManifestSchema } from './manifest.schema.js';
 
 // ---------------------------------------------------------------------------
-// Inferred TypeScript types from Zod schemas
+// v2 Schema re-exports
 // ---------------------------------------------------------------------------
 
-/** A fully validated skill definition */
-export type Skill = z.infer<typeof SkillSchema>;
+export { SCHEMA_VERSION } from './persona.schema.js'
+export type { Persona, PersonaRef } from './persona.schema.js'
+export { PersonaSchema, PersonaRefSchema } from './persona.schema.js'
 
-/** A fully validated agent definition */
-export type Agent = z.infer<typeof AgentSchema>;
+export type { Skill } from './skill.schema.js'
+export { SkillSchema, isLegacyV1Skill } from './skill.schema.js'
+
+export type { Agent, SubAgentRef, MCPRef } from './agent.schema.js'
+export { AgentSchema, SubAgentRefSchema, MCPRefSchema } from './agent.schema.js'
+
+// ---------------------------------------------------------------------------
+// Other inferred TypeScript types from Zod schemas
+// ---------------------------------------------------------------------------
 
 /** A fully validated workflow definition */
 export type Workflow = z.infer<typeof import('./workflow.schema.js').WorkflowSchema>;
@@ -33,15 +39,6 @@ export type UserMessage = z.infer<typeof import('./chat.schema.js').UserMessageS
 export type AssistantMessage = z.infer<typeof import('./chat.schema.js').AssistantMessageSchema>;
 export type ToolCall = z.infer<typeof import('./chat.schema.js').ToolCallSchema>;
 export type ToolResultMessage = z.infer<typeof import('./chat.schema.js').ToolResultMessageSchema>;
-
-/** Valid permission strings */
-export type Permission = z.infer<typeof import('./skill.schema.js').PermissionSchema>;
-
-/** Valid output format */
-export type OutputFormat = z.infer<typeof import('./skill.schema.js').OutputFormatSchema>;
-
-/** Valid category */
-export type Category = z.infer<typeof import('./skill.schema.js').CategorySchema>;
 
 /** Package types */
 export type PackageType = 'skill' | 'agent' | 'workflow' | 'mcp' | 'knowledge';

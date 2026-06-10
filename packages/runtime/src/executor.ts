@@ -1,4 +1,7 @@
 import type { ExecutionResult, RunOptions } from '@skillspace/schema';
+// NOTE: The v1 executor uses v1 Skill fields (instructions, config, permissions, mcpServers)
+// which no longer exist in the v2 schema. We use `any` for the resolved skill type here.
+// New v2 Skills use the REPL executor (repl-executor.ts) instead of this code path.
 import { SkillResolver } from './resolver.js';
 import { PermissionEnforcer } from './permissions.js';
 import { adapterRegistry } from './adapters/registry.js';
@@ -53,8 +56,8 @@ export class Executor {
   async run(options: RunOptions): Promise<ExecutionResult> {
     const startTime = Date.now();
 
-    // 1. Resolve skill from local cache
-    const skill = this.resolver.resolve(options.skill);
+    // 1. Resolve skill from local cache (v1 legacy path — cast to any for v1 field access)
+    const skill: any = this.resolver.resolve(options.skill);
 
     // 2. Determine required permissions and enforce
     const enforcer = new PermissionEnforcer(skill.name, skill.permissions);
@@ -244,8 +247,8 @@ export class Executor {
    * Execute a skill with streaming output.
    */
   async *runStream(options: RunOptions): AsyncGenerator<string> {
-    // 1. Resolve skill
-    const skill = this.resolver.resolve(options.skill);
+    // 1. Resolve skill (v1 legacy path — cast to any for v1 field access)
+    const skill: any = this.resolver.resolve(options.skill);
 
     // 2. Enforce permissions
     const enforcer = new PermissionEnforcer(skill.name, skill.permissions);

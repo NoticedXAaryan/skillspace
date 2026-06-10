@@ -1,4 +1,4 @@
-import type { Skill, ModelRequest, ExecutionResult } from '@skillspace/schema';
+import type { ModelRequest, ExecutionResult } from '@skillspace/schema';
 import type { ModelAdapter, RuntimeConfig } from './base.js';
 
 /**
@@ -13,7 +13,7 @@ export class OllamaAdapter implements ModelAdapter {
   readonly providerName = 'Ollama (Local)';
   readonly supportsStreaming = true;
 
-  buildRequest(skill: Skill, input: string, config: RuntimeConfig): ModelRequest {
+  buildRequest(skill: any, input: string, config: RuntimeConfig): ModelRequest {
     const userMessage = skill.instructions.user_template.replace('{{input}}', input);
 
     return {
