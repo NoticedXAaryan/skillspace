@@ -20,6 +20,8 @@ type DashboardData = {
   user: {
     name: string;
     email: string;
+    storageUsed: number;
+    storageQuota: number;
   }
 };
 
@@ -105,8 +107,17 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
                 <p className="text-4xl font-bold text-white tracking-tight">{data.entities.length}</p>
               </div>
               <div className="p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md">
-                <h3 className="text-neutral-400 text-sm font-medium mb-2 uppercase tracking-wider">Global Rank</h3>
-                <p className="text-4xl font-bold text-cyan-400 tracking-tight">#42</p>
+                <h3 className="text-neutral-400 text-sm font-medium mb-2 uppercase tracking-wider">Storage Used</h3>
+                <p className="text-2xl font-bold text-purple-400 tracking-tight">
+                  {(data.user.storageUsed / (1024 * 1024)).toFixed(2)} MB 
+                  <span className="text-sm text-neutral-500 ml-1">/ {(data.user.storageQuota / (1024 * 1024)).toFixed(0)} MB</span>
+                </p>
+                <div className="w-full bg-white/10 h-2 rounded-full mt-3 overflow-hidden">
+                  <div 
+                    className="bg-purple-500 h-full rounded-full" 
+                    style={{ width: `${Math.min(100, (data.user.storageUsed / data.user.storageQuota) * 100)}%` }}
+                  />
+                </div>
               </div>
             </div>
             
