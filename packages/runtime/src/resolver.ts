@@ -1,5 +1,7 @@
+import * as fs from 'node:fs';
+import YAML from 'yaml';
 import * as semver from 'semver';
-import type { Skill } from '@skillspace/schema';
+import { type Skill, SkillSchema } from '@skillspace/schema';
 import { SkillCache } from './cache.js';
 
 // ---------------------------------------------------------------------------
@@ -55,6 +57,16 @@ export class SkillResolver {
    * @returns The resolved Skill object
    */
   resolve(name: string, versionRange?: string): Skill {
+    // 1. Check if name is a local file path
+    if (name.endsWith('.yaml') || name.startsWith('./') || name.startsWith('.\\') || name.startsWith('/') || name.match(/^[a-zA-Z]:\\/)) {
+      if (fs.existsSync(name)) {
+        const content = fs.readFileSync(name, 'utf-8');
+        const parsed = YAML.parse(content);
+        return SkillSchema.parse(parsed);
+      }
+      throw new Error(`Local skill file not found: ${name}`);
+    }
+
     const versions = this.cache.getInstalledVersions(name);
 
     if (versions.length === 0) {

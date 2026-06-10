@@ -32,6 +32,14 @@ export function registerInstallCommand(program: Command): void {
       const cwd = process.cwd();
       let lock = readLockFile(cwd) || createEmptyLockFile();
 
+      if (pkgName.endsWith('.yaml') || pkgName.startsWith('./') || pkgName.startsWith('.\\') || pkgName.startsWith('/') || pkgName.match(/^[a-zA-Z]:\\/)) {
+        errorOperational('Local path provided', {
+          message: `Cannot "install" a local file.`,
+          hint: `To run a local skill or agent, use: air run ${pkgName}`
+        });
+        process.exit(1);
+      }
+
       if (!opts.yes) {
         intro('install', `AIR Registry Installer`);
       }

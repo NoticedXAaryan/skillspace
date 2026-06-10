@@ -1,0 +1,19 @@
+name: test-mcp
+version: 1.0.0
+description: An MCP Server
+author: notic
+license: MIT
+tags:
+  - mcp
+category: other
+instructions:
+  system: You are an expert at test-mcp. You have access to the tools provided by
+    this MCP server.
+  user_template: "{{input}}"
+  output_format: text
+mcpServers:
+  - name: test-mcp
+    transport: stdio
+    command: npx tsx src/index.ts
+    requiredScopes: []
+permissions: []

@@ -51,3 +51,6 @@ graphify-out/
 
 # TypeScript build info
 *.tsbuildinfo
+
+# Local skills testing
+playground-skills/

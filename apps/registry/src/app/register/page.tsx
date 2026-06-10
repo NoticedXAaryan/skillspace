@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { AssistedPasswordConfirmation } from '@/components/ui/assisted-password-confirmation';
 
 export default function RegisterPage() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordsMatch, setPasswordsMatch] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -24,6 +26,10 @@ export default function RegisterPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!passwordsMatch) {
+      setError('Passwords do not match.');
+      return;
+    }
     setLoading(true);
     setError('');
 
@@ -99,6 +105,14 @@ export default function RegisterPage() {
               </div>
             )}
           </div>
+          
+          {password && (
+            <AssistedPasswordConfirmation 
+              password={password} 
+              onMatch={setPasswordsMatch} 
+            />
+          )}
+
           <div className="mb-4 text-sm leading-relaxed text-muted-foreground">
             By creating an account, you agree to our <Link href="/terms" className="text-foreground hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-foreground hover:underline">Privacy Policy</Link>.
           </div>

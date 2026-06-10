@@ -1,11 +1,11 @@
-import styles from './Contributors.module.css';
-import { Trophy, TrendingUp, Sparkles, Star, Package, Award } from 'lucide-react';
+export const dynamic = 'force-dynamic';
+import { Trophy, Sparkles, Star, Package, Award } from 'lucide-react';
 import { PrismaClient } from '@prisma/client';
 import Link from 'next/link';
+import { HeroSection } from '@/components/ui/hero-odyssey';
+import { Card, CardContent } from '@/components/ui/card';
 
 const prisma = new PrismaClient();
-
-export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Contributors — SkillSpace',
@@ -37,80 +37,108 @@ export default async function ContributorsPage() {
   }));
 
   return (
-    <main className="container">
-      <div className={styles.header}>
-        <h1><Trophy className={styles.headerIcon} /> Contributor Leaderboard</h1>
-        <p>Recognizing the developers building the open AI ecosystem.</p>
-      </div>
+    <main className="min-h-screen bg-black pb-24">
+      <HeroSection 
+        title="Contributor Leaderboard"
+        subtitle="Recognizing the developers building the open AI ecosystem."
+        align="center"
+        badge={{ text: "Community" }}
+      />
 
-      <div className={styles.grid}>
-        {/* Hall of Fame */}
-        <section className={styles.mainSection} style={{ marginBottom: '3rem' }}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle} style={{ color: '#f59e0b' }}><Award size={20} /> Hall of Fame</h2>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
-            <div style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%)', border: '1px solid rgba(245, 158, 11, 0.2)', borderRadius: 'var(--radius-lg)', padding: '2rem', textAlign: 'center' }}>
-              <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#f59e0b', margin: '0 auto 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', color: '#fff', fontWeight: 'bold' }}>A</div>
-              <h3 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', marginBottom: '0.25rem' }}>@alice-ai</h3>
-              <p style={{ color: '#f59e0b', fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '1rem' }}>Contributor of the Month</p>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Recognized for building the core vision processing pipeline.</p>
-            </div>
-            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '2rem', textAlign: 'center' }}>
-               <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'var(--bg-elevated)', border: '2px solid var(--border-subtle)', margin: '0 auto 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>B</div>
-              <h3 style={{ fontSize: '1.25rem', color: 'var(--text-primary)', marginBottom: '0.25rem' }}>@bob-builder</h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1rem' }}>Community MVP (May 2026)</p>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Resolved over 50 community issues in the LangChain integration.</p>
-            </div>
-          </div>
-
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}><Trophy size={20} /> All-Time Leaderboard</h2>
-          </div>
+      <div className="container mx-auto px-6 max-w-6xl relative z-10 -mt-4">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-10">
           
-          <div className={styles.list}>
-            {displayUsers.map((user, index) => (
-              <div key={user.username} className={styles.row}>
-                <div className={styles.rank}>{index + 1}</div>
-                <div className={styles.avatarWrap}>
-                  <div className={styles.avatarFallback}>{user.username[0].toUpperCase()}</div>
-                </div>
-                <div className={styles.userInfo}>
-                  <Link href={`/profile/${user.username}`} className={styles.username}>
-                    @{user.username}
-                  </Link>
-                  <p className={styles.bio}>{user.bio || 'Open source contributor'}</p>
-                </div>
-                <div className={styles.stats}>
-                  <div className={styles.stat}>
-                    <Package size={14} /> {user.packages}
-                  </div>
-                  <div className={styles.stat}>
-                    <Star size={14} /> {user.followers}
-                  </div>
-                </div>
+          {/* Main Content */}
+          <div className="flex flex-col gap-10">
+            {/* Hall of Fame */}
+            <section>
+              <div className="flex items-center gap-2 mb-6 border-b border-amber-500/20 pb-3">
+                <Award className="w-6 h-6 text-amber-500" />
+                <h2 className="text-xl font-bold text-amber-500">Hall of Fame</h2>
               </div>
-            ))}
-          </div>
-        </section>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
+                <Card className="bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20 relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(245,158,11,0.1),transparent_50%)]" />
+                  <CardContent className="p-8 flex flex-col items-center text-center relative z-10">
+                    <div className="w-20 h-20 rounded-full bg-amber-500 flex items-center justify-center text-3xl font-bold text-black mb-4 group-hover:scale-110 transition-transform duration-500 shadow-[0_0_20px_rgba(245,158,11,0.3)]">
+                      A
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-1">@alice-ai</h3>
+                    <p className="text-amber-500 font-bold text-sm mb-4">Contributor of the Month</p>
+                    <p className="text-sm text-neutral-400">Recognized for building the core vision processing pipeline.</p>
+                  </CardContent>
+                </Card>
 
-        <div className={styles.sideBoards}>
-          <div className={styles.smallBoard}>
-            <div className={styles.boardHeader}>
-              <Sparkles size={18} style={{ color: 'var(--success)' }} />
-              <h3>Rising Stars</h3>
-            </div>
-            <div className={styles.listSmall}>
-               <div className={styles.rowSmall}>
-                 <Link href="/profile/new-dev" className={styles.username}>@new-dev</Link>
-                 <span style={{ fontSize: 'var(--text-xs)', color: 'var(--success)' }}>+450%</span>
-               </div>
-               <div className={styles.rowSmall}>
-                 <Link href="/profile/creative-ai" className={styles.username}>@creative-ai</Link>
-                 <span style={{ fontSize: 'var(--text-xs)', color: 'var(--success)' }}>+320%</span>
-               </div>
-            </div>
+                <Card className="bg-neutral-950 border-white/10 group">
+                  <CardContent className="p-8 flex flex-col items-center text-center">
+                    <div className="w-20 h-20 rounded-full bg-neutral-900 border-2 border-white/10 flex items-center justify-center text-3xl font-bold text-neutral-600 mb-4 group-hover:border-white/20 transition-colors">
+                      B
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-1">@bob-builder</h3>
+                    <p className="text-neutral-400 font-medium text-sm mb-4">Community MVP (May 2026)</p>
+                    <p className="text-sm text-neutral-400">Resolved over 50 community issues in the LangChain integration.</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="flex items-center gap-2 mb-6 border-b border-white/10 pb-3">
+                <Trophy className="w-6 h-6 text-white" />
+                <h2 className="text-xl font-bold text-white">All-Time Leaderboard</h2>
+              </div>
+              
+              <div className="flex flex-col gap-3">
+                {displayUsers.map((user, index) => (
+                  <div key={user.username} className="flex items-center gap-4 bg-neutral-950/50 hover:bg-neutral-900/80 border border-white/5 hover:border-cyan-500/30 rounded-xl p-4 transition-all duration-300">
+                    <div className="w-8 text-center font-mono font-bold text-neutral-500 text-lg">
+                      {index + 1}
+                    </div>
+                    <div className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center font-bold text-white shrink-0">
+                      {user.username[0].toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <Link href={`/profile/${user.username}`} className="text-base font-bold text-white hover:text-cyan-400 transition-colors truncate block">
+                        @{user.username}
+                      </Link>
+                      <p className="text-sm text-neutral-500 truncate">{user.bio || 'Open source contributor'}</p>
+                    </div>
+                    <div className="flex items-center gap-4 shrink-0">
+                      <div className="flex items-center gap-1.5 text-sm font-mono text-neutral-400">
+                        <Package className="w-4 h-4 text-cyan-500" /> {user.packages}
+                      </div>
+                      <div className="flex items-center gap-1.5 text-sm font-mono text-neutral-400">
+                        <Star className="w-4 h-4 text-amber-500" /> {user.followers}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
           </div>
+
+          {/* Sidebar */}
+          <aside className="flex flex-col gap-6">
+            <Card className="bg-neutral-950 border-white/10 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.1),transparent_70%)]" />
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2 mb-6">
+                  <Sparkles className="w-5 h-5 text-emerald-500" />
+                  <h3 className="font-bold text-white">Rising Stars</h3>
+                </div>
+                <div className="flex flex-col gap-4">
+                   <div className="flex items-center justify-between">
+                     <Link href="/profile/new-dev" className="text-sm font-medium text-neutral-300 hover:text-cyan-400 transition-colors">@new-dev</Link>
+                     <span className="text-xs font-mono font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded">+450%</span>
+                   </div>
+                   <div className="flex items-center justify-between">
+                     <Link href="/profile/creative-ai" className="text-sm font-medium text-neutral-300 hover:text-cyan-400 transition-colors">@creative-ai</Link>
+                     <span className="text-xs font-mono font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded">+320%</span>
+                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          </aside>
+
         </div>
       </div>
     </main>

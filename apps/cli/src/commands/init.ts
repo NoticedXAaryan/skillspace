@@ -1,5 +1,6 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { scaffoldMcpServer } from './mcp-scaffold.js';
 import type { Command } from 'commander';
 import YAML from 'yaml';
 import { ensureSkillspaceDir } from '@skillspace/runtime';
@@ -20,6 +21,7 @@ export function registerInitCommand(program: Command): void {
     .option('-d, --description <description>', 'Project description')
     .option('-c, --category <category>', 'Project category')
     .option('-a, --author <author>', 'Project author')
+    .option('-l, --lang <lang>', 'Language for MCP server (typescript, javascript, python, go, rust, java)')
     .action(async (opts) => {
       const startTime = Date.now();
       const cwd = process.cwd();
@@ -44,34 +46,41 @@ export function registerInitCommand(program: Command): void {
 
       if (!projectType) projectType = 'skill';
 
-      if (projectType === 'skill' || projectType === 'agent') {
-        const ext = projectType === 'agent' ? 'agent.yaml' : 'skill.yaml';
-        const manifestPath = path.join(cwd, ext);
+      let lang = opts.lang;
+      if (projectType === 'mcp' && !lang && !opts.yes) {
+        const langPrompt = await select({
+          message: 'Choose a language for your MCP Server:',
+          options: [
+            { value: 'typescript', label: 'TypeScript (Node)' },
+            { value: 'javascript', label: 'JavaScript (Node)' },
+            { value: 'python', label: 'Python' },
+            { value: 'go', label: 'Go' },
+            { value: 'rust', label: 'Rust' },
+            { value: 'java', label: 'Java' },
+          ],
+        });
+        if (isCancel(langPrompt)) { errorInline('Cancelled.'); process.exit(0); }
+        lang = langPrompt as string;
+      }
+      if (projectType === 'mcp' && !lang) lang = 'typescript';
 
-        if (fs.existsSync(manifestPath)) {
-          errorOperational('File conflict', { 
-            message: `${ext} already exists in this directory.`,
-            hint: 'Change directories or remove the file first.'
-          });
-          process.exit(1);
-        }
+      let projectName = opts.name || 'my-air-project';
+      let description = opts.description || (projectType === 'mcp' ? 'An MCP Server' : `An AIR ${projectType}`);
+      let author = opts.author || process.env.USER || process.env.USERNAME || 'unknown';
+      let category = opts.category || 'other';
 
-        let projectName = opts.name || path.basename(cwd);
-        let description = opts.description || `An AIR ${projectType}`;
-        let author = opts.author || process.env.USER || process.env.USERNAME || 'unknown';
-        let category = opts.category || 'other';
+      if (!opts.yes) {
+        if (opts.type) intro('init', `AIR ${projectType.toUpperCase()} Setup`);
 
-        if (!opts.yes) {
-          if (opts.type) intro('init', `AIR ${projectType.toUpperCase()} Setup`);
+        const namePrompt = await text({ message: 'Project name (or . for current dir):', initialValue: projectName, placeholder: projectName });
+        if (isCancel(namePrompt)) { errorInline('Cancelled.'); process.exit(0); }
+        projectName = namePrompt;
 
-          const namePrompt = await text({ message: 'Project name:', initialValue: projectName, placeholder: projectName });
-          if (isCancel(namePrompt)) { errorInline('Cancelled.'); process.exit(0); }
-          projectName = namePrompt;
+        const descPrompt = await text({ message: 'Description:', initialValue: description, placeholder: description });
+        if (isCancel(descPrompt)) { errorInline('Cancelled.'); process.exit(0); }
+        description = descPrompt;
 
-          const descPrompt = await text({ message: 'Description:', initialValue: description, placeholder: description });
-          if (isCancel(descPrompt)) { errorInline('Cancelled.'); process.exit(0); }
-          description = descPrompt;
-
+        if (projectType !== 'mcp') {
           const authorPrompt = await text({ message: 'Author:', initialValue: author, placeholder: author });
           if (isCancel(authorPrompt)) { errorInline('Cancelled.'); process.exit(0); }
           author = authorPrompt;
@@ -91,13 +100,33 @@ export function registerInitCommand(program: Command): void {
           if (isCancel(categoryPrompt)) { errorInline('Cancelled.'); process.exit(0); }
           category = categoryPrompt as string;
         }
+      }
+
+      const targetDir = projectName === '.' ? cwd : path.join(cwd, projectName);
+      if (!fs.existsSync(targetDir)) {
+        fs.mkdirSync(targetDir, { recursive: true });
+      }
+
+      const finalProjectName = projectName === '.' ? path.basename(cwd) : projectName;
+
+      if (projectType === 'skill' || projectType === 'agent') {
+        const ext = projectType === 'agent' ? 'agent.yaml' : 'skill.yaml';
+        const manifestPath = path.join(targetDir, ext);
+
+        if (fs.existsSync(manifestPath)) {
+          errorOperational('File conflict', { 
+            message: `${ext} already exists in ${targetDir}.`,
+            hint: 'Change directories or remove the file first.'
+          });
+          process.exit(1);
+        }
 
         const loader = !opts.yes ? createLoader(`Generating ${ext}`) : null;
 
         let manifest: any;
         if (projectType === 'skill') {
           manifest = {
-            name: projectName,
+            name: finalProjectName,
             version: '1.0.0',
             description,
             author,
@@ -105,7 +134,7 @@ export function registerInitCommand(program: Command): void {
             tags: [category],
             category,
             instructions: {
-              system: `You are an expert at ${projectName}.`,
+              system: `You are an expert at ${finalProjectName}.`,
               user_template: `{{input}}`,
               output_format: 'text'
             },
@@ -113,13 +142,13 @@ export function registerInitCommand(program: Command): void {
           };
         } else {
           manifest = {
-            name: projectName,
+            name: finalProjectName,
             version: '1.0.0',
             description,
             author,
+            license: 'MIT',
             type: 'agent',
-            instructions: `You are an autonomous agent for ${projectName}.`,
-            model: 'ollama/llama3.2',
+            model: { id: 'ollama/llama3.2' },
             skills: []
           };
         }
@@ -129,137 +158,18 @@ export function registerInitCommand(program: Command): void {
 
         if (loader) {
           loader.succeed(`Generated ${ext}`);
-          successCritical('Project initialized.', `${projectName} has been scaffolded successfully.`, [
+          successCritical('Project initialized.', `${finalProjectName} has been scaffolded successfully.`, [
             ['Publish', `air publish`],
-            ['Run locally', `air run ${projectName}`]
+            ['Run locally', `air run ${projectName === '.' ? ext : path.join(projectName, ext)}`]
           ]);
           outro(Date.now() - startTime);
         } else {
-          successStandard(`Initialized AIR ${projectType} "${projectName}"`, {
+          successStandard(`Initialized AIR ${projectType} "${finalProjectName}"`, {
             'Created file': ext
           });
         }
       } else if (projectType === 'mcp') {
-        const pkgJsonPath = path.join(cwd, 'package.json');
-        if (fs.existsSync(pkgJsonPath)) {
-          errorOperational('File conflict', { 
-            message: 'package.json already exists in this directory.',
-            hint: 'Change directories or remove the file first.'
-          });
-          process.exit(1);
-        }
-
-        let projectName = opts.name || path.basename(cwd);
-        let description = opts.description || 'An MCP Server';
-        
-        if (!opts.yes) {
-          if (opts.type) intro('init', 'AIR MCP Server Setup');
-          
-          const namePrompt = await text({ message: 'Project name:', initialValue: projectName, placeholder: projectName });
-          if (isCancel(namePrompt)) { errorInline('Cancelled.'); process.exit(0); }
-          projectName = namePrompt;
-
-          const descPrompt = await text({ message: 'Description:', initialValue: description, placeholder: description });
-          if (isCancel(descPrompt)) { errorInline('Cancelled.'); process.exit(0); }
-          description = descPrompt;
-        }
-
-        const loader = !opts.yes ? createLoader('Scaffolding MCP Server project') : null;
-
-        const pkgJson = {
-          name: projectName,
-          version: "1.0.0",
-          description: description,
-          type: "module",
-          bin: {
-            [projectName]: "./build/index.js"
-          },
-          scripts: {
-            "build": "tsc",
-            "start": "node build/index.js"
-          },
-          dependencies: {
-            "@modelcontextprotocol/sdk": "latest"
-          },
-          devDependencies: {
-            "@types/node": "^20.0.0",
-            "typescript": "^5.0.0"
-          }
-        };
-
-        const tsconfig = {
-          compilerOptions: {
-            target: "ES2022",
-            module: "Node16",
-            moduleResolution: "Node16",
-            outDir: "./build",
-            rootDir: "./src",
-            strict: true,
-            esModuleInterop: true,
-            skipLibCheck: true,
-            forceConsistentCasingInFileNames: true
-          },
-          include: ["src/**/*"]
-        };
-
-        const indexTs = `import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
-
-const server = new Server(
-  { name: '${projectName}', version: '1.0.0' },
-  { capabilities: { tools: {} } }
-);
-
-server.setRequestHandler(ListToolsRequestSchema, async () => {
-  return {
-    tools: [
-      {
-        name: 'hello_world',
-        description: 'A simple hello world tool',
-        inputSchema: { type: 'object', properties: {} },
-      },
-    ],
-  };
-});
-
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  if (request.params.name === 'hello_world') {
-    return { content: [{ type: 'text', text: 'Hello from MCP!' }] };
-  }
-  throw new Error('Tool not found');
-});
-
-async function main() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error('MCP Server running on stdio');
-}
-
-main().catch((error) => {
-  console.error('Server error:', error);
-  process.exit(1);
-});
-`;
-
-        fs.writeFileSync(pkgJsonPath, JSON.stringify(pkgJson, null, 2), 'utf-8');
-        fs.writeFileSync(path.join(cwd, 'tsconfig.json'), JSON.stringify(tsconfig, null, 2), 'utf-8');
-        fs.mkdirSync(path.join(cwd, 'src'), { recursive: true });
-        fs.writeFileSync(path.join(cwd, 'src', 'index.ts'), indexTs, 'utf-8');
-
-        if (loader) {
-          loader.succeed('Scaffolded MCP Server');
-          successCritical('MCP Server initialized.', `Your Typescript boilerplate is ready.`, [
-            ['Install', 'npm install'],
-            ['Build', 'npm run build'],
-            ['Start', 'npm start']
-          ]);
-          outro(Date.now() - startTime);
-        } else {
-          successStandard(`Initialized MCP Server "${projectName}"`, {
-            'Created files': 'package.json, tsconfig.json, src/index.ts'
-          });
-        }
+        await scaffoldMcpServer(targetDir, projectName, finalProjectName, description, author, lang as string, !!opts.yes, startTime);
       } else {
         errorInline(`Unknown type: ${projectType}`);
         process.exit(1);

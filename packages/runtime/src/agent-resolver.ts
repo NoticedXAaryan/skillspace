@@ -1,5 +1,7 @@
+import * as fs from 'node:fs';
+import YAML from 'yaml';
 import * as semver from 'semver';
-import type { Agent, Skill } from '@skillspace/schema';
+import { type Agent, type Skill, AgentSchema } from '@skillspace/schema';
 import { SkillResolver } from './resolver.js';
 import { SkillCache } from './cache.js';
 
@@ -33,6 +35,15 @@ export class AgentResolver {
    * Resolve an agent by name and optional version range.
    */
   resolve(name: string, versionRange?: string): Agent {
+    if (name.endsWith('.yaml') || name.startsWith('./') || name.startsWith('.\\') || name.startsWith('/') || name.match(/^[a-zA-Z]:\\/)) {
+      if (fs.existsSync(name)) {
+        const content = fs.readFileSync(name, 'utf-8');
+        const parsed = YAML.parse(content);
+        return AgentSchema.parse(parsed);
+      }
+      throw new Error(`Local agent file not found: ${name}`);
+    }
+
     const versions = this.cache.getInstalledAgentVersions(name);
 
     if (versions.length === 0) {

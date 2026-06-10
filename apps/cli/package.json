@@ -2,6 +2,7 @@
   "name": "@air/cli",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "AIR CLI — install, run, and publish AI capabilities",
   "bin": {
     "air": "./dist/index.js"

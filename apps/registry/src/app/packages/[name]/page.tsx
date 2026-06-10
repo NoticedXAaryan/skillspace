@@ -5,6 +5,7 @@ import Link from 'next/link';
 import prisma from '@/lib/prisma';
 import PackageTabs from './PackageTabs';
 import { Badge } from '@/components/ui/badge';
+import { AnimatedTerminal } from '@/components/ui/animated-terminal';
 
 export const dynamic = 'force-dynamic';
 
@@ -183,12 +184,8 @@ export default async function PackagePage({ params }: { params: Promise<{ name: 
               </div>
               
               {/* Quick Install CLI Block */}
-              <div className="mt-10 flex items-center justify-between rounded-lg border border-border bg-black/80 px-6 py-4 shadow-inner">
-                <div className="flex items-center gap-4 font-mono text-sm text-zinc-300">
-                  <Terminal className="h-4 w-4 text-primary" />
-                  <span>air install <span className="text-primary">{pkg.name}</span></span>
-                </div>
-                <InstallCard pkgName={pkg.name} />
+              <div className="mt-10">
+                <AnimatedTerminal command={`skillspace install ${pkg.name}`} />
               </div>
             </div>
           </div>
