@@ -126,6 +126,7 @@ export function registerInitCommand(program: Command): void {
         let manifest: any;
         if (projectType === 'skill') {
           manifest = {
+            schemaVersion: 2,
             name: finalProjectName,
             version: '1.0.0',
             description,
@@ -133,12 +134,17 @@ export function registerInitCommand(program: Command): void {
             license: 'MIT',
             tags: [category],
             category,
-            instructions: {
-              system: `You are an expert at ${finalProjectName}.`,
-              user_template: `{{input}}`,
-              output_format: 'text'
+            persona: {
+              system_prompt: `You are an expert at ${finalProjectName}.`,
+              guidelines: [
+                "Always be helpful and concise"
+              ],
+              tone: "professional"
             },
-            permissions: []
+            capabilities: {
+              tools: [],
+              mcpServers: []
+            }
           };
         } else {
           manifest = {

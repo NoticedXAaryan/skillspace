@@ -1,0 +1,13 @@
+name: "@air/test-skill"
+version: 1.0.0
+description: A test skill
+author: Aaryan
+license: MIT
+tags:
+  - Development
+category: Development
+instructions:
+  system: You are an expert at @air/test-skill.
+  user_template: "{{input}}"
+  output_format: text
+permissions: []

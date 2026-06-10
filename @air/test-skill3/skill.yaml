@@ -1,0 +1,17 @@
+schemaVersion: 2
+name: "@air/test-skill3"
+version: 1.0.0
+description: An SkillSpace skill
+author: notic
+license: MIT
+tags:
+  - other
+category: other
+persona:
+  system_prompt: You are an expert at @air/test-skill3.
+  guidelines:
+    - Always be helpful and concise
+  tone: professional
+capabilities:
+  tools: []
+  mcpServers: []
