@@ -151,6 +151,19 @@ export default function ProfilePage() {
               Sign Out
             </Button>
           </div>
+
+          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+            <h2 className="mb-4 border-b border-border pb-2 text-xl font-bold text-foreground">Security</h2>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1">
+                <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Two-Factor Auth</span>
+                <p className="text-sm text-muted-foreground mb-2">Protect your account with an extra layer of security.</p>
+                <Button variant="outline" className="w-full" onClick={() => router.push('/profile/2fa')}>
+                  Configure 2FA
+                </Button>
+              </div>
+            </div>
+          </div>
         </aside>
 
         <div className="flex min-w-0 flex-col gap-8">

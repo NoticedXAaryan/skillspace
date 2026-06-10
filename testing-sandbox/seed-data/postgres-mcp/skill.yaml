@@ -1,0 +1,7 @@
+name: "@air/postgres-mcp"
+version: "1.0.0"
+description: "Direct database access layer"
+type: "mcp"
+mcp:
+  url: "http://localhost:8000/postgres"
+  authType: "bearer"

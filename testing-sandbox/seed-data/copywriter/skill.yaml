@@ -1,0 +1,14 @@
+name: "@air/copywriter"
+version: "1.0.0"
+description: "Generates high-converting marketing copy"
+type: "skill"
+persona:
+  system_prompt: "You are the copywriter expert."
+  guidelines:
+    - "Do your job perfectly."
+  tone: "professional"
+capabilities:
+  tools:
+    - name: "search_trends"
+    - name: "generate_text"
+  mcpServers: []

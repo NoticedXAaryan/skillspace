@@ -1,0 +1,7 @@
+name: "@air/slack-mcp"
+version: "1.0.0"
+description: "Sends and reads messages from Slack channels"
+type: "mcp"
+mcp:
+  url: "http://localhost:8000/slack"
+  authType: "bearer"

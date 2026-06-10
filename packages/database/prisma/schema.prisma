@@ -8,22 +8,30 @@ datasource db {
 }
 
 model User {
-  id           String  @id @default(uuid())
-  username     String  @unique
-  email        String  @unique
-  passwordHash String
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Better-Auth Relations
+  sessions      Session[]
+  accounts      Account[]
+  twoFactors    TwoFactor[]
+
+  // Legacy/Custom Fields
+  username     String? @unique
   plan         String  @default("free")
-  verified     Boolean @default(false)
 
   // Profile Fields
-  avatar  String?
   banner  String?
   bio     String?
   github  String?
   website String?
   twitter String?
 
-  createdAt          DateTime            @default(now())
   packages           Package[]
   orgMemberships     OrgMember[]
   executionLogs      ExecutionLog[]
@@ -42,6 +50,54 @@ model User {
   roadmapVotes       RoadmapVote[]
 
   onboarding UserOnboarding?
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+}
+
+model TwoFactor {
+  id          String   @id
+  secret      String
+  backupCodes String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime?
+  updatedAt   DateTime?
 }
 
 model UserOnboarding {

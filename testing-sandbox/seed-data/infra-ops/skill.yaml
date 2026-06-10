@@ -1,0 +1,13 @@
+name: "@air/infra-ops"
+version: "1.0.0"
+description: "Monitors AWS and manages Terraform"
+type: "agent"
+persona:
+  system_prompt: "You are an agent managing infra-ops workflows."
+  guidelines:
+    - "Coordinate skills effectively."
+  tone: "orchestrator"
+capabilities:
+  skills:
+    - "@air/aws-expert"
+  mcpServers: []

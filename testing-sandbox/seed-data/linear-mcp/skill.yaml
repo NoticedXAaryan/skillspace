@@ -1,0 +1,7 @@
+name: "@air/linear-mcp"
+version: "1.0.0"
+description: "Issue tracking and sprint management"
+type: "mcp"
+mcp:
+  url: "http://localhost:8000/linear"
+  authType: "bearer"

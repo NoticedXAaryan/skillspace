@@ -1,0 +1,7 @@
+name: "@air/stripe-mcp"
+version: "1.0.0"
+description: "Manages subscriptions and payments"
+type: "mcp"
+mcp:
+  url: "http://localhost:8000/stripe"
+  authType: "bearer"

@@ -1,42 +1,24 @@
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { NextRequest } from 'next/server';
+import { betterAuth } from "better-auth";
+import { prismaAdapter } from "better-auth/adapters/prisma";
+import { twoFactor } from "better-auth/plugins";
+import { prisma } from "./prisma";
 
-const JWT_SECRET = process.env.JWT_SECRET as string;
-if (!JWT_SECRET) throw new Error("JWT_SECRET is not defined");
-
-const JWT_EXPIRY = '7d';
-
-export async function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, 12);
-}
-
-export async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  return bcrypt.compare(password, hash);
-}
-
-export function signJwt(payload: { userId: string; username: string; email: string }): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRY });
-}
-
-export function verifyJwt(token: string): { userId: string; username: string; email: string } | null {
-  try {
-    return jwt.verify(token, JWT_SECRET) as { userId: string; username: string; email: string };
-  } catch {
-    return null;
-  }
-}
-
-export function getTokenFromRequest(req: NextRequest): string | null {
-  const authHeader = req.headers.get('authorization');
-  if (authHeader?.startsWith('Bearer ')) {
-    return authHeader.slice(7);
-  }
-  return null;
-}
-
-export function getUserFromRequest(req: NextRequest): { userId: string; username: string; email: string } | null {
-  const token = getTokenFromRequest(req);
-  if (!token) return null;
-  return verifyJwt(token);
-}
+export const auth = betterAuth({
+  database: prismaAdapter(prisma, {
+    provider: "postgresql", // or "mysql", "sqlite"
+  }),
+  emailAndPassword: {
+    enabled: true,
+  },
+  socialProviders: {
+    github: {
+      clientId: process.env.GITHUB_CLIENT_ID as string,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+    },
+  },
+  plugins: [
+    twoFactor({
+      issuer: "AIR Registry",
+    }),
+  ]
+});

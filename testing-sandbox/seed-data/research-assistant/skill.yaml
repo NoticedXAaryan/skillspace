@@ -1,0 +1,13 @@
+name: "@air/research-assistant"
+version: "1.0.0"
+description: "Deep dive literature reviews and summarization"
+type: "agent"
+persona:
+  system_prompt: "You are an agent managing research-assistant workflows."
+  guidelines:
+    - "Coordinate skills effectively."
+  tone: "orchestrator"
+capabilities:
+  skills:
+    - "@air/data-analyst"
+  mcpServers: []

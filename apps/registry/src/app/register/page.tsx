@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AssistedPasswordConfirmation } from '@/components/ui/assisted-password-confirmation';
+import { authClient } from '@/lib/auth-client';
+import { Github, Loader2 } from 'lucide-react';
 
 export default function RegisterPage() {
   const [username, setUsername] = useState('');
@@ -24,7 +26,7 @@ export default function RegisterPage() {
   };
   const strength = getPasswordStrength(password);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleEmailSignUp(e: React.FormEvent) {
     e.preventDefault();
     if (!passwordsMatch) {
       setError('Passwords do not match.');
@@ -33,24 +35,27 @@ export default function RegisterPage() {
     setLoading(true);
     setError('');
 
-    try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password }),
-      });
-      const data = await res.json();
-      if (data.error) {
-        setError(data.error.message);
-      } else {
-        localStorage.setItem('token', data.data.token);
-        router.push('/');
-      }
-    } catch {
-      setError('Network error. Please try again.');
-    } finally {
+    const { data, error: signUpError } = await authClient.signUp.email({
+      email,
+      password,
+      name: username,
+    });
+
+    if (signUpError) {
+      setError(signUpError.message || 'Failed to create account');
       setLoading(false);
+    } else {
+      router.push('/');
+      router.refresh();
     }
+  }
+
+  async function handleGithubSignUp() {
+    setLoading(true);
+    await authClient.signIn.social({
+      provider: 'github',
+      callbackURL: '/',
+    });
   }
 
   return (
@@ -61,7 +66,27 @@ export default function RegisterPage() {
 
         {error && <div className="mb-6 rounded-md bg-destructive/15 p-3 text-center text-sm font-medium text-destructive">{error}</div>}
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+        <Button 
+          variant="outline" 
+          type="button" 
+          className="w-full mb-6 relative" 
+          onClick={handleGithubSignUp}
+          disabled={loading}
+        >
+          {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Github className="mr-2 h-4 w-4" />}
+          Continue with GitHub
+        </Button>
+
+        <div className="relative mb-6">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-border" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+          </div>
+        </div>
+
+        <form onSubmit={handleEmailSignUp} className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium leading-none text-foreground">Username</label>
             <Input
@@ -117,7 +142,7 @@ export default function RegisterPage() {
             By creating an account, you agree to our <Link href="/terms" className="text-foreground hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-foreground hover:underline">Privacy Policy</Link>.
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Creating account...' : 'Create Account'}
+            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Create Account'}
           </Button>
         </form>
 

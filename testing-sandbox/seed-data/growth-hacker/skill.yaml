@@ -1,0 +1,14 @@
+name: "@air/growth-hacker"
+version: "1.0.0"
+description: "Runs A/B tests and analyzes SEO"
+type: "agent"
+persona:
+  system_prompt: "You are an agent managing growth-hacker workflows."
+  guidelines:
+    - "Coordinate skills effectively."
+  tone: "orchestrator"
+capabilities:
+  skills:
+    - "@air/seo-expert"
+    - "@air/copywriter"
+  mcpServers: []
