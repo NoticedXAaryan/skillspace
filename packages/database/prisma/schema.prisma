@@ -28,6 +28,11 @@ model User {
   // Profile Fields
   banner  String?
   bio     String?
+  
+  // Storage Quota (bytes)
+  storageUsed  BigInt @default(0)
+  storageQuota BigInt @default(10737418240) // 10 GB
+
   github  String?
   website String?
   twitter String?
@@ -171,6 +176,7 @@ model PackageVersion {
   manifest    String
   storagePath String
   checksum    String
+  size        BigInt   @default(0)
   deprecated  Boolean  @default(false)
   publishedAt DateTime @default(now())
 

@@ -221,7 +221,7 @@ export default function Navbar() {
 
           {isAuth ? (
             <>
-              <Link href="/profile" className={cn("transition-colors hover:text-cyan-400", pathname === '/profile' ? 'text-cyan-400' : 'text-neutral-300')}>Profile</Link>
+              <Link href="/dashboard" className={cn("transition-colors hover:text-cyan-400", pathname === '/dashboard' ? 'text-cyan-400' : 'text-neutral-300')}>Dashboard</Link>
               <Button variant="ghost" onClick={handleSignOut} className="text-neutral-300 hover:text-white hover:bg-white/10">Sign Out</Button>
             </>
           ) : (
@@ -274,7 +274,7 @@ export default function Navbar() {
                 {isAuth ? (
                   <>
                     <Button variant="outline" asChild className="w-full border-white/10 text-white hover:bg-white/10 hover:text-white">
-                      <Link href="/profile" onClick={() => setIsSheetOpen(false)}>Profile</Link>
+                      <Link href="/dashboard" onClick={() => setIsSheetOpen(false)}>Dashboard</Link>
                     </Button>
                     <Button 
                       variant="ghost" 

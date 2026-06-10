@@ -54,6 +54,7 @@ ${chalk.bold('CREATOR TOOLS')}
 ${chalk.bold('ACCOUNT & CONFIG')}
   ${c.code('login')}       Authenticate with your SkillSpace account.
   ${c.code('whoami')}      View your current authentication status.
+  ${c.code('config')}      Manage global CLI configuration (e.g. registry URL).
   ${c.code('model')}       Configure your default AI models (OpenAI, Anthropic, Ollama).
   ${c.code('org')}         Manage your organization and team access.
   ${c.code('env')}         Manage environment variables and secrets.
@@ -85,10 +86,13 @@ registerBenchmarkCommand(program);
 registerMigrateCommand(program);
 registerExportCommand(program);
 
+import { configCommand } from './commands/config.js';
+
 program.addCommand(agentCommand);
 program.addCommand(mcpCommand);
 program.addCommand(workflowCommand);
 program.addCommand(orgCommand);
 program.addCommand(envCommand);
+program.addCommand(configCommand);
 
 program.parse();

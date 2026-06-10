@@ -1,38 +1,32 @@
-import prisma from './prisma';
+import { NextRequest } from 'next/server';
 
-export async function rateLimit(key: string, maxRequests: number, windowMs: number): Promise<{ allowed: boolean; remaining: number }> {
-  const now = new Date();
-  
-  // Clean up expired tokens periodically (could be done in a cron, but doing it opportunistically here)
-  if (Math.random() < 0.01) {
-    await prisma.rateLimit.deleteMany({ where: { resetAt: { lt: now } } }).catch(() => {});
+type RateLimitEntry = {
+  count: number;
+  resetAt: number;
+};
+
+// Global in-memory store for rate limiting.
+// Note: In a Serverless environment like Vercel, this is per-instance. 
+// It works well enough for basic burst protection, but for cluster-wide rate limiting, use Redis.
+const rateLimitCache = new Map<string, RateLimitEntry>();
+
+export function checkRateLimit(req: NextRequest, limit: number, windowSecs: number): { success: boolean; limit: number; remaining: number } {
+  const ip = req.headers.get('x-forwarded-for') || req.ip || '127.0.0.1';
+  const now = Date.now();
+  const windowMs = windowSecs * 1000;
+
+  let entry = rateLimitCache.get(ip);
+
+  if (!entry || now > entry.resetAt) {
+    entry = { count: 0, resetAt: now + windowMs };
   }
 
-  let record = await prisma.rateLimit.findUnique({ where: { key } });
+  entry.count += 1;
+  rateLimitCache.set(ip, entry);
 
-  if (!record || record.resetAt < now) {
-    record = await prisma.rateLimit.upsert({
-      where: { key },
-      update: { count: 1, resetAt: new Date(now.getTime() + windowMs) },
-      create: { key, count: 1, resetAt: new Date(now.getTime() + windowMs) }
-    });
-    return { allowed: true, remaining: maxRequests - 1 };
-  }
-
-  if (record.count >= maxRequests) {
-    return { allowed: false, remaining: 0 };
-  }
-
-  record = await prisma.rateLimit.update({
-    where: { key },
-    data: { count: { increment: 1 } }
-  });
-
-  return { allowed: true, remaining: maxRequests - record.count };
-}
-
-export function getClientIp(req: Request): string {
-  const forwarded = req.headers.get('x-forwarded-for');
-  if (forwarded) return forwarded.split(',')[0]!.trim();
-  return '127.0.0.1';
+  return {
+    success: entry.count <= limit,
+    limit,
+    remaining: Math.max(0, limit - entry.count)
+  };
 }

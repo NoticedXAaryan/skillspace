@@ -68,7 +68,7 @@ export class RegistryClient {
     
     // Better-auth returns the token in the response JSON natively if configured,
     // or we can extract it from the response body.
-    const data = await res.json();
+    const data: any = await res.json();
     return { data: { token: data.token, user: data.user } };
   }
 
@@ -85,7 +85,7 @@ export class RegistryClient {
       return { error: { message: text || res.statusText } };
     }
     
-    const data = await res.json();
+    const data: any = await res.json();
     return { data: { token: data.token, user: data.user } };
   }
 
@@ -98,7 +98,7 @@ export class RegistryClient {
       return { error: { message: 'Unauthorized' } };
     }
     
-    const data = await res.json();
+    const data: any = await res.json();
     if (!data || !data.user) return { error: { message: 'Invalid session' } };
     
     // Map Better-Auth user schema back to expected CLI schema

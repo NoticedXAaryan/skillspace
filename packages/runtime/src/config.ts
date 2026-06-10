@@ -30,8 +30,8 @@ export interface SkillSpaceConfig {
 }
 
 const DEFAULT_CONFIG: SkillSpaceConfig = {
-  registry_url: 'http://localhost:3000',
-  registries: ['http://localhost:3000', 'https://registry.skillspace.ai'],
+  registry_url: 'https://skillspace-registry.vercel.app',
+  registries: ['https://skillspace-registry.vercel.app'],
   models: {},
 };
 
@@ -147,7 +147,7 @@ export function getRegistries(): string[] {
   if (config.registries && config.registries.length > 0) {
     return config.registries;
   }
-  return [config.registry_url || 'http://localhost:3000', 'https://registry.skillspace.ai'];
+  return [config.registry_url || 'https://skillspace-registry.vercel.app'];
 }
 
 /**
