@@ -1,6 +1,6 @@
-# AIR Ecosystem: Technical Debt & V2 Roadmap
+# SkillSpace Ecosystem: Technical Debt & V2 Roadmap
 
-This document serves as a persistent ledger of architectural limitations, technical debt, and planned improvements for the AIR ecosystem. It ensures future AI agents or developers have immediate context on what needs to be upgraded for scale.
+This document serves as a persistent ledger of architectural limitations, technical debt, and planned improvements for the SkillSpace ecosystem. It ensures future AI agents or developers have immediate context on what needs to be upgraded for scale.
 
 ## 1. CLI Packager (`apps/cli/src/utils/packager.ts`)
 **Current State (V1):**
@@ -35,5 +35,5 @@ This document serves as a persistent ledger of architectural limitations, techni
 
 **V2 Improvement Plan:**
 - **GitHub Provenance (The "Verified Source" Model):** Force public packages to link to a public GitHub repository. The registry backend will verify that the `.skillpkg` being published exactly matches the code in the public GitHub branch (using OIDC tokens, similar to npm provenance). This guarantees transparency so the community can audit the code.
-- **The AIR Sandbox:** Unlike `npm` (which can run malicious `postinstall` bash scripts the second you download it), the `@skillspace/runtime` must enforce a strict sandbox. An agent cannot read the filesystem or run a bash command unless the user explicitly accepts a permission prompt in the CLI (e.g., *"Agent 'malicious/tool' is requesting to run `rm -rf /` - Allow? [y/N]"*).
+- **The SkillSpace Sandbox:** Unlike `npm` (which can run malicious `postinstall` bash scripts the second you download it), the `@skillspace/runtime` must enforce a strict sandbox. An agent cannot read the filesystem or run a bash command unless the user explicitly accepts a permission prompt in the CLI (e.g., *"Agent 'malicious/tool' is requesting to run `rm -rf /` - Allow? [y/N]"*).
 - **Verified Namespaces:** Implement a verified checkmark system on the registry for known, trusted developers/organizations.

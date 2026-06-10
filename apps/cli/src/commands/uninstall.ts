@@ -24,7 +24,7 @@ export function registerUninstallCommand(program: Command): void {
       const versions = cache.getInstalledVersions(pkgName);
 
       if (!opts.yes) {
-        intro('uninstall', 'AIR Package Removal');
+        intro('uninstall', 'SkillSpace Package Removal');
       }
 
       if (versions.length === 0) {

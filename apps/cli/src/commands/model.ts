@@ -43,7 +43,7 @@ export function registerModelCommand(program: Command): void {
       let url = opts.url;
 
       if (!opts.yes && !key && provider !== 'ollama') {
-        intro('model add', `AIR Model Setup: ${provider}`);
+        intro('model add', `SkillSpace Model Setup: ${provider}`);
         
         const keyInput = await passwordPrompt({
           message: `API Key for ${provider}:`,
@@ -164,7 +164,7 @@ export function registerModelCommand(program: Command): void {
           config: { temperature: 0.3, max_tokens: 100, timeout_seconds: 15 },
         };
 
-        const request = adapter.buildRequest(testSkill, 'Say "AIR works!" and nothing else.', {
+        const request = adapter.buildRequest(testSkill, 'Say "SkillSpace works!" and nothing else.', {
           apiKey,
           modelId: modelName,
           temperature: 0.3,

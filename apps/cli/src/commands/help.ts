@@ -34,7 +34,7 @@ const docs: Record<string, { title: string; desc: string; flags: string[]; examp
   },
   publish: {
     title: 'air publish',
-    desc: 'Packages your current directory and uploads it to the global AIR registry.',
+    desc: 'Packages your current directory and uploads it to the global SkillSpace registry.',
     flags: [
       '--private            Publish as a private package (requires Org)',
       '-y, --yes            Headless mode'
@@ -84,7 +84,7 @@ const docs: Record<string, { title: string; desc: string; flags: string[]; examp
   },
   search: {
     title: 'air search <query>',
-    desc: 'Search the global AIR registry for existing AI capabilities.',
+    desc: 'Search the global SkillSpace registry for existing AI capabilities.',
     flags: [
       '--limit <num>        Limit the number of results returned'
     ],
@@ -94,7 +94,7 @@ const docs: Record<string, { title: string; desc: string; flags: string[]; examp
   },
   login: {
     title: 'air login',
-    desc: 'Authenticate your machine with the AIR registry using a web browser or token.',
+    desc: 'Authenticate your machine with the SkillSpace registry using a web browser or token.',
     flags: [
       '--token <token>      Login headlessly using an API token'
     ],

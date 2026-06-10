@@ -1,7 +1,7 @@
 {
   "name": "@air/memory-mcp",
   "version": "0.1.0",
-  "description": "Local SQLite FTS5 memory server for AIR Agents",
+  "description": "Local SQLite FTS5 memory server for SkillSpace Agents",
   "type": "module",
   "bin": {
     "air-memory-mcp": "./dist/index.js"

@@ -3,7 +3,7 @@ import { loadCredentials, getRegistryUrl } from '@skillspace/runtime';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
- * API client for the AIR registry.
+ * API client for the SkillSpace registry.
  */
 export class RegistryClient {
   public baseUrl: string;

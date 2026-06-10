@@ -16,7 +16,7 @@ export const err = chalk.hex('#ef4444');
 // ---------------------------------------------------------------------------
 
 export function logo(): string {
-  return brand.bold('⚡ AIR');
+  return brand.bold('⚡ SkillSpace');
 }
 
 // ---------------------------------------------------------------------------

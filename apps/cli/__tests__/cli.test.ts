@@ -29,7 +29,7 @@ describe('CLI E2E', () => {
 
   it('init command creates skill.yaml', async () => {
     const { stdout } = await runCli('init --yes');
-    expect(stdout).toContain('Initialized AIR project');
+    expect(stdout).toContain('Initialized SkillSpace project');
     expect(fs.existsSync(path.join(tempDir, 'skill.yaml'))).toBe(true);
   });
 

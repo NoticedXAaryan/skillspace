@@ -41,7 +41,7 @@ export function registerInstallCommand(program: Command): void {
       }
 
       if (!opts.yes) {
-        intro('install', `AIR Registry Installer`);
+        intro('install', `SkillSpace Registry Installer`);
       }
 
       let loader = !opts.yes ? createLoader(`Resolving ${pkgName}...`) : null;

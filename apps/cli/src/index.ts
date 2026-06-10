@@ -29,7 +29,7 @@ program
   .version('0.2.0');
 
 const customHelp = `
-${chalk.bold(c.brand('AIR CLI'))} - The universal runtime and registry for AI capabilities.
+${chalk.bold(c.brand('SkillSpace CLI'))} - The universal runtime and registry for AI capabilities.
 
 ${chalk.bold('USAGE')}
   $ air <command> [options]
@@ -38,7 +38,7 @@ ${chalk.bold('EXECUTION')}
   ${c.code('run')}         Execute an Agent, Skill, or Workflow locally.
 
 ${chalk.bold('PACKAGE MANAGEMENT')}
-  ${c.code('search')}      Search the global AIR registry for capabilities.
+  ${c.code('search')}      Search the global SkillSpace registry for capabilities.
   ${c.code('install')}     Install a package to your local system.
   ${c.code('uninstall')}   Remove an installed package.
   ${c.code('list')}        List all locally installed packages.
@@ -46,11 +46,11 @@ ${chalk.bold('PACKAGE MANAGEMENT')}
 
 ${chalk.bold('CREATOR TOOLS')}
   ${c.code('init')}        Scaffold a new Agent, Skill, or MCP Server project.
-  ${c.code('publish')}     Publish your project to the AIR registry.
+  ${c.code('publish')}     Publish your project to the SkillSpace registry.
   ${c.code('benchmark')}   Run automated tests and benchmarks against your agent.
 
 ${chalk.bold('ACCOUNT & CONFIG')}
-  ${c.code('login')}       Authenticate with your AIR account.
+  ${c.code('login')}       Authenticate with your SkillSpace account.
   ${c.code('whoami')}      View your current authentication status.
   ${c.code('model')}       Configure your default AI models (OpenAI, Anthropic, Ollama).
   ${c.code('org')}         Manage your organization and team access.

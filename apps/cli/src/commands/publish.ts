@@ -25,7 +25,7 @@ export function registerPublishCommand(program: Command): void {
       const agentYamlPath = path.join(dir, 'agent.yaml');
 
       if (!opts.yes) {
-        intro('publish', 'AIR Registry Publisher');
+        intro('publish', 'SkillSpace Registry Publisher');
       }
 
       // 1. Check auth
@@ -114,7 +114,7 @@ export function registerPublishCommand(program: Command): void {
 
       if (loader) {
         loader.succeed(`Published ${skill.name}@${skill.version}`);
-        successCritical('Agent is live.', `${skill.name} has been published to the AIR registry.`, [
+        successCritical('Agent is live.', `${skill.name} has been published to the SkillSpace registry.`, [
           ['Install remotely', `air install ${skill.name}`],
           ['View registry', `air.dev/agents/${skill.name}`]
         ]);

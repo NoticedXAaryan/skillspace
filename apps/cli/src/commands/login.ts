@@ -13,7 +13,7 @@ import { box } from '../ui/layout/box.js';
 export function registerLoginCommand(program: Command): void {
   program
     .command('login')
-    .description('Authenticate with the AIR registry')
+    .description('Authenticate with the SkillSpace registry')
     .option('-e, --email <email>', 'Your email address')
     .option('-p, --password <password>', 'Your password')
     .option('-y, --yes', 'Headless mode')
@@ -23,7 +23,7 @@ export function registerLoginCommand(program: Command): void {
       let password = opts.password;
 
       if (!opts.yes && (!email || !password)) {
-        intro('login', 'AIR Authentication');
+        intro('login', 'SkillSpace Authentication');
       }
 
       if (!opts.yes) {
@@ -84,7 +84,7 @@ export function registerLoginCommand(program: Command): void {
 
   program
     .command('register')
-    .description('Create a new AIR account')
+    .description('Create a new SkillSpace account')
     .option('-u, --username <username>', 'Username (3-39 chars, alphanumeric)')
     .option('-e, --email <email>', 'Your email address')
     .option('-p, --password <password>', 'Password (min 8 chars)')
@@ -96,7 +96,7 @@ export function registerLoginCommand(program: Command): void {
       let password = opts.password;
 
       if (!opts.yes && (!username || !email || !password)) {
-        intro('register', 'AIR Registration');
+        intro('register', 'SkillSpace Registration');
       }
 
       if (!opts.yes) {

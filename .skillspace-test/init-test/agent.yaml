@@ -1,6 +1,6 @@
 name: my-test-agent
 version: 1.0.0
-description: An AIR agent
+description: An SkillSpace agent
 author: notic
 type: agent
 instructions: You are an autonomous agent for my-test-agent.

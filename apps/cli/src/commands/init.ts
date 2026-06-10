@@ -14,7 +14,7 @@ import { errorInline, errorOperational } from '../ui/states/error.js';
 export function registerInitCommand(program: Command): void {
   program
     .command('init')
-    .description('Initialize a new AIR project (Skill, Agent, or MCP Server)')
+    .description('Initialize a new SkillSpace project (Skill, Agent, or MCP Server)')
     .option('-y, --yes', 'Skip prompts and use defaults (or provided flags) for headless execution')
     .option('-t, --type <type>', 'Project type (skill, agent, mcp)')
     .option('-n, --name <name>', 'Project name')
@@ -65,12 +65,12 @@ export function registerInitCommand(program: Command): void {
       if (projectType === 'mcp' && !lang) lang = 'typescript';
 
       let projectName = opts.name || 'my-air-project';
-      let description = opts.description || (projectType === 'mcp' ? 'An MCP Server' : `An AIR ${projectType}`);
+      let description = opts.description || (projectType === 'mcp' ? 'An MCP Server' : `An SkillSpace ${projectType}`);
       let author = opts.author || process.env.USER || process.env.USERNAME || 'unknown';
       let category = opts.category || 'other';
 
       if (!opts.yes) {
-        if (opts.type) intro('init', `AIR ${projectType.toUpperCase()} Setup`);
+        if (opts.type) intro('init', `SkillSpace ${projectType.toUpperCase()} Setup`);
 
         const namePrompt = await text({ message: 'Project name (or . for current dir):', initialValue: projectName, placeholder: projectName });
         if (isCancel(namePrompt)) { errorInline('Cancelled.'); process.exit(0); }
@@ -164,7 +164,7 @@ export function registerInitCommand(program: Command): void {
           ]);
           outro(Date.now() - startTime);
         } else {
-          successStandard(`Initialized AIR ${projectType} "${finalProjectName}"`, {
+          successStandard(`Initialized SkillSpace ${projectType} "${finalProjectName}"`, {
             'Created file': ext
           });
         }

@@ -2,7 +2,7 @@ import chalk from 'chalk';
 
 export const c = {
   // ── Brand ──────────────────────────────────────────────────────────────────
-  brand:       chalk.hex('#A78BFA'),   // Electric violet — AIR's identity color
+  brand:       chalk.hex('#06b6d4'),   // Cyan — SkillSpace's identity color
   brandDim:    chalk.hex('#7C3AED'),   // Deeper violet — hover states, borders
   brandSubtle: chalk.hex('#2E1065'),   // Near-black violet — background tints
 
