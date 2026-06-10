@@ -11,8 +11,7 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yaml}\"",
-    "clean": "turbo run clean && rimraf node_modules",
-    "postinstall": "pnpm --filter @skillspace/registry db:generate"
+    "clean": "turbo run clean && rimraf node_modules"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
