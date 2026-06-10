@@ -1,7 +1,0 @@
-name: "@air/github-mcp"
-version: "1.0.0"
-description: "Connects to GitHub API for PRs and Issues"
-type: "mcp"
-mcp:
-  url: "http://localhost:8000/github"
-  authType: "bearer"

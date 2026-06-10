@@ -1,19 +1,40 @@
 import { loadCredentials, getRegistryUrl } from '@skillspace/runtime';
+import * as os from 'os';
+import * as crypto from 'crypto';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+/**
+ * Generates a lightweight anonymous device footprint 
+ * based on hardware architecture and hostname to track CLI installations.
+ */
+function getDeviceFootprint(): string {
+  const data = [
+    os.platform(),
+    os.arch(),
+    os.hostname(),
+    os.cpus()[0]?.model || 'unknown_cpu',
+  ].join('|');
+  return crypto.createHash('sha256').update(data).digest('hex').substring(0, 16);
+}
 
 /**
  * API client for the SkillSpace registry.
  */
 export class RegistryClient {
   public baseUrl: string;
+  private deviceFootprint: string;
 
   constructor(baseUrl?: string) {
     this.baseUrl = baseUrl || getRegistryUrl();
+    this.deviceFootprint = getDeviceFootprint();
   }
 
   private getHeaders(auth = false): Record<string, string> {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    const headers: Record<string, string> = { 
+      'Content-Type': 'application/json',
+      'X-Device-Footprint': this.deviceFootprint 
+    };
     if (auth) {
       const token = loadCredentials();
       if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -33,29 +54,55 @@ export class RegistryClient {
   }
 
   async register(username: string, email: string, password: string): Promise<any> {
-    console.log(`[DEBUG] Fetching ${this.baseUrl}/api/auth/register`);
-    const res = await this.safeFetch(`${this.baseUrl}/api/auth/register`, {
+    // Maps to Better-Auth API
+    const res = await this.safeFetch(`${this.baseUrl}/api/auth/sign-up/email`, {
       method: 'POST',
       headers: this.getHeaders(),
-      body: JSON.stringify({ username, email, password }),
+      body: JSON.stringify({ name: username, email, password }),
     });
-    return res.json();
+    
+    if (!res.ok) {
+      const text = await res.text();
+      return { error: { message: text || res.statusText } };
+    }
+    
+    // Better-auth returns the token in the response JSON natively if configured,
+    // or we can extract it from the response body.
+    const data = await res.json();
+    return { data: { token: data.token, user: data.user } };
   }
 
   async login(email: string, password: string): Promise<any> {
-    const res = await this.safeFetch(`${this.baseUrl}/api/auth/login`, {
+    // Maps to Better-Auth API
+    const res = await this.safeFetch(`${this.baseUrl}/api/auth/sign-in/email`, {
       method: 'POST',
       headers: this.getHeaders(),
       body: JSON.stringify({ email, password }),
     });
-    return res.json();
+
+    if (!res.ok) {
+      const text = await res.text();
+      return { error: { message: text || res.statusText } };
+    }
+    
+    const data = await res.json();
+    return { data: { token: data.token, user: data.user } };
   }
 
   async me(): Promise<any> {
-    const res = await this.safeFetch(`${this.baseUrl}/api/auth/me`, {
+    const res = await this.safeFetch(`${this.baseUrl}/api/auth/get-session`, {
       headers: this.getHeaders(true),
     });
-    return res.json();
+    
+    if (!res.ok) {
+      return { error: { message: 'Unauthorized' } };
+    }
+    
+    const data = await res.json();
+    if (!data || !data.user) return { error: { message: 'Invalid session' } };
+    
+    // Map Better-Auth user schema back to expected CLI schema
+    return { data: { username: data.user.name, email: data.user.email, plan: 'Free' } };
   }
 
   async search(query: string, type?: string): Promise<any> {
