@@ -90,7 +90,7 @@ export class RegistryClient {
   }
 
   async me(): Promise<any> {
-    const res = await this.safeFetch(`${this.baseUrl}/api/auth/get-session`, {
+    const res = await this.safeFetch(`${this.baseUrl}/api/profile`, {
       headers: this.getHeaders(true),
     });
     
@@ -99,10 +99,10 @@ export class RegistryClient {
     }
     
     const data: any = await res.json();
-    if (!data || !data.user) return { error: { message: 'Invalid session' } };
+    const user = data.data || data;
+    if (!user || !user.email) return { error: { message: 'Invalid session' } };
     
-    // Map Better-Auth user schema back to expected CLI schema
-    return { data: { username: data.user.name, email: data.user.email, plan: 'Free' } };
+    return { data: { username: user.username, email: user.email, plan: user.plan || 'Free' } };
   }
 
   async search(query: string, type?: string): Promise<any> {
