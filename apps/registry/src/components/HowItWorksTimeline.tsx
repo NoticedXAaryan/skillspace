@@ -30,7 +30,7 @@ export function HowItWorksTimeline() {
       title: "1. Install",
       content: (
         <div className="bg-neutral-950 border border-white/10 rounded-xl p-6 font-mono text-sm text-neutral-300">
-          <div className="text-cyan-400 mb-4">$ skillspace install @core/summary</div>
+          <div className="text-cyan-400 mb-4">$ air install @skillspace/security-review</div>
           <div className="text-neutral-500">
             └─ node_modules/<br />
             &nbsp;&nbsp; └─ @skillspace/<br />

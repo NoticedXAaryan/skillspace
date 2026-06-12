@@ -1,63 +1,25 @@
 export const dynamic = 'force-dynamic';
 import Link from 'next/link';
-import { Package, ShieldCheck, Code, Cpu, BookOpen, Terminal, ChevronRight, Zap, Globe, GitBranch, Star } from 'lucide-react';
-const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.02c3.19-.34 6.52-1.58 6.52-7.02a5.36 5.36 0 0 0-1.5-3.8 5.4 5.4 0 0 0-.15-3.75s-1.2-.38-3.9 1.45a13.2 13.2 0 0 0-7 0c-2.7-1.83-3.9-1.45-3.9-1.45a5.4 5.4 0 0 0-.15 3.75 5.36 5.36 0 0 0-1.5 3.8c0 5.4 3.33 6.66 6.52 7.02a4.8 4.8 0 0 0-1 3.02v4" />
-    <path d="M9 20c-5 1.5-5-2.5-7-3" />
-  </svg>
-);
-import PackageCard from '@/components/PackageCard';
-import AnimatedTerminal from '@/components/AnimatedTerminal';
+import { Package, ShieldCheck, Code, Cpu, Terminal, ChevronRight, Zap, Globe, GitBranch, Star, ArrowRight, Download } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { SparklesCore } from '@/components/ui/sparkles';
-import { TypewriterEffect } from '@/components/ui/typewriter-effect';
-import { ContainerScroll } from '@/components/ui/container-scroll-animation';
-import { BentoGrid, BentoGridItem } from '@/components/ui/bento-grid';
-import { LampCTA } from '@/components/LampCTA';
-import { GithubCommunityCTA } from '@/components/GithubCommunityCTA';
-import { HeroSection } from '@/components/ui/hero-odyssey';
-import { AhaSection } from '@/components/AhaSection';
-import { HowItWorksTimeline } from '@/components/HowItWorksTimeline';
-import { WorksWithStrip } from '@/components/WorksWithStrip';
-import { Features as FeaturesSection } from '@/components/ui/features-8';
-
-import { DynamicGooeyBackground } from '@/components/DynamicGooeyBackground';
+import PackageCard from '@/components/PackageCard';
 
 async function getCommunityStats() {
   try {
-    const [skillsCount, usersCount, executionsCount, downloadsResult] = await Promise.all([
+    const [skillsCount, usersCount, downloadsResult] = await Promise.all([
       prisma.package.count(),
       prisma.user.count(),
-      prisma.executionLog.count(),
-      prisma.package.aggregate({
-        _sum: {
-          downloads: true,
-        },
-      }),
+      prisma.package.aggregate({ _sum: { downloads: true } }),
     ]);
-    return { 
-      skillsCount, 
-      usersCount, 
-      executionsCount, 
-      downloadsCount: downloadsResult._sum.downloads || 0 
+    return {
+      skillsCount,
+      usersCount,
+      downloadsCount: downloadsResult._sum.downloads || 0,
     };
   } catch {
-    return { skillsCount: 0, usersCount: 0, executionsCount: 0, downloadsCount: 0 };
+    return { skillsCount: 0, usersCount: 0, downloadsCount: 0 };
   }
 }
 
@@ -86,112 +48,188 @@ export default async function HomePage() {
   const packages = await getFeaturedPackages();
 
   return (
-    <main className="relative min-h-screen overflow-hidden pb-16 bg-black text-white selection:bg-cyan-500/30">
-      <DynamicGooeyBackground />
-      <div className="container mx-auto px-4 relative z-10 pointer-events-none">
-        <div className="pointer-events-auto">
+    <main className="relative min-h-screen overflow-hidden bg-black text-white selection:bg-cyan-500/30">
 
-        
-        <HeroSection />
+      {/* Hero */}
+      <section className="relative pt-24 pb-16 px-4">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-900/20 via-black to-black pointer-events-none" />
+        <div className="container mx-auto max-w-4xl text-center relative z-10">
+          <Badge variant="secondary" className="mb-6 inline-flex items-center gap-1.5 px-3 py-1 font-bold tracking-widest uppercase bg-cyan-500/10 text-cyan-400 border-cyan-500/20">
+            <Zap className="h-3.5 w-3.5" /> Open Source
+          </Badge>
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-gradient-to-b from-white to-neutral-400 bg-clip-text text-transparent">
+            Install AI capabilities<br />like npm packages
+          </h1>
+          <p className="text-lg md:text-xl text-neutral-400 mb-10 max-w-2xl mx-auto">
+            Share, version, and run AI skills across any model.
+            One command to install. One command to run.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+            <Button asChild size="lg" className="bg-cyan-500 hover:bg-cyan-400 text-black font-semibold h-12 px-8">
+              <Link href="/packages">Browse Registry <ArrowRight className="ml-2 h-4 w-4" /></Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10 bg-transparent h-12 px-8">
+              <Link href="/docs">Documentation</Link>
+            </Button>
+          </div>
 
-        <WorksWithStrip />
-
-        {/* CLI Demo Section with Container Scroll */}
-        <section className="w-full">
-          <ContainerScroll
-            titleComponent={
-              <>
-                <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
-                  One command to run anything.
-                </h1>
-              </>
-            }
-          >
-            <div className="h-full w-full flex items-center justify-center bg-black rounded-2xl p-4">
-              <AnimatedTerminal />
+          {/* Terminal Demo */}
+          <div className="mx-auto max-w-2xl rounded-xl border border-white/10 bg-neutral-950 shadow-2xl overflow-hidden">
+            <div className="flex h-10 items-center gap-2 border-b border-white/10 bg-black px-4">
+              <div className="h-3 w-3 rounded-full bg-red-500/80" />
+              <div className="h-3 w-3 rounded-full bg-yellow-500/80" />
+              <div className="h-3 w-3 rounded-full bg-green-500/80" />
+              <span className="ml-4 text-xs font-mono text-neutral-500">terminal</span>
             </div>
-          </ContainerScroll>
-        </section>
-
-        <AhaSection />
-
-        <HowItWorksTimeline />
-
-        {/* Features Grid */}
-        <FeaturesSection />
-
-        {/* Stats or Social Proof */}
-        {process.env.NEXT_PUBLIC_STATS_LIVE === 'true' ? (
-          <section className="my-24 rounded-xl border border-white/10 bg-neutral-950 p-10 shadow-sm flex flex-col md:flex-row items-center justify-around gap-8 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-500/10 to-transparent opacity-50" />
-            {[
-              { val: stats.skillsCount, label: 'Total Skills' },
-              { val: stats.usersCount, label: 'Contributors' },
-              { val: stats.downloadsCount, label: 'Downloads' },
-              { val: stats.executionsCount, label: 'Executions' },
-            ].map((stat, i) => (
-              <div key={stat.label} className="flex flex-col md:flex-row items-center gap-8 w-full justify-center relative z-10">
-                <div className="flex flex-col items-center text-center">
-                  <div className="mb-2 font-mono text-4xl font-bold text-white">{stat.val.toLocaleString()}</div>
-                  <div className="text-xs font-medium uppercase tracking-wider text-cyan-500">{stat.label}</div>
-                </div>
-                {i < 3 && <div className="hidden md:block h-16 w-px bg-white/10" />}
+            <div className="p-6 font-mono text-sm text-left">
+              <div className="flex gap-2 mb-2">
+                <span className="text-cyan-400">$</span>
+                <span className="text-neutral-300">air install @skillspace/security-review</span>
               </div>
-            ))}
-          </section>
-        ) : (
-          <section className="my-24 grid md:grid-cols-3 gap-6">
-            {[
-              { q: "The simplest way I've found to distribute tools to my agent swarm.", author: "Senior AI Engineer" },
-              { q: "Finally, package management for prompts and model configs.", author: "Open Source Maintainer" },
-              { q: "We moved all our LangChain tools to SkillSpace. CI/CD is actually possible now.", author: "Startup CTO" },
-            ].map((quote, i) => (
-              <div key={i} className="rounded-xl border border-white/10 bg-neutral-950 p-8 shadow-sm flex flex-col justify-between">
-                <p className="text-neutral-300 italic mb-6">"{quote.q}"</p>
-                <div className="text-sm font-medium text-cyan-400">— {quote.author}</div>
+              <div className="text-neutral-500 mb-4 ml-4">
+                Resolved @skillspace/security-review@2.1.0<br />
+                Downloaded 2.3 kB in 0.4s<br />
+                Installed to ~/.skillspace/registry/
               </div>
-            ))}
-          </section>
-        )}
-
-        {/* Package of the Week */}
-        <section className="mb-16 rounded-2xl border border-white/10 bg-black py-16 text-center shadow-2xl relative overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-cyan-900/20 via-black to-black pointer-events-none" />
-          <div className="mx-auto max-w-2xl px-6 relative z-10 flex flex-col items-center">
-            <Badge variant="secondary" className="mb-6 inline-flex items-center gap-1.5 px-3 py-1 font-bold tracking-widest uppercase bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 border-cyan-500/20">
-              <Star className="h-3.5 w-3.5" /> Package of the Week
-            </Badge>
-            <h2 className="mb-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">@core/autonomous-agent</h2>
-            <div className="text-sm font-mono text-cyan-400 mb-4 tracking-tight">12.4k downloads this week</div>
-            <p className="mb-8 text-lg text-neutral-400">A fully featured autonomous agent runner with tool use and memory.</p>
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-              <div className="bg-neutral-900 border border-white/10 rounded-md px-4 py-3 font-mono text-sm text-neutral-300">
-                <span className="text-neutral-500 mr-2">$</span>
-                skillspace install @core/autonomous-agent
+              <div className="flex gap-2 mb-2">
+                <span className="text-cyan-400">$</span>
+                <span className="text-neutral-300">air run security-review --input ./src</span>
               </div>
-              <Button asChild size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10 bg-transparent h-[46px]">
-                <Link href="/packages/autonomous-agent">View Package</Link>
-              </Button>
+              <div className="text-green-400 ml-4">
+                Found 2 vulnerabilities in 3 files
+              </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Featured Packages */}
-        <section className="py-24">
-          <div className="mb-12 text-center">
-            <h2 className="mb-3 text-3xl font-bold tracking-tight text-white">Trending Skills</h2>
-            <p className="text-lg text-neutral-400">Discover the most popular community capabilities.</p>
+      {/* How It Works */}
+      <section className="py-24 px-4">
+        <div className="container mx-auto max-w-5xl">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">How it works</h2>
+            <p className="text-lg text-neutral-400">Three commands to go from discovery to execution.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                step: '01',
+                title: 'Install',
+                description: 'Browse the registry and install capabilities with a single command.',
+                code: 'air install @skillspace/code-reviewer',
+                icon: <Download className="h-6 w-6 text-cyan-400" />,
+              },
+              {
+                step: '02',
+                title: 'Run',
+                description: 'Execute any installed skill against your code, text, or data.',
+                code: 'air run code-reviewer --input ./src',
+                icon: <Terminal className="h-6 w-6 text-cyan-400" />,
+              },
+              {
+                step: '03',
+                title: 'Share',
+                description: 'Package and publish your own capabilities for others to use.',
+                code: 'air publish',
+                icon: <Globe className="h-6 w-6 text-cyan-400" />,
+              },
+            ].map((item) => (
+              <div key={item.step} className="relative group">
+                <div className="rounded-xl border border-white/10 bg-neutral-950 p-8 h-full hover:border-cyan-500/30 transition-colors">
+                  <div className="flex items-center gap-3 mb-4">
+                    {item.icon}
+                    <span className="text-xs font-mono text-neutral-500">Step {item.step}</span>
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
+                  <p className="text-neutral-400 mb-6">{item.description}</p>
+                  <div className="bg-black rounded-lg border border-white/5 p-4 font-mono text-sm">
+                    <span className="text-cyan-400">$</span> <span className="text-neutral-300">{item.code.replace('air ', '')}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="py-24 px-4 border-t border-white/5">
+        <div className="container mx-auto max-w-5xl">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">Why SkillSpace</h2>
+            <p className="text-lg text-neutral-400">The package manager AI capabilities deserve.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: <Globe className="h-6 w-6 text-cyan-400" />,
+                title: 'Cross-Model Portability',
+                description: 'Write once, run on Claude, GPT-4, Gemini, or Ollama. Zero YAML changes needed.',
+              },
+              {
+                icon: <GitBranch className="h-6 w-6 text-cyan-400" />,
+                title: 'Version Control',
+                description: 'Every capability is versioned with semver. Roll back when updates break things.',
+              },
+              {
+                icon: <ShieldCheck className="h-6 w-6 text-cyan-400" />,
+                title: 'Secure Execution',
+                description: 'Capabilities declare their permissions. The runtime enforces them. No surprises.',
+              },
+            ].map((feature) => (
+              <div key={feature.title} className="rounded-xl border border-white/10 bg-neutral-950 p-8 hover:border-cyan-500/30 transition-colors">
+                <div className="mb-4">{feature.icon}</div>
+                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
+                <p className="text-neutral-400 text-sm">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Trending Packages */}
+      <section className="py-24 px-4 border-t border-white/5">
+        <div className="container mx-auto max-w-5xl">
+          <div className="flex items-center justify-between mb-12">
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight mb-2">Trending Skills</h2>
+              <p className="text-neutral-400">Discover what the community is building.</p>
+            </div>
+            <Button asChild variant="outline" className="border-white/20 text-white hover:bg-white/10 bg-transparent hidden sm:flex">
+              <Link href="/packages">View All <ChevronRight className="ml-1 h-4 w-4" /></Link>
+            </Button>
           </div>
           {packages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-xl border border-white/10 border-dashed bg-black/50 py-20 text-center">
-              <Globe className="mb-4 h-12 w-12 text-neutral-600" />
-              <h3 className="mb-2 text-xl font-semibold text-white">No trending skills yet</h3>
-              <p className="mb-6 max-w-sm text-sm text-neutral-400">
-                The registry is currently empty. Start the ecosystem by publishing the first high-quality skill.
-              </p>
-              <Button asChild variant="outline" className="border-white/20 text-white hover:bg-white/10 bg-transparent">
-                <Link href="/create">Learn how to publish</Link>
-              </Button>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {[
+                { name: '@skillspace/security-review', description: 'Analyze code for security vulnerabilities using OWASP Top 10', tags: ['security', 'code-review'], downloads: 1247 },
+                { name: '@skillspace/code-reviewer', description: 'Reads diffs and provides comprehensive code review', tags: ['code-review', 'quality'], downloads: 892 },
+                { name: '@skillspace/bash-expert', description: 'Converts English requests into precise bash commands', tags: ['bash', 'cli'], downloads: 634 },
+                { name: '@skillspace/git-commit-gen', description: 'Generates conventional commit messages from diffs', tags: ['git', 'workflow'], downloads: 521 },
+                { name: '@skillspace/sql-optimizer', description: 'Analyzes SQL queries and suggests performance optimizations', tags: ['sql', 'database'], downloads: 403 },
+                { name: '@skillspace/unit-test-gen', description: 'Generates unit tests including edge cases and error handling', tags: ['testing', 'quality'], downloads: 378 },
+              ].map((pkg, i) => (
+                <div key={pkg.name} className="group rounded-xl border border-white/10 bg-neutral-950 p-6 hover:border-cyan-500/30 transition-colors">
+                  <div className="flex items-start justify-between mb-3">
+                    <Package className="h-5 w-5 text-cyan-400 shrink-0" />
+                    <span className="text-xs font-mono text-neutral-500 flex items-center gap-1">
+                      <Download className="h-3 w-3" /> {pkg.downloads.toLocaleString()}
+                    </span>
+                  </div>
+                  <h3 className="font-semibold mb-1 font-mono text-sm">{pkg.name}</h3>
+                  <p className="text-sm text-neutral-400 mb-4 line-clamp-2">{pkg.description}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {pkg.tags.map(tag => (
+                      <Badge key={tag} variant="secondary" className="text-xs bg-white/5 text-neutral-400 border-white/10">{tag}</Badge>
+                    ))}
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-white/5">
+                    <code className="text-xs font-mono text-neutral-500">
+                      <span className="text-cyan-400">$</span> air install {pkg.name}
+                    </code>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -200,19 +238,52 @@ export default async function HomePage() {
               ))}
             </div>
           )}
-        </section>
-
-        {/* Community Orbit CTA */}
-        <section className="mt-24 mb-16 w-full px-4">
-          <GithubCommunityCTA />
-        </section>
-
-        {/* Final CTA */}
-        <section className="mt-24 mb-16">
-          <LampCTA />
-        </section>
         </div>
-      </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-24 px-4 border-t border-white/5">
+        <div className="container mx-auto max-w-2xl text-center">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+            Start building with SkillSpace
+          </h2>
+          <p className="text-lg text-neutral-400 mb-8">
+            Join the open-source community building the future of AI capability management.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Button asChild size="lg" className="bg-cyan-500 hover:bg-cyan-400 text-black font-semibold h-12 px-8">
+              <Link href="/packages">Browse Registry</Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10 bg-transparent h-12 px-8">
+              <a href="https://github.com/skillspace/skillspace" target="_blank" rel="noopener noreferrer">
+                <Code className="mr-2 h-4 w-4" /> View on GitHub
+              </a>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-white/5 py-12 px-4">
+        <div className="container mx-auto max-w-5xl">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-2">
+              <Package className="h-5 w-5 text-cyan-400" />
+              <span className="font-semibold">SkillSpace</span>
+              <span className="text-neutral-500 text-sm">v0.1.0</span>
+            </div>
+            <div className="flex items-center gap-6 text-sm text-neutral-400">
+              <Link href="/packages" className="hover:text-white transition-colors">Registry</Link>
+              <Link href="/docs" className="hover:text-white transition-colors">Docs</Link>
+              <Link href="/login" className="hover:text-white transition-colors">Sign In</Link>
+              <a href="https://github.com/skillspace/skillspace" className="hover:text-white transition-colors" target="_blank" rel="noopener noreferrer">GitHub</a>
+            </div>
+            <div className="text-sm text-neutral-500">
+              MIT License
+            </div>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }
