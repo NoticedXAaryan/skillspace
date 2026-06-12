@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const type = url.searchParams.get('type') || undefined;
   const sort = url.searchParams.get('sort') || 'popular';
+  const search = url.searchParams.get('search') || url.searchParams.get('q') || undefined;
   let page = parseInt(url.searchParams.get('page') || '1');
   if (isNaN(page)) page = 1;
   page = Math.max(1, page);
@@ -25,7 +26,15 @@ export async function GET(req: NextRequest) {
 
   const skip = (page - 1) * limit;
 
-  const where = type ? { type } : {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const where: any = {};
+  if (type) where.type = type;
+  if (search) {
+    where.OR = [
+      { name: { contains: search, mode: 'insensitive' } },
+      { description: { contains: search, mode: 'insensitive' } },
+    ];
+  }
   let orderBy: any = { downloads: 'desc' };
   if (sort === 'recent') orderBy = { createdAt: 'desc' };
   if (sort === 'name') orderBy = { name: 'asc' };

@@ -55,7 +55,7 @@ function PackagesContent() {
       setLoading(true);
       try {
         const offset = (pageParam - 1) * limit;
-        let url = `/api/packages?limit=${limit}&offset=${offset}&sort=${sortParam}`;
+        let url = `/api/packages?limit=${limit}&page=${pageParam}&sort=${sortParam}`;
         if (debouncedQuery) url += `&search=${encodeURIComponent(debouncedQuery)}`;
         if (typeParam !== 'all') url += `&type=${typeParam}`;
         
@@ -63,7 +63,7 @@ function PackagesContent() {
         if (res.ok) {
           const data = await res.json();
           setPackages(data.data || []);
-          setTotal(data.pagination?.total || 0);
+          setTotal(data.meta?.total || 0);
         } else {
           setPackages([]);
           setTotal(0);
