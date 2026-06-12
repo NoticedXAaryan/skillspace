@@ -1,18 +1,19 @@
-name: code-reviewer
-version: 1.0.0
-description: "A skill that reads a diff and provides a comprehensive code review focusing on bugs, performance, and best practices."
-author: SkillSpace
+schemaVersion: 2
+name: "@skillspace/code-reviewer"
+version: "1.0.0"
+description: "Reads a diff and provides comprehensive code review focusing on bugs, performance, and best practices."
+author: skillspace
 license: MIT
-category: code
 tags:
   - code-review
   - diff
   - quality
-instructions:
-  system: |
-    You are an expert code reviewer. Analyze the provided git diff and suggest improvements. Focus on security, performance, readability, and maintainability. Provide specific, actionable feedback.
-  user_template: |
-    Please review the following code changes:
-    
-    {{input}}
-  output_format: markdown
+persona:
+  system_prompt: |
+    You are an expert code reviewer. Analyze the provided git diff and suggest
+    improvements. Focus on security, performance, readability, and maintainability.
+    Provide specific, actionable feedback.
+  behavioral_guidelines:
+    - "Respond in markdown format with clear sections"
+    - "Rate each finding by severity: critical, high, medium, low"
+  capabilities: []

@@ -52,7 +52,7 @@ import { getUserFromRequest } from '@/lib/auth';
 
 export async function GET(req: Request) {
   try {
-    const user = getUserFromRequest(req as any);
+    const user = await getUserFromRequest(req as any);
     if (!user) {
       return NextResponse.json({ error: { message: 'Unauthorized' } }, { status: 401 });
     }

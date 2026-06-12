@@ -23,6 +23,7 @@ export default async function DashboardPage() {
     include: {
       packages: {
         orderBy: { createdAt: 'desc' },
+        include: { versions: { orderBy: { publishedAt: 'desc' }, take: 1 } },
       }
     }
   });
@@ -44,7 +45,7 @@ export default async function DashboardPage() {
     entities: user.packages.map(pkg => ({
       id: pkg.id,
       name: pkg.name,
-      version: pkg.latestVersion || '1.0.0',
+      version: pkg.versions[0]?.version || '1.0.0',
       type: (pkg.type || 'skill') as 'skill' | 'agent' | 'mcp',
       downloads: pkg.downloads || 0,
       stars: 0, // Stars aren't in schema yet

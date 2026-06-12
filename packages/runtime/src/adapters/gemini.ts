@@ -12,7 +12,9 @@ export class GeminiAdapter implements ModelAdapter {
   readonly supportsStreaming = true;
 
   buildRequest(skill: any, input: string, config: RuntimeConfig): ModelRequest {
-    const userMessage = skill.instructions.user_template.replace('{{input}}', input);
+    const systemPrompt = skill.persona?.system_prompt ?? skill.instructions?.system ?? '';
+    const userTemplate = skill.instructions?.user_template ?? '{{input}}';
+    const userMessage = userTemplate.replace('{{input}}', input);
     const modelId = config.modelId;
     const baseUrl =
       config.baseUrl || 'https://generativelanguage.googleapis.com/v1beta';
@@ -25,7 +27,7 @@ export class GeminiAdapter implements ModelAdapter {
       },
       body: {
         systemInstruction: {
-          parts: [{ text: skill.instructions.system }],
+          parts: [{ text: systemPrompt }],
         },
         contents: [
           {

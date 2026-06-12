@@ -80,8 +80,44 @@ export class AgentResolver {
    */
   resolveWithDependencies(name: string, versionRange?: string): { agent: Agent; skills: any[] } {
     const agent = this.resolve(name, versionRange);
-    // v2 agents no longer have a skills array — they embed personas via ref or inline
-    return { agent, skills: [] };
+    const resolvedSkills: any[] = [];
+
+    // v2 agents embed personas via ref or inline — resolve refs
+    if (agent.persona && typeof agent.persona === 'object' && 'ref' in agent.persona) {
+      const ref = (agent.persona as any).ref;
+      const match = ref.match(/^@([\w-]+)\/([\w-]+)(?:@([\d.]+))?$/);
+      if (match) {
+        const skillName = `@${match[1]}/${match[2]}`;
+        const skillVersion = match[3];
+        try {
+          const versions = this.cache.getInstalledVersions(skillName);
+          if (versions.length > 0) {
+            const resolved = skillVersion
+              ? versions.find(v => v === skillVersion) ?? versions.sort(semver.rcompare)[0]
+              : versions.sort(semver.rcompare)[0];
+            const skill = this.cache.loadSkill(skillName, resolved);
+            resolvedSkills.push(skill);
+          }
+        } catch {
+          // Skill not available locally — leave empty
+        }
+      }
+    }
+
+    // v1 agents may still declare a skills array
+    const v1Skills = (agent as any).skills;
+    if (Array.isArray(v1Skills)) {
+      for (const s of v1Skills) {
+        try {
+          const skill = this.cache.loadSkill(s.name, s.version ?? 'latest');
+          resolvedSkills.push(skill);
+        } catch {
+          // Skill not available
+        }
+      }
+    }
+
+    return { agent, skills: resolvedSkills };
   }
 }
 

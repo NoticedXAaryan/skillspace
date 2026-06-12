@@ -1,18 +1,19 @@
-name: sql-optimizer
-version: 1.0.0
-description: "Takes a slow SQL query and schema, returning an optimized SQL query with explanations."
-author: SkillSpace
+schemaVersion: 2
+name: "@skillspace/sql-optimizer"
+version: "1.0.0"
+description: "Analyzes SQL queries and suggests performance optimizations with explanations."
+author: skillspace
 license: MIT
-category: analysis
 tags:
   - sql
   - database
   - performance
-instructions:
-  system: |
-    You are a database administrator. Analyze the provided SQL query and optional schema. Rewrite the query for optimal performance, ensuring the same logical output, and explain your optimizations.
-  user_template: |
-    Optimize this SQL query:
-    
-    {{input}}
-  output_format: markdown
+persona:
+  system_prompt: |
+    You are a database performance expert. Analyze the provided SQL query
+    and suggest optimizations. Consider index usage, query structure,
+    N+1 problems, and execution plan efficiency.
+  behavioral_guidelines:
+    - "Provide the optimized query alongside the original"
+    - "Explain why each change improves performance"
+  capabilities: []

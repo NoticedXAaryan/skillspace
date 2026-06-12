@@ -5,13 +5,16 @@ type RateLimitEntry = {
   resetAt: number;
 };
 
-// Global in-memory store for rate limiting.
-// Note: In a Serverless environment like Vercel, this is per-instance. 
-// It works well enough for basic burst protection, but for cluster-wide rate limiting, use Redis.
 const rateLimitCache = new Map<string, RateLimitEntry>();
 
+export function getClientIp(req: NextRequest): string {
+  return req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    || req.headers.get('x-real-ip')
+    || '127.0.0.1';
+}
+
 export function checkRateLimit(req: NextRequest, limit: number, windowSecs: number): { success: boolean; limit: number; remaining: number } {
-  const ip = req.headers.get('x-forwarded-for') || req.ip || '127.0.0.1';
+  const ip = getClientIp(req);
   const now = Date.now();
   const windowMs = windowSecs * 1000;
 
@@ -28,5 +31,26 @@ export function checkRateLimit(req: NextRequest, limit: number, windowSecs: numb
     success: entry.count <= limit,
     limit,
     remaining: Math.max(0, limit - entry.count)
+  };
+}
+
+export async function rateLimit(
+  key: string,
+  limit: number,
+  windowMs: number,
+): Promise<{ allowed: boolean; remaining: number }> {
+  const now = Date.now();
+  let entry = rateLimitCache.get(key);
+
+  if (!entry || now > entry.resetAt) {
+    entry = { count: 0, resetAt: now + windowMs };
+  }
+
+  entry.count += 1;
+  rateLimitCache.set(key, entry);
+
+  return {
+    allowed: entry.count <= limit,
+    remaining: Math.max(0, limit - entry.count),
   };
 }

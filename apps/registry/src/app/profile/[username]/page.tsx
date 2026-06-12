@@ -1,9 +1,8 @@
 export const dynamic = 'force-dynamic';
+import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
-import { PrismaClient } from '@prisma/client';
 import ProfileClient from './ProfileClient';
 
-const prisma = new PrismaClient();
 
 export default async function ProfilePage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = await params;
@@ -48,9 +47,9 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
   };
 
   const profileData = {
-    username: safeUser.username,
+    username: safeUser.username || username,
     bio: safeUser.bio,
-    avatar: safeUser.avatar,
+    avatar: 'image' in safeUser ? safeUser.image : (safeUser as any).avatar,
     banner: safeUser.banner,
     github: safeUser.github,
     website: safeUser.website,

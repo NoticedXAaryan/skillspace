@@ -13,7 +13,7 @@ export async function GET(
   if (!pkg) return notFound(`Package "${name}" not found`);
 
   if (pkg.isPrivate) {
-    const user = getUserFromRequest(_req);
+    const user = await getUserFromRequest(_req);
     if (!user) {
       return error('UNAUTHORIZED', 'Unauthorized. This package is private.', 401);
     }

@@ -21,29 +21,23 @@ describe('Executor', () => {
     executor = new Executor(resolver);
 
     const skillYaml = YAML.stringify({
-      name: 'test-skill',
+      schemaVersion: 2,
+      name: '@test/test-skill',
       version: '1.0.0',
       description: 'A test skill',
       author: 'tester',
       license: 'MIT',
-      instructions: {
-        system: 'System prompt',
-        user_template: '{{input}}',
-        output_format: 'text',
+      persona: {
+        system_prompt: 'You are a helpful test assistant that processes input.',
+        behavioral_guidelines: ['Always respond concisely'],
+        capabilities: ['filesystem.read', 'filesystem.write'],
       },
       tags: ['test'],
-      category: 'other',
-      permissions: ['filesystem.write', 'filesystem.read'],
-      config: {
-        temperature: 0.5,
-        max_tokens: 1000,
-        timeout_seconds: 5,
-      }
     });
 
     const files = new Map<string, Buffer>();
     files.set('skill.yaml', Buffer.from(skillYaml));
-    await mockInstallPackage(cache, 'test-skill', '1.0.0', files);
+    await mockInstallPackage(cache, '@test/test-skill', '1.0.0', files);
     
     // Mock config load to provide dummy API keys
     vi.mock('../src/config.js', async (importOriginal) => {
@@ -86,7 +80,7 @@ describe('Executor', () => {
     });
 
     const result = await executor.run({
-      skill: 'test-skill',
+      skill: '@test/test-skill',
       input: 'Hello world',
       model: 'openai/gpt-4o'
     });
@@ -113,7 +107,7 @@ describe('Executor', () => {
     });
 
     const result = await executor.run({
-      skill: 'test-skill',
+      skill: '@test/test-skill',
       input: inputFile,
       model: 'openai/gpt-4o'
     });
@@ -134,7 +128,7 @@ describe('Executor', () => {
     });
 
     await expect(executor.run({
-      skill: 'test-skill',
+      skill: '@test/test-skill',
       input: 'Hello',
       model: 'openai/gpt-4o'
     })).rejects.toThrowError(/Invalid API key/);
@@ -164,7 +158,7 @@ describe('Executor', () => {
     vi.spyOn(executor as any, 'sleep').mockResolvedValue(undefined);
 
     const result = await executor.run({
-      skill: 'test-skill',
+      skill: '@test/test-skill',
       input: 'Hello',
       model: 'openai/gpt-4o'
     });
@@ -183,7 +177,7 @@ describe('Executor', () => {
     vi.spyOn(executor as any, 'sleep').mockResolvedValue(undefined);
 
     await expect(executor.run({
-      skill: 'test-skill',
+      skill: '@test/test-skill',
       input: 'Hello',
       model: 'openai/gpt-4o'
     })).rejects.toThrowError(/Failed after/);

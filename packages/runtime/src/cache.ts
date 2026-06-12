@@ -99,13 +99,13 @@ export class SkillCache {
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
       const atIndex = entry.name.lastIndexOf('@');
-      if (atIndex <= 0) continue; // skip invalid entries
+      if (atIndex < 0) continue;
 
-      const name = entry.name.substring(0, atIndex);
+      const rawName = entry.name.substring(0, atIndex);
       const version = entry.name.substring(atIndex + 1);
+      const name = rawName.startsWith('@') ? rawName.replace(/^(@[^~]+)~/, '$1/') : rawName;
       const pkgPath = path.join(this.registryDir, entry.name);
 
-      // Verify it has a skill.yaml
       if (fs.existsSync(path.join(pkgPath, 'skill.yaml'))) {
         packages.push({ name, version, path: pkgPath });
       }
@@ -127,7 +127,8 @@ export class SkillCache {
    * Get the directory path for a package.
    */
   getPackageDir(name: string, version: string): string {
-    return path.join(this.registryDir, `${name}@${version}`);
+    const safeName = name.replace(/\//g, '~');
+    return path.join(this.registryDir, `${safeName}@${version}`);
   }
 
   /**
@@ -184,10 +185,11 @@ export class SkillCache {
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
       const atIndex = entry.name.lastIndexOf('@');
-      if (atIndex <= 0) continue;
+      if (atIndex < 0) continue;
 
-      const name = entry.name.substring(0, atIndex);
+      const rawName = entry.name.substring(0, atIndex);
       const version = entry.name.substring(atIndex + 1);
+      const name = rawName.startsWith('@') ? rawName.replace(/^(@[^~]+)~/, '$1/') : rawName;
       const pkgPath = path.join(this.registryDir, entry.name);
 
       let manifestPath = path.join(pkgPath, 'agent.yaml');

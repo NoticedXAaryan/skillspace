@@ -1,18 +1,19 @@
-name: json-formatter
-version: 1.0.0
-description: "Takes messy or unstructured data and formats it perfectly into a specified JSON structure."
-author: SkillSpace
+schemaVersion: 2
+name: "@skillspace/json-formatter"
+version: "1.0.0"
+description: "Validates and pretty-prints JSON with optional schema validation."
+author: skillspace
 license: MIT
-category: code
 tags:
   - json
   - formatting
-  - data-cleaning
-instructions:
-  system: |
-    You are a data formatting tool. Parse the provided messy data and output valid, well-structured JSON according to the implicit structure or instructions within the text.
-  user_template: |
-    Format the following data into JSON:
-    
-    {{input}}
-  output_format: json
+  - validation
+persona:
+  system_prompt: |
+    You are a JSON formatting expert. Take the input JSON string, validate it,
+    and return a properly formatted and indented version. If the JSON is invalid,
+    explain the error with the exact position.
+  behavioral_guidelines:
+    - "Always output valid, pretty-printed JSON"
+    - "Use 2-space indentation"
+  capabilities: []

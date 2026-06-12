@@ -22,19 +22,18 @@ describe('SkillCache', () => {
   });
 
   const sampleSkillYaml = YAML.stringify({
-    name: 'test-skill',
+    schemaVersion: 2,
+    name: '@test/test-skill',
     version: '1.0.0',
     description: 'A test skill',
     author: 'tester',
     license: 'MIT',
-    instructions: {
-      system: 'System prompt',
-      user_template: '{{input}}',
-      output_format: 'text',
+    persona: {
+      system_prompt: 'You are a helpful test assistant.',
+      behavioral_guidelines: [],
+      capabilities: [],
     },
     tags: ['test'],
-    category: 'other',
-    permissions: [],
   });
 
   it('installs a package correctly', async () => {
@@ -42,15 +41,15 @@ describe('SkillCache', () => {
     files.set('skill.yaml', Buffer.from(sampleSkillYaml));
     files.set('README.md', Buffer.from('# Test Skill'));
 
-    const pkgDir = await mockInstallPackage(cache, 'test-skill', '1.0.0', files);
+    const pkgDir = await mockInstallPackage(cache, '@test/test-skill', '1.0.0', files);
 
     expect(fs.existsSync(pkgDir)).toBe(true);
     expect(fs.existsSync(path.join(pkgDir, 'skill.yaml'))).toBe(true);
     expect(fs.existsSync(path.join(pkgDir, 'README.md'))).toBe(true);
     
     // Check isInstalled
-    expect(cache.isInstalled('test-skill', '1.0.0')).toBe(true);
-    expect(cache.isInstalled('test-skill', '2.0.0')).toBe(false);
+    expect(cache.isInstalled('@test/test-skill', '1.0.0')).toBe(true);
+    expect(cache.isInstalled('@test/test-skill', '2.0.0')).toBe(false);
   });
 
   it('validates checksum during installation', async () => {
@@ -62,24 +61,24 @@ describe('SkillCache', () => {
     
     // Should succeed if no checksum is provided
     await expect(
-      cache.preparePackageDir('test-skill', '1.0.0', fakeBuffer)
+      cache.preparePackageDir('@test/test-skill', '1.0.0', fakeBuffer)
     ).resolves.not.toThrow();
 
     // Should fail with invalid checksum
     await expect(
-      cache.preparePackageDir('test-skill', '1.0.1', fakeBuffer, 'sha256:invalid')
+      cache.preparePackageDir('@test/test-skill', '1.0.1', fakeBuffer, 'sha256:invalid')
     ).rejects.toThrow(/Checksum mismatch/);
   });
 
   it('loads a skill from cache', async () => {
     const files = new Map<string, Buffer>();
     files.set('skill.yaml', Buffer.from(sampleSkillYaml));
-    await mockInstallPackage(cache, 'test-skill', '1.0.0', files);
+    await mockInstallPackage(cache, '@test/test-skill', '1.0.0', files);
 
-    const skill = cache.loadSkill('test-skill', '1.0.0');
-    expect(skill.name).toBe('test-skill');
+    const skill = cache.loadSkill('@test/test-skill', '1.0.0');
+    expect(skill.name).toBe('@test/test-skill');
     expect(skill.version).toBe('1.0.0');
-    expect(skill.instructions.system).toBe('System prompt');
+    expect(skill.persona.system_prompt).toBe('You are a helpful test assistant.');
   });
 
   it('throws when loading a non-existent skill', () => {
@@ -89,13 +88,13 @@ describe('SkillCache', () => {
   it('removes a package', async () => {
     const files = new Map<string, Buffer>();
     files.set('skill.yaml', Buffer.from(sampleSkillYaml));
-    await mockInstallPackage(cache, 'test-skill', '1.0.0', files);
+    await mockInstallPackage(cache, '@test/test-skill', '1.0.0', files);
 
-    expect(cache.isInstalled('test-skill', '1.0.0')).toBe(true);
+    expect(cache.isInstalled('@test/test-skill', '1.0.0')).toBe(true);
 
-    cache.removePackage('test-skill', '1.0.0');
+    cache.removePackage('@test/test-skill', '1.0.0');
 
-    expect(cache.isInstalled('test-skill', '1.0.0')).toBe(false);
+    expect(cache.isInstalled('@test/test-skill', '1.0.0')).toBe(false);
   });
 
   it('lists installed packages and versions', async () => {
@@ -106,15 +105,15 @@ describe('SkillCache', () => {
     const files2 = new Map<string, Buffer>();
     files2.set('skill.yaml', Buffer.from(skillYaml2));
 
-    await mockInstallPackage(cache, 'test-skill', '1.0.0', files1);
-    await mockInstallPackage(cache, 'test-skill', '2.0.0', files2);
+    await mockInstallPackage(cache, '@test/test-skill', '1.0.0', files1);
+    await mockInstallPackage(cache, '@test/test-skill', '2.0.0', files2);
 
     const installed = cache.listInstalled();
     expect(installed).toHaveLength(2);
     expect(installed.map(p => p.version)).toContain('1.0.0');
     expect(installed.map(p => p.version)).toContain('2.0.0');
 
-    const versions = cache.getInstalledVersions('test-skill');
+    const versions = cache.getInstalledVersions('@test/test-skill');
     expect(versions).toEqual(expect.arrayContaining(['1.0.0', '2.0.0']));
   });
   
@@ -122,9 +121,9 @@ describe('SkillCache', () => {
     const files = new Map<string, Buffer>();
     files.set('skill.yaml', Buffer.from(sampleSkillYaml));
     files.set('README.md', Buffer.from('# Hello Readme'));
-    await mockInstallPackage(cache, 'test-skill', '1.0.0', files);
+    await mockInstallPackage(cache, '@test/test-skill', '1.0.0', files);
     
-    expect(cache.getReadme('test-skill', '1.0.0')).toBe('# Hello Readme');
-    expect(cache.getReadme('test-skill', '2.0.0')).toBeNull();
+    expect(cache.getReadme('@test/test-skill', '1.0.0')).toBe('# Hello Readme');
+    expect(cache.getReadme('@test/test-skill', '2.0.0')).toBeNull();
   });
 });

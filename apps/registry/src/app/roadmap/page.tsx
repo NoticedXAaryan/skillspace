@@ -1,11 +1,10 @@
 export const dynamic = 'force-dynamic';
+import { prisma } from '@/lib/prisma';
 import { Map, CheckCircle2, CircleDashed, ArrowRightCircle, ThumbsUp } from 'lucide-react';
-import { PrismaClient } from '@prisma/client';
 import { HeroSection } from '@/components/ui/hero-odyssey';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
-const prisma = new PrismaClient();
 
 export const metadata = {
   title: 'Roadmap — SkillSpace',

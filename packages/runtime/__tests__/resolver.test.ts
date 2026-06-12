@@ -22,23 +22,22 @@ describe('SkillResolver', () => {
     
     for (const version of versions) {
       const skillYaml = YAML.stringify({
-        name: 'test-skill',
+        schemaVersion: 2,
+        name: '@test/test-skill',
         version: version,
         description: 'A test skill',
         author: 'tester',
         license: 'MIT',
-        instructions: {
-          system: 'System prompt',
-          user_template: '{{input}}',
-          output_format: 'text',
+        persona: {
+          system_prompt: 'You are a helpful test assistant.',
+          behavioral_guidelines: [],
+          capabilities: [],
         },
         tags: ['test'],
-        category: 'other',
-        permissions: [],
       });
       const files = new Map<string, Buffer>();
       files.set('skill.yaml', Buffer.from(skillYaml));
-      await mockInstallPackage(cache, 'test-skill', version, files);
+      await mockInstallPackage(cache, '@test/test-skill', version, files);
     }
   });
 
@@ -49,34 +48,34 @@ describe('SkillResolver', () => {
   });
 
   it('resolves exact versions', () => {
-    const skill = resolver.resolve('test-skill', '1.0.1');
+    const skill = resolver.resolve('@test/test-skill', '1.0.1');
     expect(skill.version).toBe('1.0.1');
   });
 
   it('resolves ^ range to highest minor/patch', () => {
-    const skill = resolver.resolve('test-skill', '^1.0.0');
+    const skill = resolver.resolve('@test/test-skill', '^1.0.0');
     // Highest 1.x.x is 1.1.0
     expect(skill.version).toBe('1.1.0');
   });
 
   it('resolves ~ range to highest patch', () => {
-    const skill = resolver.resolve('test-skill', '~1.0.0');
+    const skill = resolver.resolve('@test/test-skill', '~1.0.0');
     // Highest 1.0.x is 1.0.1
     expect(skill.version).toBe('1.0.1');
   });
 
   it('resolves latest if no range is provided', () => {
-    const skill = resolver.resolve('test-skill');
+    const skill = resolver.resolve('@test/test-skill');
     expect(skill.version).toBe('2.0.0');
   });
 
   it('resolves latest if * is provided', () => {
-    const skill = resolver.resolve('test-skill', '*');
+    const skill = resolver.resolve('@test/test-skill', '*');
     expect(skill.version).toBe('2.0.0');
   });
 
   it('resolves latest if "latest" is provided', () => {
-    const skill = resolver.resolve('test-skill', 'latest');
+    const skill = resolver.resolve('@test/test-skill', 'latest');
     expect(skill.version).toBe('2.0.0');
   });
 
@@ -86,22 +85,22 @@ describe('SkillResolver', () => {
   });
 
   it('throws VersionNotFoundError if range cannot be satisfied', () => {
-    expect(() => resolver.resolve('test-skill', '^3.0.0')).toThrow(VersionNotFoundError);
-    expect(() => resolver.resolve('test-skill', '^3.0.0')).toThrow(/3\.0\.0/);
+    expect(() => resolver.resolve('@test/test-skill', '^3.0.0')).toThrow(VersionNotFoundError);
+    expect(() => resolver.resolve('@test/test-skill', '^3.0.0')).toThrow(/3\.0\.0/);
   });
 
   it('resolveWithVersion returns both', () => {
-    const result = resolver.resolveWithVersion('test-skill', '^1.0.0');
-    expect(result.skill.name).toBe('test-skill');
+    const result = resolver.resolveWithVersion('@test/test-skill', '^1.0.0');
+    expect(result.skill.name).toBe('@test/test-skill');
     expect(result.version).toBe('1.1.0');
   });
 
   it('isAvailable returns true if available', () => {
-    expect(resolver.isAvailable('test-skill', '^1.0.0')).toBe(true);
+    expect(resolver.isAvailable('@test/test-skill', '^1.0.0')).toBe(true);
   });
 
   it('isAvailable returns false if missing', () => {
-    expect(resolver.isAvailable('test-skill', '^3.0.0')).toBe(false);
+    expect(resolver.isAvailable('@test/test-skill', '^3.0.0')).toBe(false);
     expect(resolver.isAvailable('missing-skill')).toBe(false);
   });
 });

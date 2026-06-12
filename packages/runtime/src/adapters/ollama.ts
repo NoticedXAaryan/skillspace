@@ -14,7 +14,9 @@ export class OllamaAdapter implements ModelAdapter {
   readonly supportsStreaming = true;
 
   buildRequest(skill: any, input: string, config: RuntimeConfig): ModelRequest {
-    const userMessage = skill.instructions.user_template.replace('{{input}}', input);
+    const systemPrompt = skill.persona?.system_prompt ?? skill.instructions?.system ?? '';
+    const userTemplate = skill.instructions?.user_template ?? '{{input}}';
+    const userMessage = userTemplate.replace('{{input}}', input);
 
     return {
       url: `${config.baseUrl || 'http://localhost:11434'}/api/chat`,
@@ -24,13 +26,13 @@ export class OllamaAdapter implements ModelAdapter {
       body: {
         model: config.modelId,
         messages: [
-          { role: 'system', content: skill.instructions.system },
+          { role: 'system', content: systemPrompt },
           { role: 'user', content: userMessage },
         ],
         stream: false,
         options: {
-          temperature: config.temperature ?? skill.config.temperature,
-          num_predict: config.maxTokens ?? skill.config.max_tokens,
+          temperature: config.temperature ?? skill.config?.temperature ?? 0.3,
+          num_predict: config.maxTokens ?? skill.config?.max_tokens ?? 4000,
         },
       },
       stream: false,

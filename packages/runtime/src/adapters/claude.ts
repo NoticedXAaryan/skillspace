@@ -12,7 +12,9 @@ export class ClaudeAdapter implements ModelAdapter {
   readonly supportsStreaming = true;
 
   buildRequest(skill: any, input: string, config: RuntimeConfig): ModelRequest {
-    const userMessage = skill.instructions.user_template.replace('{{input}}', input);
+    const systemPrompt = skill.persona?.system_prompt ?? skill.instructions?.system ?? '';
+    const userTemplate = skill.instructions?.user_template ?? '{{input}}';
+    const userMessage = userTemplate.replace('{{input}}', input);
 
     return {
       url: config.baseUrl || 'https://api.anthropic.com/v1/messages',
@@ -23,9 +25,9 @@ export class ClaudeAdapter implements ModelAdapter {
       },
       body: {
         model: config.modelId,
-        max_tokens: config.maxTokens ?? skill.config.max_tokens,
-        temperature: config.temperature ?? skill.config.temperature,
-        system: skill.instructions.system,
+        max_tokens: config.maxTokens ?? skill.config?.max_tokens ?? 4000,
+        temperature: config.temperature ?? skill.config?.temperature ?? 0.3,
+        system: systemPrompt,
         messages: [
           {
             role: 'user',

@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { twoFactor } from "better-auth/plugins";
+import { NextRequest } from "next/server";
 import { prisma } from "./prisma";
 
 export const auth = betterAuth({
@@ -20,16 +21,31 @@ export const auth = betterAuth({
     },
   },
   advanced: {
-    useSecureCookies: false, // For local dev and CLI interaction
+    useSecureCookies: false,
     defaultCookieAttributes: {
       sameSite: "none",
       secure: true
     }
   },
-  trustedOrigins: ['https://skillspace-registry.vercel.app', 'http://localhost:3000'],
   plugins: [
     twoFactor({
-      issuer: "AIR Registry",
+      issuer: "SkillSpace Registry",
     }),
   ]
 });
+
+export async function getUserFromRequest(req: NextRequest): Promise<{ userId: string; username: string; email: string } | null> {
+  try {
+    const session = await auth.api.getSession({
+      headers: req.headers,
+    });
+    if (!session?.user) return null;
+    return {
+      userId: session.user.id,
+      username: session.user.name || session.user.email.split('@')[0],
+      email: session.user.email,
+    };
+  } catch {
+    return null;
+  }
+}

@@ -1,18 +1,19 @@
-name: doc-generator
-version: 1.0.0
-description: "Reads a source code file and writes JSDoc or standard documentation comments for functions and classes."
-author: SkillSpace
+schemaVersion: 2
+name: "@skillspace/doc-generator"
+version: "1.0.0"
+description: "Generates documentation for code files including function signatures, parameters, and usage examples."
+author: skillspace
 license: MIT
-category: writing
 tags:
   - documentation
-  - jsdoc
-  - comments
-instructions:
-  system: |
-    You are a technical writer. Document the provided code by adding appropriate JSDoc comments to all functions, classes, and complex logic blocks. Only output the documented code.
-  user_template: |
-    Add documentation comments to this code:
-    
-    {{input}}
-  output_format: markdown
+  - api-docs
+  - markdown
+persona:
+  system_prompt: |
+    You are a technical documentation writer. Analyze the provided code and
+    generate comprehensive documentation including: function descriptions,
+    parameter types, return values, and usage examples.
+  behavioral_guidelines:
+    - "Use markdown format with code blocks"
+    - "Include practical usage examples"
+  capabilities: []

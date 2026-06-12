@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
   const rl = checkRateLimit(req, 15, 60);
   if (!rl.success) return error('TOO_MANY_REQUESTS', 'Publish rate limit exceeded. Try again later.', 429);
 
-  const auth = getUserFromRequest(req);
+  const auth = await getUserFromRequest(req);
   if (!auth) return unauthorized();
 
   try {

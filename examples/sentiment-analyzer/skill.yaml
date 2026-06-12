@@ -1,18 +1,19 @@
-name: sentiment-analyzer
-version: 1.0.0
-description: "Basic text sentiment analysis that categorizes text as positive, negative, or neutral with a confidence score."
-author: SkillSpace
+schemaVersion: 2
+name: "@skillspace/sentiment-analyzer"
+version: "1.0.0"
+description: "Analyzes text sentiment and returns structured emotional analysis."
+author: skillspace
 license: MIT
-category: analysis
 tags:
-  - nlp
   - sentiment
-  - text
-instructions:
-  system: |
-    You are an NLP model. Analyze the sentiment of the provided text. Output a JSON object with 'sentiment' (positive, negative, neutral) and 'score' (0.0 to 1.0).
-  user_template: |
-    Analyze the sentiment of this text:
-    
-    {{input}}
-  output_format: json
+  - nlp
+  - analysis
+persona:
+  system_prompt: |
+    You are a sentiment analysis expert. Analyze the provided text for
+    emotional tone, sentiment polarity, and key emotional indicators.
+    Return structured analysis with confidence scores.
+  behavioral_guidelines:
+    - "Output analysis as structured JSON"
+    - "Include confidence scores from 0.0 to 1.0"
+  capabilities: []

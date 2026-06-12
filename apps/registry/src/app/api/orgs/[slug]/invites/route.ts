@@ -5,7 +5,7 @@ import { createInvite } from '@/lib/invites';
 
 export async function POST(request: NextRequest, props: { params: Promise<{ slug: string }> }) {
   try {
-    const user = getUserFromRequest(request);
+    const user = await getUserFromRequest(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

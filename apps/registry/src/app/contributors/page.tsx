@@ -1,11 +1,10 @@
 export const dynamic = 'force-dynamic';
+import { prisma } from '@/lib/prisma';
 import { Trophy, Sparkles, Star, Package, Award } from 'lucide-react';
-import { PrismaClient } from '@prisma/client';
 import Link from 'next/link';
 import { HeroSection } from '@/components/ui/hero-odyssey';
 import { Card, CardContent } from '@/components/ui/card';
 
-const prisma = new PrismaClient();
 
 export const metadata = {
   title: 'Contributors — SkillSpace',
@@ -94,11 +93,11 @@ export default async function ContributorsPage() {
                       {index + 1}
                     </div>
                     <div className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center font-bold text-white shrink-0">
-                      {user.username[0].toUpperCase()}
+                      {user.username?.[0]?.toUpperCase() || '?'}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <Link href={`/profile/${user.username}`} className="text-base font-bold text-white hover:text-cyan-400 transition-colors truncate block">
-                        @{user.username}
+                      <Link href={`/profile/${user.username || ''}`} className="text-base font-bold text-white hover:text-cyan-400 transition-colors truncate block">
+                        @{user.username || 'unknown'}
                       </Link>
                       <p className="text-sm text-neutral-500 truncate">{user.bio || 'Open source contributor'}</p>
                     </div>

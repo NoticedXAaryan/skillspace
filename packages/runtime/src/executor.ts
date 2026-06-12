@@ -60,7 +60,8 @@ export class Executor {
     const skill: any = this.resolver.resolve(options.skill);
 
     // 2. Determine required permissions and enforce
-    const enforcer = new PermissionEnforcer(skill.name, skill.permissions);
+    const declaredPermissions = skill.permissions ?? skill.persona?.capabilities ?? [];
+    const enforcer = new PermissionEnforcer(skill.name, declaredPermissions);
     const fsSandbox = new FileSystemSandbox();
     this.enforceInputPermissions(enforcer, options, fsSandbox);
 
@@ -82,9 +83,9 @@ export class Executor {
     const runtimeConfig: RuntimeConfig = {
       apiKey,
       modelId: modelName,
-      temperature: options.config?.temperature ?? skill.config.temperature,
-      maxTokens: options.config?.max_tokens ?? skill.config.max_tokens,
-      timeoutSeconds: options.config?.timeout_seconds ?? skill.config.timeout_seconds,
+      temperature: options.config?.temperature ?? skill.config?.temperature ?? 0.3,
+      maxTokens: options.config?.max_tokens ?? skill.config?.max_tokens ?? 4000,
+      timeoutSeconds: options.config?.timeout_seconds ?? skill.config?.timeout_seconds ?? 30,
       baseUrl: getBaseUrl(provider),
     };
 
@@ -138,9 +139,11 @@ export class Executor {
           }
         }
 
+        const systemPrompt = skill.persona?.system_prompt ?? skill.instructions?.system ?? '';
+        const userTemplate = skill.instructions?.user_template ?? '{{input}}';
         const messages: ChatMessage[] = [
-          { role: 'system', content: skill.instructions.system },
-          { role: 'user', content: skill.instructions.user_template.replace('{{input}}', input) }
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userTemplate.replace('{{input}}', input) }
         ];
 
         let stepCount = 0;
@@ -205,7 +208,7 @@ export class Executor {
       result.duration_ms = Date.now() - startTime;
 
       // 10. Validate output schema if specified
-      if (skill.instructions.output_format === 'json' && skill.instructions.output_schema) {
+      if (skill.instructions?.output_format === 'json' && skill.instructions?.output_schema) {
         try {
           JSON.parse(result.output);
         } catch {
@@ -273,9 +276,9 @@ export class Executor {
     const runtimeConfig: RuntimeConfig = {
       apiKey,
       modelId: modelName,
-      temperature: options.config?.temperature ?? skill.config.temperature,
-      maxTokens: options.config?.max_tokens ?? skill.config.max_tokens,
-      timeoutSeconds: options.config?.timeout_seconds ?? skill.config.timeout_seconds,
+      temperature: options.config?.temperature ?? skill.config?.temperature ?? 0.3,
+      maxTokens: options.config?.max_tokens ?? skill.config?.max_tokens ?? 4000,
+      timeoutSeconds: options.config?.timeout_seconds ?? skill.config?.timeout_seconds ?? 30,
       baseUrl: getBaseUrl(provider),
     };
 

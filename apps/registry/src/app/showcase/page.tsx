@@ -1,11 +1,10 @@
 export const dynamic = 'force-dynamic';
+import { prisma } from '@/lib/prisma';
 import { ExternalLink, Rocket } from 'lucide-react';
-import { PrismaClient } from '@prisma/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { HeroSection } from '@/components/ui/hero-odyssey';
 
-const prisma = new PrismaClient();
 
 export const metadata = {
   title: 'Showcase — SkillSpace',

@@ -18,7 +18,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ nam
     if (!pkg) return notFound(`Package "${name}" not found`);
 
     if (pkg.isPrivate) {
-      const user = getUserFromRequest(_req);
+      const user = await getUserFromRequest(_req);
       if (!user) {
         return new Response(JSON.stringify({ error: { message: 'Unauthorized. This package is private.' } }), {
           status: 401,

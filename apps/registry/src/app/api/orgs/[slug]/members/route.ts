@@ -4,7 +4,7 @@ import { getUserFromRequest } from '@/lib/auth';
 
 export async function GET(request: NextRequest, context: { params: Promise<{ slug: string }> }) {
   try {
-    const user = getUserFromRequest(request);
+    const user = await getUserFromRequest(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
 
 export async function POST(request: NextRequest, context: { params: Promise<{ slug: string }> }) {
   try {
-    const user = getUserFromRequest(request);
+    const user = await getUserFromRequest(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

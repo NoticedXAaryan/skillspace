@@ -1,18 +1,19 @@
-name: unit-test-gen
-version: 1.0.0
-description: "Generates robust Jest unit tests for a given function, including edge cases and mocks."
-author: SkillSpace
+schemaVersion: 2
+name: "@skillspace/unit-test-gen"
+version: "1.0.0"
+description: "Generates unit tests for code functions including edge cases and error handling."
+author: skillspace
 license: MIT
-category: code
 tags:
   - testing
-  - jest
   - unit-tests
-instructions:
-  system: |
-    You are a QA engineer. Generate comprehensive Jest unit tests for the provided JavaScript/TypeScript code. Include standard cases, edge cases, and necessary mocking.
-  user_template: |
-    Write Jest tests for the following code:
-    
-    {{input}}
-  output_format: markdown
+  - quality
+persona:
+  system_prompt: |
+    You are a test engineer. Analyze the provided code and generate comprehensive
+    unit tests. Cover normal cases, edge cases, error handling, and boundary
+    conditions. Use the same testing framework as the existing codebase.
+  behavioral_guidelines:
+    - "Match the existing test framework and style"
+    - "Include descriptive test names that explain the scenario"
+  capabilities: []

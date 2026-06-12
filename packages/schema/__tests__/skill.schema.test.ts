@@ -1,106 +1,82 @@
 import { describe, it, expect } from 'vitest';
 import { validateSkill, validateSkillYaml } from '../src/index.js';
 
-// ---------------------------------------------------------------------------
-// Valid skill fixture
-// ---------------------------------------------------------------------------
 const validSkill = {
-  name: 'security-review',
+  schemaVersion: 2 as const,
+  name: '@skillspace/security-review',
   version: '2.1.0',
   description: 'Analyze code for security vulnerabilities',
   author: 'skillspace',
   license: 'MIT',
-  instructions: {
-    system: 'You are a security reviewer. Analyze the provided code for vulnerabilities.',
-    user_template: 'Review the following code:\n<code>{{input}}</code>',
-    output_format: 'json' as const,
-  },
   tags: ['security', 'code-review'],
-  category: 'security' as const,
-  examples: [
-    {
-      input: 'function login(user, pass) { return db.query("SELECT * FROM users WHERE name=\'" + user + "\'"); }',
-      expected_output: { vulnerabilities: ['SQL Injection'] },
-      model: 'ollama/llama3.2',
-    },
-  ],
-  permissions: ['filesystem.read' as const],
-  config: {
-    temperature: 0.3,
-    max_tokens: 4000,
-    timeout_seconds: 30,
+  persona: {
+    system_prompt: 'You are a security reviewer. Analyze the provided code for vulnerabilities and output findings as structured JSON.',
+    tone: 'Professional and precise',
+    behavioral_guidelines: [
+      'Always output findings in JSON format',
+      'Rate each finding by severity: critical, high, medium, low',
+    ],
+    preferred_model: 'anthropic/claude-sonnet-4-6',
+    capabilities: ['read:files'],
   },
 };
 
 const validSkillYaml = `
-name: security-review
+schemaVersion: 2
+name: "@skillspace/security-review"
 version: "2.1.0"
 description: Analyze code for security vulnerabilities
 author: skillspace
 license: MIT
-instructions:
-  system: You are a security reviewer.
-  user_template: "Review: {{input}}"
-  output_format: text
 tags:
   - security
-category: security
-permissions:
-  - filesystem.read
+persona:
+  system_prompt: "You are a security reviewer. Analyze code for vulnerabilities."
+  tone: "Professional"
+  behavioral_guidelines:
+    - "Output findings as JSON"
+  capabilities:
+    - "read:files"
 `;
-
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
 
 describe('SkillSchema', () => {
   it('validates a correct skill object', () => {
     const result = validateSkill(validSkill);
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.name).toBe('security-review');
+      expect(result.data.name).toBe('@skillspace/security-review');
       expect(result.data.version).toBe('2.1.0');
+      expect(result.data.schemaVersion).toBe(2);
     }
   });
 
   it('applies defaults for optional fields', () => {
     const minimal = {
-      name: 'minimal-skill',
+      schemaVersion: 2 as const,
+      name: '@test/minimal-skill',
       version: '1.0.0',
-      description: 'A minimal skill',
-      author: 'test',
-      license: 'MIT',
-      instructions: {
-        system: 'You are helpful.',
-        user_template: 'Do this: {{input}}',
+      persona: {
+        system_prompt: 'You are a helpful assistant.',
       },
     };
     const result = validateSkill(minimal);
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.permissions).toEqual([]);
       expect(result.data.tags).toEqual([]);
-      expect(result.data.category).toBe('other');
-      expect(result.data.config.temperature).toBe(0.3);
-      expect(result.data.config.max_tokens).toBe(4000);
+      expect(result.data.license).toBe('MIT');
+      expect(result.data.persona.behavioral_guidelines).toEqual([]);
+      expect(result.data.persona.capabilities).toEqual([]);
     }
   });
 
   it('rejects missing required fields', () => {
     const result = validateSkill({});
     expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.errors.issues.length).toBeGreaterThan(0);
-    }
   });
 
-  it('rejects non-kebab-case name', () => {
-    const result = validateSkill({ ...validSkill, name: 'MySkill' });
+  it('rejects non-scoped name', () => {
+    const result = validateSkill({ ...validSkill, name: 'security-review' });
     expect(result.success).toBe(false);
-    if (!result.success) {
-      const nameIssue = result.errors.issues.find((i) => i.path.includes('name'));
-      expect(nameIssue).toBeDefined();
-    }
   });
 
   it('rejects invalid semver version', () => {
@@ -108,33 +84,25 @@ describe('SkillSchema', () => {
     expect(result.success).toBe(false);
   });
 
-  it('rejects user_template without {{input}} placeholder', () => {
+  it('rejects missing persona', () => {
     const result = validateSkill({
-      ...validSkill,
-      instructions: {
-        ...validSkill.instructions,
-        user_template: 'No placeholder here',
-      },
+      schemaVersion: 2,
+      name: '@test/skill',
+      version: '1.0.0',
     });
     expect(result.success).toBe(false);
   });
 
-  it('rejects invalid permission strings', () => {
+  it('rejects empty persona system_prompt', () => {
     const result = validateSkill({
       ...validSkill,
-      permissions: ['filesystem.read', 'invalid.permission'],
+      persona: { ...validSkill.persona, system_prompt: '' },
     });
     expect(result.success).toBe(false);
   });
 
-  it('rejects more than 10 tags', () => {
-    const tooManyTags = Array.from({ length: 11 }, (_, i) => `tag${i}`);
-    const result = validateSkill({ ...validSkill, tags: tooManyTags });
-    expect(result.success).toBe(false);
-  });
-
-  it('rejects invalid category', () => {
-    const result = validateSkill({ ...validSkill, category: 'invalid' });
+  it('rejects invalid schemaVersion', () => {
+    const result = validateSkill({ ...validSkill, schemaVersion: 1 });
     expect(result.success).toBe(false);
   });
 });
