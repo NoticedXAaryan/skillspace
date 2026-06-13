@@ -44,7 +44,7 @@ export default function AnimatedTerminal() {
           
           {/* Step 0: Type first command */}
           <div className="flex gap-3">
-            <span className="text-cyan-400">$</span>
+            <span className="text-blue-400">$</span>
             <span>skillspace install @skillspace/security-review</span>
           </div>
 
@@ -60,7 +60,7 @@ export default function AnimatedTerminal() {
           {/* Step 2: Type second command */}
           {step >= 2 && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3">
-              <span className="text-cyan-400">$</span>
+              <span className="text-blue-400">$</span>
               <span>skillspace run @core/summary --text "The quarterly report shows..."</span>
             </motion.div>
           )}
@@ -77,8 +77,8 @@ export default function AnimatedTerminal() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="ml-5 flex flex-col text-neutral-400 mt-2">
               <span className="text-neutral-500 mb-1">Output:</span>
               <span className="text-white">{"{"}</span>
-              <span className="ml-4"><span className="text-cyan-300">"summary"</span>: <span className="text-green-300">"Q3 revenue grew 14% YoY..."</span>,</span>
-              <span className="ml-4"><span className="text-cyan-300">"tokens_used"</span>: <span className="text-yellow-300">312</span></span>
+              <span className="ml-4"><span className="text-blue-300">"summary"</span>: <span className="text-green-300">"Q3 revenue grew 14% YoY..."</span>,</span>
+              <span className="ml-4"><span className="text-blue-300">"tokens_used"</span>: <span className="text-yellow-300">312</span></span>
               <span className="text-white">{"}"}</span>
             </motion.div>
           )}
@@ -86,7 +86,7 @@ export default function AnimatedTerminal() {
           {/* Cursor */}
           {step >= 5 && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3 mt-4">
-              <span className="text-cyan-400">$</span>
+              <span className="text-blue-400">$</span>
               <motion.div
                 animate={{ opacity: [1, 0] }}
                 transition={{ repeat: Infinity, duration: 0.8 }}

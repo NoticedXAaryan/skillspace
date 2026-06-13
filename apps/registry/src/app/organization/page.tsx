@@ -5,6 +5,7 @@ import { Users, Shield, Plus, Settings, Trash2, Package } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import PackageCard from '@/components/PackageCard';
+import { authClient } from '@/lib/auth-client';
 
 export default function OrganizationDashboard() {
   const [activeTab, setActiveTab] = useState('packages');
@@ -12,19 +13,18 @@ export default function OrganizationDashboard() {
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { data: session, isPending } = authClient.useSession();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
+    if (isPending) return;
+    if (!session) {
       router.push('/login');
       return;
     }
 
     async function fetchOrgs() {
       try {
-        const res = await fetch('/api/orgs', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await fetch('/api/orgs');
         const data = await res.json();
         if (res.ok && data.orgs) {
           setOrgs(data.orgs);
@@ -32,7 +32,6 @@ export default function OrganizationDashboard() {
             setSelectedOrgId(data.orgs[0].id);
           }
         } else if (res.status === 401) {
-          localStorage.removeItem('token');
           router.push('/login');
         }
       } catch (err) {
@@ -43,7 +42,7 @@ export default function OrganizationDashboard() {
     }
 
     fetchOrgs();
-  }, [router]);
+  }, [session, isPending, router]);
 
   if (loading) return <main className="container" style={{ padding: '4rem 1.5rem', textAlign: 'center' }}>Loading organizations...</main>;
 

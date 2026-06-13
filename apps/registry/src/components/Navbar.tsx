@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { authClient } from '@/lib/auth-client';
 import { useRouter, usePathname } from 'next/navigation';
 import { Menu, X, Book, Compass, Package, Box, Play, FileCode2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -45,19 +46,19 @@ const menu: MenuItem[] = [
       {
         title: "Registry",
         description: "Browse thousands of community-built skills.",
-        icon: <Package className="size-5 shrink-0 text-cyan-400" />,
+        icon: <Package className="size-5 shrink-0 text-blue-400" />,
         url: "/packages",
       },
       {
         title: "Trending",
         description: "See what the community is downloading today.",
-        icon: <Compass className="size-5 shrink-0 text-cyan-400" />,
+        icon: <Compass className="size-5 shrink-0 text-blue-400" />,
         url: "/trending",
       },
       {
         title: "Showcase",
         description: "Discover what's possible with SkillSpace.",
-        icon: <Box className="size-5 shrink-0 text-cyan-400" />,
+        icon: <Box className="size-5 shrink-0 text-blue-400" />,
         url: "/showcase",
       },
     ],
@@ -69,19 +70,19 @@ const menu: MenuItem[] = [
       {
         title: "Documentation",
         description: "Get started building skills with our guides.",
-        icon: <Book className="size-5 shrink-0 text-cyan-400" />,
+        icon: <Book className="size-5 shrink-0 text-blue-400" />,
         url: "/docs",
       },
       {
         title: "API Reference",
         description: "Detailed API specs for integrating skills.",
-        icon: <FileCode2 className="size-5 shrink-0 text-cyan-400" />,
+        icon: <FileCode2 className="size-5 shrink-0 text-blue-400" />,
         url: "/docs/api",
       },
       {
         title: "Playground",
         description: "Test and run skills directly in your browser.",
-        icon: <Play className="size-5 shrink-0 text-cyan-400" />,
+        icon: <Play className="size-5 shrink-0 text-blue-400" />,
         url: "/playground",
       },
     ],
@@ -89,19 +90,16 @@ const menu: MenuItem[] = [
 ];
 
 export default function Navbar() {
-  const [isAuth, setIsAuth] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const { data: session } = authClient.useSession();
+  const isAuth = !!session;
 
-  useEffect(() => {
-    setIsAuth(!!localStorage.getItem('skillspace_token'));
-  }, []);
-
-  const handleSignOut = () => {
-    localStorage.removeItem('skillspace_token');
-    setIsAuth(false);
+  const handleSignOut = async () => {
+    await authClient.signOut();
     router.push('/');
+    router.refresh();
   };
 
   const handleSearchSubmit = (queryStr: string) => {
@@ -149,7 +147,7 @@ export default function Navbar() {
     return (
       <NavigationMenuItem key={item.title}>
         <Link href={item.url} legacyBehavior passHref>
-          <NavigationMenuLink className={cn("group inline-flex h-9 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 text-sm font-medium text-neutral-300 transition-colors hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white focus:outline-none disabled:pointer-events-none disabled:opacity-50", pathname === item.url && "text-cyan-400")}>
+          <NavigationMenuLink className={cn("group inline-flex h-9 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 text-sm font-medium text-neutral-300 transition-colors hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white focus:outline-none disabled:pointer-events-none disabled:opacity-50", pathname === item.url && "text-blue-400")}>
             {item.title}
           </NavigationMenuLink>
         </Link>
@@ -223,14 +221,14 @@ export default function Navbar() {
 
           {isAuth ? (
             <>
-              <Link href="/dashboard" className={cn("transition-colors hover:text-cyan-400", pathname === '/dashboard' ? 'text-cyan-400' : 'text-neutral-300')}>Dashboard</Link>
+              <Link href="/dashboard" className={cn("transition-colors hover:text-blue-400", pathname === '/dashboard' ? 'text-blue-400' : 'text-neutral-300')}>Dashboard</Link>
               <Button variant="ghost" onClick={handleSignOut} className="text-neutral-300 hover:text-white hover:bg-white/10">Sign Out</Button>
             </>
           ) : (
             <>
-              <Link href="/login" className={cn("transition-colors hover:text-cyan-400", pathname === '/login' ? 'text-cyan-400' : 'text-neutral-300')}>Sign In</Link>
+              <Link href="/login" className={cn("transition-colors hover:text-blue-400", pathname === '/login' ? 'text-blue-400' : 'text-neutral-300')}>Sign In</Link>
               <Link href="/register">
-                <Button size="sm" className="bg-cyan-500 text-black hover:bg-cyan-400 font-semibold h-8 px-3 text-xs">Get Started</Button>
+                <Button size="sm" className="bg-blue-500 text-white hover:bg-blue-400 font-semibold h-8 px-3 text-xs">Get Started</Button>
               </Link>
             </>
           )}
@@ -291,7 +289,7 @@ export default function Navbar() {
                     <Button variant="outline" asChild className="w-full border-white/10 text-white bg-transparent hover:bg-white/10 hover:text-white">
                       <Link href="/login" onClick={() => setIsSheetOpen(false)}>Log in</Link>
                     </Button>
-                    <Button asChild className="w-full bg-cyan-500 text-black hover:bg-cyan-400 font-semibold">
+                    <Button asChild className="w-full bg-blue-500 text-white hover:bg-blue-400 font-semibold">
                       <Link href="/register" onClick={() => setIsSheetOpen(false)}>Sign up</Link>
                     </Button>
                   </>

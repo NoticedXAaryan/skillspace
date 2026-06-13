@@ -6,6 +6,7 @@ import Link from 'next/link';
 import PackageCard from '@/components/PackageCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { authClient } from '@/lib/auth-client';
 
 interface UserProfile {
   id: string;
@@ -35,30 +36,26 @@ interface UserProfile {
 
 export default function ProfilePage() {
   const router = useRouter();
+  const { data: session, isPending } = authClient.useSession();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
+    if (isPending) return;
+    if (!session) {
       router.push('/login');
       return;
     }
 
     async function fetchProfile() {
       try {
-        const res = await fetch('/api/profile', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        const res = await fetch('/api/profile');
         const data = await res.json();
         
         if (!res.ok || data.error) {
           setError(data.error?.message || 'Failed to load profile');
           if (res.status === 401) {
-            localStorage.removeItem('token');
             router.push('/login');
           }
         } else {
@@ -72,10 +69,10 @@ export default function ProfilePage() {
     }
 
     fetchProfile();
-  }, [router]);
+  }, [session, isPending, router]);
 
-  function handleLogout() {
-    localStorage.removeItem('token');
+  async function handleLogout() {
+    await authClient.signOut();
     router.push('/');
   }
 

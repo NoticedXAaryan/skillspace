@@ -25,7 +25,7 @@ export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle:
       <div className="flex items-center justify-between h-14 px-4 border-b border-white/10">
         {!collapsed && (
           <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-cyan-500 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-lg bg-blue-500 flex items-center justify-center">
               <span className="text-black font-bold text-sm">S</span>
             </div>
             <span className="font-semibold text-white text-sm">SkillSpace</span>

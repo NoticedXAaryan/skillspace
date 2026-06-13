@@ -39,17 +39,17 @@ export default function PackageCard({ pkg, index = 0, compact = false }: { pkg: 
         className={cn(
           "group relative flex flex-col justify-between h-full rounded-2xl border border-white/10 bg-neutral-950/50 p-6 backdrop-blur-xl transition-all duration-300",
           compact ? "p-4" : "",
-          "hover:-translate-y-1 hover:border-cyan-500/50 hover:bg-neutral-900/80 hover:shadow-[0_8px_32px_rgba(34,211,238,0.15)]"
+          "hover:-translate-y-1 hover:border-blue-500/50 hover:bg-neutral-900/80 hover:shadow-[0_8px_32px_rgba(34,211,238,0.15)]"
         )}
       >
         <div>
           <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-white/5 rounded-lg border border-white/10 group-hover:bg-cyan-500/10 group-hover:border-cyan-500/20 transition-colors">
-              <Box className="w-5 h-5 text-neutral-400 group-hover:text-cyan-400 transition-colors" />
+            <div className="p-2 bg-white/5 rounded-lg border border-white/10 group-hover:bg-blue-500/10 group-hover:border-blue-500/20 transition-colors">
+              <Box className="w-5 h-5 text-neutral-400 group-hover:text-blue-400 transition-colors" />
             </div>
             <div className="flex gap-2">
               {pkg.isNew && (
-                <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-1 bg-cyan-500/10 rounded-md border border-cyan-500/20 text-cyan-400">
+                <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-1 bg-blue-500/10 rounded-md border border-blue-500/20 text-blue-400">
                   NEW
                 </span>
               )}
@@ -83,7 +83,7 @@ export default function PackageCard({ pkg, index = 0, compact = false }: { pkg: 
 
         <div className="flex items-center justify-between pt-4 border-t border-white/10">
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-cyan-500/20 to-cyan-700/20 flex items-center justify-center text-[10px] font-bold text-cyan-400 border border-cyan-500/20">
+            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-blue-500/20 to-blue-700/20 flex items-center justify-center text-[10px] font-bold text-blue-400 border border-blue-500/20">
               {pkg.owner?.username?.[0]?.toUpperCase() || 'S'}
             </div>
             <span className="text-xs font-medium text-neutral-400">{pkg.owner?.username || 'skillspace'}</span>
@@ -96,7 +96,7 @@ export default function PackageCard({ pkg, index = 0, compact = false }: { pkg: 
             </span>
             <motion.div
               animate={{ x: isHovered ? 4 : 0 }}
-              className="text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity"
             >
               <ChevronRight className="w-4 h-4" />
             </motion.div>
