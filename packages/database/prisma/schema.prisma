@@ -40,6 +40,7 @@ model User {
   website String?
   twitter String?
 
+  settings       UserSettings?
   packages           Package[]
   orgMemberships     OrgMember[]
   executionLogs      ExecutionLog[]
@@ -108,6 +109,19 @@ model TwoFactor {
   updatedAt   DateTime?
 }
 
+model UserSettings {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  openaiKey      String?
+  anthropicKey   String?
+  googleKey      String?
+  ollamaUrl      String?
+  defaultModel   String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
 model UserOnboarding {
   id                   String   @id @default(cuid())
   userId               String   @unique
@@ -161,6 +175,11 @@ model Package {
   downloads    Int                 @default(0)
   verified     Boolean             @default(false)
   isPrivate    Boolean             @default(false)
+  githubUrl    String?
+  githubBranch String?             @default("main")
+  githubPath   String?
+  verifiedBy   String?
+  verifiedAt   DateTime?
   createdAt    DateTime            @default(now())
   versions     PackageVersion[]
   executions   ExecutionLog[]
@@ -172,16 +191,17 @@ model Package {
 }
 
 model PackageVersion {
-  id          String   @id @default(uuid())
-  packageId   String
-  package     Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  version     String
-  manifest    String
-  storagePath String
-  checksum    String
-  size        BigInt   @default(0)
-  deprecated  Boolean  @default(false)
-  publishedAt DateTime @default(now())
+  id            String   @id @default(uuid())
+  packageId     String
+  package       Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  version       String
+  manifest      String
+  storagePath   String
+  checksum      String
+  size          BigInt   @default(0)
+  deprecated    Boolean  @default(false)
+  githubCommit  String?
+  publishedAt   DateTime @default(now())
 
   @@unique([packageId, version])
 }
