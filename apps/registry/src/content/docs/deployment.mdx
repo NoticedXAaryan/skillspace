@@ -1,0 +1,97 @@
+---
+title: Deployment
+description: Deploy SkillSpace to Vercel with Neon PostgreSQL.
+---
+
+# Deploying to Vercel
+
+This guide walks you through deploying the SkillSpace registry to Vercel.
+
+## Prerequisites
+
+- A [Vercel](https://vercel.com) account
+- A [Neon](https://neon.tech) PostgreSQL database
+- (Optional) A [Cloudflare R2](https://www.cloudflare.com/r2/) bucket for file storage
+
+## Step 1: Fork the Repository
+
+Fork the SkillSpace repository to your GitHub account.
+
+## Step 2: Import to Vercel
+
+1. Go to [vercel.com/new](https://vercel.com/new)
+2. Import your forked repository
+3. Vercel will auto-detect the Next.js framework
+4. Click "Deploy" (it will fail until env vars are set — that's expected)
+
+## Step 3: Set Environment Variables
+
+Go to your project → Settings → Environment Variables → Add the following:
+
+### Required
+
+| Variable | Value | Where to get it |
+|----------|-------|-----------------|
+| `DATABASE_URL` | `postgresql://...` | Neon Console → Connection Details → Pooled connection |
+| `BETTER_AUTH_SECRET` | Random string | Run `openssl rand -base64 32` in your terminal |
+| `BETTER_AUTH_URL` | `https://your-domain.vercel.app` | Your Vercel deployment URL |
+| `NEXT_PUBLIC_APP_URL` | `https://your-domain.vercel.app` | Same as above |
+
+### Optional: GitHub OAuth
+
+| Variable | Value | Where to get it |
+|----------|-------|-----------------|
+| `GITHUB_CLIENT_ID` | `Iv1...` | GitHub → Settings → Developer Settings → OAuth Apps |
+| `GITHUB_CLIENT_SECRET` | `...` | Same page → Generate new secret |
+
+When creating the OAuth App on GitHub:
+- **Homepage URL**: `https://your-domain.vercel.app`
+- **Authorization callback URL**: `https://your-domain.vercel.app/api/auth/callback/github`
+
+### Optional: File Storage (Cloudflare R2)
+
+| Variable | Value | Where to get it |
+|----------|-------|-----------------|
+| `STORAGE_BUCKET` | `skillspace-packages` | R2 Console → Create bucket |
+| `STORAGE_ENDPOINT` | `https://xxx.r2.cloudflarestorage.com` | R2 → Settings → S3 API |
+| `STORAGE_ACCESS_KEY` | `...` | R2 → Manage R2 API Tokens |
+| `STORAGE_SECRET_KEY` | `...` | Same token |
+
+## Step 4: Set Up the Database
+
+1. In your Neon console, open the SQL Editor
+2. Run the migration (or use `prisma migrate deploy` from the CLI):
+
+```bash
+cd packages/database
+npx prisma migrate deploy
+```
+
+## Step 5: Redeploy
+
+After adding all environment variables, trigger a redeploy:
+
+1. Go to your Vercel project → Deployments
+2. Click the "..." menu on the latest deployment
+3. Click "Redeploy"
+
+## Step 6: Verify
+
+1. Visit your deployed URL
+2. Register a new account
+3. Login — you should see the dashboard
+4. Visit `/packages` — should show packages (empty initially)
+
+## Troubleshooting
+
+### "Authentication failed" errors
+- Make sure `BETTER_AUTH_SECRET` is set and non-empty
+- Make sure `BETTER_AUTH_URL` matches your actual domain
+
+### Database connection errors
+- Ensure `DATABASE_URL` uses the **pooled** connection string (port 5432)
+- Check that your Neon database is active (not suspended)
+
+### GitHub sign-in doesn't work
+- Verify `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` are correct
+- Ensure the callback URL in GitHub matches exactly: `https://your-domain.vercel.app/api/auth/callback/github`

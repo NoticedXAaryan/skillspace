@@ -9,41 +9,69 @@ SkillSpace is the universal package manager and execution runtime for AI capabil
 
 ## Prerequisites
 
-You need Node.js 18+ installed on your machine.
+- Node.js 18+ installed on your machine
+- An API key from one of: OpenAI, Anthropic, or Google
 
 ## Installation
 
-Install the SkillSpace CLI globally:
+Run the CLI directly using `npx`:
 
 ```bash
-npm install -g skillspace-cli
+npx skillspace <command>
 ```
 
-Or run it directly using `npx`:
+Or install it globally:
 
 ```bash
-npx skillspace-cli <command>
+npm install -g skillspace
+```
+
+## Configure Your Model
+
+Set up your API key so SkillSpace can call AI models:
+
+```bash
+# Option 1: Set environment variable
+export OPENAI_API_KEY="sk-..."
+
+# Option 2: Use the CLI to configure
+skillspace model add openai
 ```
 
 ## Running Your First Skill
 
-To see the power of SkillSpace, you can run a community skill immediately. You don't need an account to run public skills if you provide your own LLM API key.
+Install a skill from the registry:
 
 ```bash
-export OPENAI_API_KEY="sk-..."
-skillspace run @core/summarizer "Explain quantum computing simply"
+skillspace install @skillspace/code-reviewer
 ```
 
-The runtime will:
-1. Fetch the exact, immutable `@core/summarizer` package from the registry.
-2. Resolve its internal dependencies and prompts.
-3. Securely execute the inference using your API key.
-4. Stream the deterministic output back to your terminal.
+Run it against your code:
+
+```bash
+skillspace run code-reviewer --input ./src
+```
+
+## Searching for Skills
+
+Browse the registry for available skills:
+
+```bash
+skillspace search "security"
+```
+
+## Publishing Your Own
+
+Create a `skill.yaml` in your project directory, then publish:
+
+```bash
+skillspace init
+# Edit skill.yaml with your persona definition
+skillspace publish
+```
 
 ## Next Steps
 
-Now that you've run a skill, learn how to create and publish your own!
-
-- [Core Concepts](/docs/concepts)
-- [Publishing a Skill](/docs/cli)
-- [Building Agents](/docs/agents)
+- [Core Concepts](/docs/concepts) — Understand skills, agents, and personas
+- [CLI Reference](/docs/cli) — Full command reference
+- [Architecture](/docs/architecture) — How SkillSpace works under the hood
