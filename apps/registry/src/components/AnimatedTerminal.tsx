@@ -17,7 +17,7 @@ export default function AnimatedTerminal() {
     return () => clearInterval(timer);
   }, []);
 
-  const fullText = `$ air install @skillspace/security-review\n$ air run security-review --input ./src`;
+  const fullText = `$ skillspace install @skillspace/security-review\n$ skillspace run security-review --input ./src`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(fullText);
@@ -45,7 +45,7 @@ export default function AnimatedTerminal() {
           {/* Step 0: Type first command */}
           <div className="flex gap-3">
             <span className="text-cyan-400">$</span>
-            <span>air install @skillspace/security-review</span>
+            <span>skillspace install @skillspace/security-review</span>
           </div>
 
           {/* Step 1: Output 1 */}

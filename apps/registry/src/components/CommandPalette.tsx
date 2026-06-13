@@ -99,21 +99,21 @@ export default function CommandPalette() {
           </CommandItem>
         </CommandGroup>
 
-        {(query.toLowerCase().includes('install') || query.toLowerCase().includes('run') || query.toLowerCase().includes('publish') || query.toLowerCase().startsWith('air')) && (
+        {(query.toLowerCase().includes('install') || query.toLowerCase().includes('run') || query.toLowerCase().includes('publish') || query.toLowerCase().startsWith('skillspace')) && (
           <CommandGroup heading="CLI Commands (Click to copy)">
-            <CommandItem onSelect={() => handleCopyCommand('air install @core/agent')}>
-              {copiedCmd === 'air install @core/agent' ? <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> : <Terminal className="mr-2 h-4 w-4 text-primary" />}
-              <span>air install <span className="text-muted-foreground">@core/agent</span></span>
+            <CommandItem onSelect={() => handleCopyCommand('skillspace install @skillspace/agent')}>
+              {copiedCmd === 'skillspace install @skillspace/agent' ? <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> : <Terminal className="mr-2 h-4 w-4 text-primary" />}
+              <span>skillspace install <span className="text-muted-foreground">@skillspace/agent</span></span>
               <Copy className="ml-auto h-3 w-3 opacity-50" />
             </CommandItem>
-            <CommandItem onSelect={() => handleCopyCommand('air run @core/summary')}>
-              {copiedCmd === 'air run @core/summary' ? <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> : <Terminal className="mr-2 h-4 w-4 text-primary" />}
-              <span>air run <span className="text-muted-foreground">@core/summary</span></span>
+            <CommandItem onSelect={() => handleCopyCommand('skillspace run @skillspace/summary')}>
+              {copiedCmd === 'skillspace run @skillspace/summary' ? <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> : <Terminal className="mr-2 h-4 w-4 text-primary" />}
+              <span>skillspace run <span className="text-muted-foreground">@skillspace/summary</span></span>
               <Copy className="ml-auto h-3 w-3 opacity-50" />
             </CommandItem>
-            <CommandItem onSelect={() => handleCopyCommand('air publish')}>
-              {copiedCmd === 'air publish' ? <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> : <Terminal className="mr-2 h-4 w-4 text-primary" />}
-              <span>air publish</span>
+            <CommandItem onSelect={() => handleCopyCommand('skillspace publish')}>
+              {copiedCmd === 'skillspace publish' ? <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" /> : <Terminal className="mr-2 h-4 w-4 text-primary" />}
+              <span>skillspace publish</span>
               <Copy className="ml-auto h-3 w-3 opacity-50" />
             </CommandItem>
           </CommandGroup>

@@ -12,7 +12,7 @@ export default function PlaygroundClient({ initialSkills }: { initialSkills: Ski
 
   const handleExportCli = () => {
     if (!selectedSkill) return;
-    const cmd = `air run ${selectedSkill} --interactive`;
+    const cmd = `skillspace run ${selectedSkill} --interactive`;
     navigator.clipboard.writeText(cmd);
     setCopiedCli(true);
     setTimeout(() => setCopiedCli(false), 2000);

@@ -338,7 +338,7 @@ export default function CreateWizard() {
                     <h2 className="text-3xl font-bold text-white mb-2">Successfully Published!</h2>
                     <p className="text-neutral-400 mb-8">Your capability is now live on SkillSpace.</p>
                     <div className="bg-black border border-white/10 rounded-lg p-4 font-mono text-cyan-400 text-sm mb-8 w-full max-w-md">
-                      <span className="text-neutral-500 mr-2">$</span> air install @skillspace/{name || 'untitled'}
+                      <span className="text-neutral-500 mr-2">$</span> skillspace install @skillspace/{name || 'untitled'}
                     </div>
                     <Button className="bg-cyan-500 hover:bg-cyan-400 text-black font-bold px-8 py-6 rounded-full" onClick={() => router.push('/packages')}>
                       View in Registry
