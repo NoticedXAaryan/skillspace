@@ -14,15 +14,21 @@ export default function InstallCard({ pkgName, children }: { pkgName: string, ch
   };
 
   return (
-    <div className="card">
-      <h3 style={{ color: '#fff', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <Terminal size={18} color="var(--accent)" /> Quick Install
+    <div className="rounded-xl border border-white/10 bg-white/5 p-5">
+      <h3 className="text-white mb-3 flex items-center gap-2 text-sm font-semibold">
+        <Terminal size={16} className="text-neutral-400" /> Quick Install
       </h3>
-      <div className="codeBlock" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <code>{command}</code>
-        <button onClick={handleCopy} style={{ background: 'none', border: 'none', color: copied ? 'var(--success)' : 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }} title="Copy to clipboard">
-          {copied ? <Check size={16} /> : <Copy size={16} />}
-          {copied && <span style={{ fontSize: '10px' }}>Copied!</span>}
+      <div className="mb-5 flex items-center justify-between rounded-lg bg-neutral-900/80 border border-white/5 px-4 py-2.5">
+        <code className="text-sm font-mono text-neutral-200">{command}</code>
+        <button
+          onClick={handleCopy}
+          className={`flex items-center gap-1 transition-colors ${
+            copied ? 'text-green-400' : 'text-neutral-500 hover:text-neutral-300'
+          }`}
+          title="Copy to clipboard"
+        >
+          {copied ? <Check size={14} /> : <Copy size={14} />}
+          {copied && <span className="text-[10px]">Copied!</span>}
         </button>
       </div>
       {children}

@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Package, Settings, Key, Terminal, LogOut, ChevronLeft } from 'lucide-react';
+import { LayoutDashboard, Package, Settings, Key, Terminal, Activity, LogOut, ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
   { href: '/dashboard/packages', label: 'Packages', icon: Package },
   { href: '/dashboard/playground', label: 'Playground', icon: Terminal },
+  { href: '/dashboard/activity', label: 'Activity', icon: Activity },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
   { href: '/dashboard/keys', label: 'API Keys', icon: Key },
 ];

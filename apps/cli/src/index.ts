@@ -19,6 +19,7 @@ import { registerBenchmarkCommand } from './commands/benchmark.js';
 import { registerHelpCommand } from './commands/help.js';
 import { registerMigrateCommand } from './commands/migrate.js';
 import { registerExportCommand } from './commands/export.js';
+import { registerLinkCommand, registerDashboardCommand } from './commands/link.js';
 
 import chalk from 'chalk';
 import { c } from './ui/tokens/colors.js';
@@ -59,6 +60,10 @@ ${chalk.bold('ACCOUNT & CONFIG')}
   ${c.code('org')}         Manage your organization and team access.
   ${c.code('env')}         Manage environment variables and secrets.
 
+${chalk.bold('DASHBOARD')}
+  ${c.code('link')}        Link local project to the dashboard for session tracking.
+  ${c.code('dashboard')}   Open the SkillSpace dashboard in your browser.
+
 ${chalk.bold('ADVANCED')}
   ${c.code('agent')}       Advanced Agent operations.
   ${c.code('mcp')}         Advanced MCP Server operations.
@@ -85,6 +90,8 @@ registerInfoCommand(program);
 registerBenchmarkCommand(program);
 registerMigrateCommand(program);
 registerExportCommand(program);
+registerLinkCommand(program);
+registerDashboardCommand(program);
 
 import { configCommand } from './commands/config.js';
 

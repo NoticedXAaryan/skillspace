@@ -19,26 +19,5 @@ export default async function SettingsPage() {
 
   if (!user) redirect('/');
 
-  const settings = await prisma.userSettings.findUnique({
-    where: { userId: session.user.id },
-  });
-
-  return (
-    <SettingsClient
-      user={user}
-      settings={settings ? {
-        openaiKey: settings.openaiKey ? true : false,
-        anthropicKey: settings.anthropicKey ? true : false,
-        googleKey: settings.googleKey ? true : false,
-        ollamaUrl: settings.ollamaUrl || '',
-        defaultModel: settings.defaultModel || '',
-      } : {
-        openaiKey: false,
-        anthropicKey: false,
-        googleKey: false,
-        ollamaUrl: '',
-        defaultModel: '',
-      }}
-    />
-  );
+  return <SettingsClient user={user} />;
 }

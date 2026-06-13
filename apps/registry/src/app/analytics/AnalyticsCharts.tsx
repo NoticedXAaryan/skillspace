@@ -2,29 +2,30 @@
 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
-const MOCK_EXECUTIONS = [
-  { name: 'Jan', value: 1200 },
-  { name: 'Feb', value: 3400 },
-  { name: 'Mar', value: 5500 },
-  { name: 'Apr', value: 8900 },
-  { name: 'May', value: 14200 },
-  { name: 'Jun', value: 22500 },
-];
+interface ChartData {
+  name: string;
+  value: number;
+}
 
-const MOCK_TYPES = [
-  { name: 'Agents', value: 45, color: '#3b82f6' },
-  { name: 'Workflows', value: 30, color: '#10b981' },
-  { name: 'Tools', value: 15, color: '#f59e0b' },
-  { name: 'Models', value: 10, color: '#8b5cf6' },
-];
+interface TypeData extends ChartData {
+  color: string;
+}
 
-export function ExecutionBarChart() {
+export function ExecutionBarChart({ data }: { data: ChartData[] }) {
+  if (data.length === 0) {
+    return (
+      <div className="mt-4 h-[250px] w-full flex items-center justify-center text-muted-foreground text-sm">
+        No execution data yet. Run some skills to see analytics.
+      </div>
+    );
+  }
+
   return (
     <div className="mt-4 h-[250px] w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={MOCK_EXECUTIONS}>
+        <BarChart data={data}>
           <XAxis dataKey="name" stroke="currentColor" className="text-muted-foreground" fontSize={12} tickLine={false} axisLine={false} />
-          <YAxis stroke="currentColor" className="text-muted-foreground" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value / 1000}k`} />
+          <YAxis stroke="currentColor" className="text-muted-foreground" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => value >= 1000 ? `${(value / 1000).toFixed(1)}k` : `${value}`} />
           <Tooltip 
             cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
             contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius)' }}
@@ -37,13 +38,23 @@ export function ExecutionBarChart() {
   );
 }
 
-export function TypePieChart() {
+export function TypePieChart({ data }: { data: TypeData[] }) {
+  if (data.length === 0) {
+    return (
+      <div className="mt-4 flex h-[250px] w-full items-center justify-center text-muted-foreground text-sm">
+        No packages published yet.
+      </div>
+    );
+  }
+
+  const total = data.reduce((sum, item) => sum + item.value, 0);
+
   return (
     <div className="mt-4 flex h-[250px] w-full items-center justify-center">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
-            data={MOCK_TYPES}
+            data={data}
             cx="50%"
             cy="50%"
             innerRadius={60}
@@ -52,14 +63,14 @@ export function TypePieChart() {
             dataKey="value"
             stroke="none"
           >
-            {MOCK_TYPES.map((entry, index) => (
+            {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
           </Pie>
           <Tooltip 
             contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius)' }}
             itemStyle={{ color: 'hsl(var(--foreground))' }}
-            formatter={(value) => [`${value}%`, 'Share']}
+            formatter={(value) => [`${Math.round((Number(value) / total) * 100)}% (${value})`, 'Count']}
           />
         </PieChart>
       </ResponsiveContainer>

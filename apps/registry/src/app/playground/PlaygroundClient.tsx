@@ -76,11 +76,12 @@ export default function PlaygroundClient({ initialSkills }: { initialSkills: Ski
           <div className="relative">
             {selectedSkill ? (
               <AIChat 
+                skillName={selectedSkill}
                 initialMessages={[
                   {
                     id: 'welcome',
                     role: 'assistant',
-                    content: `Hello! I'm the execution environment for ${selectedSkill}. You can interact with me here to test the workflows.`,
+                    content: `Ready to test **${selectedSkill}**. Send a message to start the session.`,
                   }
                 ]}
               />

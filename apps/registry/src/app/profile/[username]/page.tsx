@@ -27,40 +27,23 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
     }
   });
 
-  const safeUser = user || {
-    username: username,
-    bio: 'Open source contributor and AI researcher.',
-    avatar: null,
-    banner: null,
-    github: `https://github.com/${username}`,
-    website: `https://${username}.com`,
-    twitter: `https://twitter.com/${username}`,
-    createdAt: new Date(),
-    packages: [
-      { id: '1', name: `@${username}/demo-skill`, description: 'A powerful AI skill for demonstration purposes.', _count: { stars: 42 } }
-    ],
-    _count: {
-      followers: 125,
-      following: 12,
-      packages: 1
-    }
-  };
+  if (!user) notFound();
 
   const profileData = {
-    username: safeUser.username || username,
-    bio: safeUser.bio,
-    avatar: 'image' in safeUser ? safeUser.image : (safeUser as any).avatar,
-    banner: safeUser.banner,
-    github: safeUser.github,
-    website: safeUser.website,
-    twitter: safeUser.twitter,
-    createdAt: safeUser.createdAt,
+    username: user.username || username,
+    bio: user.bio,
+    avatar: 'image' in user ? user.image : (user as any).avatar,
+    banner: user.banner,
+    github: user.github,
+    website: user.website,
+    twitter: user.twitter,
+    createdAt: user.createdAt,
     stats: {
-      followers: safeUser._count.followers,
-      following: safeUser._count.following,
-      packages: safeUser._count.packages,
+      followers: user._count.followers,
+      following: user._count.following,
+      packages: user._count.packages,
     },
-    packages: safeUser.packages,
+    packages: user.packages,
   };
 
   return <ProfileClient profile={profileData} />;

@@ -11,7 +11,10 @@ export const metadata = {
 };
 
 async function getAnalyticsData() {
-  const [totalPackages, totalExecutions, totalContributors, topContributors, fastestGrowing] = await Promise.all([
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+  const [totalPackages, totalExecutions, totalContributors, topContributors, fastestGrowing, executionByMonth, packageTypes] = await Promise.all([
     prisma.package.count(),
     prisma.executionLog.count(),
     prisma.user.count(),
@@ -24,10 +27,42 @@ async function getAnalyticsData() {
       take: 5,
       orderBy: { downloads: 'desc' },
       select: { name: true, downloads: true }
-    })
+    }),
+    prisma.$queryRawUnsafe<{ month: string; value: bigint }[]>(`
+      SELECT to_char("createdAt", 'YYYY-MM') as month, count(*) as value
+      FROM "ExecutionLog"
+      WHERE "createdAt" >= $1
+      GROUP BY to_char("createdAt", 'YYYY-MM')
+      ORDER BY month ASC
+    `, sixMonthsAgo),
+    prisma.$queryRawUnsafe<{ type: string; value: bigint }[]>(`
+      SELECT type, count(*) as value
+      FROM "Package"
+      GROUP BY type
+      ORDER BY value DESC
+    `),
   ]);
 
-  return { totalPackages, totalExecutions, totalContributors, topContributors, fastestGrowing };
+  const monthlyData = executionByMonth.map(row => ({
+    name: row.month.slice(5),
+    value: Number(row.value),
+  }));
+
+  const typeColors: Record<string, string> = {
+    skill: '#3b82f6',
+    agent: '#10b981',
+    workflow: '#f59e0b',
+    mcp: '#8b5cf6',
+    knowledge: '#ec4899',
+  };
+
+  const typeData = packageTypes.map(row => ({
+    name: row.type.charAt(0).toUpperCase() + row.type.slice(1),
+    value: Number(row.value),
+    color: typeColors[row.type] || '#6b7280',
+  }));
+
+  return { totalPackages, totalExecutions, totalContributors, topContributors, fastestGrowing, monthlyData, typeData };
 }
 
 export default async function AnalyticsPage() {
@@ -67,7 +102,7 @@ export default async function AnalyticsPage() {
             <h3 className="text-lg font-semibold text-foreground">Monthly Executions</h3>
             <TrendingUp size={16} className="text-green-500" />
           </div>
-          <ExecutionBarChart />
+          <ExecutionBarChart data={data.monthlyData} />
         </div>
 
         {/* Chart 2: Top Languages / Types */}
@@ -76,7 +111,7 @@ export default async function AnalyticsPage() {
             <h3 className="text-lg font-semibold text-foreground">Skill Types</h3>
             <Code size={16} className="text-amber-500" />
           </div>
-          <TypePieChart />
+          <TypePieChart data={data.typeData} />
         </div>
       </div>
 
@@ -92,7 +127,9 @@ export default async function AnalyticsPage() {
                 </tr>
               </thead>
               <tbody>
-                {data.topContributors.map(user => (
+                {data.topContributors.length === 0 ? (
+                  <tr><td colSpan={2} className="p-6 text-center text-sm text-muted-foreground">No contributors yet.</td></tr>
+                ) : data.topContributors.map(user => (
                   <tr key={user.id} className="last:border-0 border-b border-border">
                     <td className="p-3 text-sm text-foreground"><Link href={`/profile/${user.username}`} className="hover:underline">@{user.username}</Link></td>
                     <td className="p-3 text-sm text-foreground">{user._count.packages}</td>
@@ -114,7 +151,9 @@ export default async function AnalyticsPage() {
                 </tr>
               </thead>
               <tbody>
-                {data.fastestGrowing.map(pkg => (
+                {data.fastestGrowing.length === 0 ? (
+                  <tr><td colSpan={2} className="p-6 text-center text-sm text-muted-foreground">No packages published yet.</td></tr>
+                ) : data.fastestGrowing.map(pkg => (
                   <tr key={pkg.name} className="last:border-0 border-b border-border">
                     <td className="p-3 text-sm text-foreground"><Link href={`/packages/${pkg.name}`} className="hover:underline">{pkg.name}</Link></td>
                     <td className="p-3 text-sm font-medium text-green-500">{pkg.downloads.toLocaleString()}</td>
