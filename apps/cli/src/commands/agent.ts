@@ -54,7 +54,7 @@ agentCommand
   .action(async (agentName) => {
     warn('Deprecated Command', [
       'To install an agent, use the unified install command:',
-      `  ${c.brand(`air install ${agentName}`)}`
+      `  ${c.brand(`skillspace install ${agentName}`)}`
     ]);
   });
 

@@ -7,7 +7,7 @@ export function intro(command: string, description?: string): void {
   console.log();
   console.log(
     '  ' + c.brand(CHARS.BULLET_DONE) + '  ' +
-    c.text(chalk.bold('air ' + command))
+    c.text(chalk.bold('skillspace ' + command))
   );
   if (description) {
     console.log(

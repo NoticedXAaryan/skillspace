@@ -1,7 +1,7 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  // output: 'standalone', // Disabled due to Windows EPERM symlink errors during local dev
+  output: process.env.BUILD_STANDALONE === 'true' ? 'standalone' : undefined,
   transpilePackages: ['@skillspace/schema', '@skillspace/runtime'],
 };
 

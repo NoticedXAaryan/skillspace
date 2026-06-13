@@ -33,7 +33,7 @@ export function registerPublishCommand(program: Command): void {
       if (!token) {
         errorOperational('Authentication required', {
           message: 'You must be logged in to publish packages.',
-          hint: 'Run `air login` to authenticate.'
+          hint: 'Run `skillspace login` to authenticate.'
         });
         process.exit(1);
       }
@@ -50,7 +50,7 @@ export function registerPublishCommand(program: Command): void {
       } else {
         errorOperational('Manifest not found', {
           message: 'No skill.yaml or agent.yaml found in the current directory.',
-          hint: 'Run `air init` to scaffold a new project.'
+          hint: 'Run `skillspace init` to scaffold a new project.'
         });
         process.exit(1);
       }
@@ -76,7 +76,7 @@ export function registerPublishCommand(program: Command): void {
 
       // 4. Create package
       const os = await import('node:os');
-      const tmpPath = path.join(os.tmpdir(), `air-pkg-${Date.now()}.tar.gz`);
+      const tmpPath = path.join(os.tmpdir(), `skillspace-pkg-${Date.now()}.tar.gz`);
       const checksum = await createSkillPackage(dir, tmpPath);
       
       const buffer = fs.readFileSync(tmpPath);
@@ -115,8 +115,8 @@ export function registerPublishCommand(program: Command): void {
       if (loader) {
         loader.succeed(`Published ${skill.name}@${skill.version}`);
         successCritical('Agent is live.', `${skill.name} has been published to the SkillSpace registry.`, [
-          ['Install remotely', `air install ${skill.name}`],
-          ['View registry', `air.dev/agents/${skill.name}`]
+          ['Install remotely', `skillspace install ${skill.name}`],
+          ['View registry', `skillspace.dev/agents/${skill.name}`]
         ]);
         outro(Date.now() - startTime);
       } else {

@@ -10,7 +10,7 @@ if (!fs.existsSync(SANDBOX_DIR)) {
 const personas = [
   {
     dir: 'code-reviewer',
-    yaml: `name: "@air/code-reviewer"
+    yaml: `name: "@skillspace/code-reviewer"
 version: "1.0.0"
 description: "A stringent, highly-skilled senior engineer persona that reviews code for security, performance, and best practices."
 type: "skill"
@@ -32,7 +32,7 @@ capabilities:
   },
   {
     dir: 'project-manager',
-    yaml: `name: "@air/project-manager"
+    yaml: `name: "@skillspace/project-manager"
 version: "1.0.0"
 description: "An agile project manager persona that organizes tasks, writes tickets, and keeps the team unblocked."
 type: "agent"
@@ -45,7 +45,7 @@ persona:
   tone: "organized and encouraging"
 capabilities:
   skills:
-    - "@air/code-reviewer"
+    - "@skillspace/code-reviewer"
   mcpServers: []
 `
   }

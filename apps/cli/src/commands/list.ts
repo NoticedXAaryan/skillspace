@@ -13,7 +13,7 @@ export function registerListCommand(program: Command): void {
       const installed = cache.listInstalled();
 
       if (installed.length === 0) {
-        console.log(box(['No packages installed.', 'Run `air install <package>` to install one.'], {
+        console.log(box(['No packages installed.', 'Run `skillspace install <package>` to install one.'], {
           title: 'Installed Packages',
           colorFn: c.border
         }));

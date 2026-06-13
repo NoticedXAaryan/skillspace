@@ -9,7 +9,7 @@ import ignore from 'ignore';
 // ---------------------------------------------------------------------------
 
 /**
- * Creates a tar.gz package from a directory (respecting .gitignore/.airignore)
+ * Creates a tar.gz package from a directory (respecting .gitignore/.skillspaceignore)
  * and writes it to outputPath. Returns the SHA256 checksum of the tarball.
  */
 export async function createSkillPackage(dir: string, outputPath: string): Promise<string> {
@@ -21,9 +21,9 @@ export async function createSkillPackage(dir: string, outputPath: string): Promi
   if (fs.existsSync(gitignorePath)) {
     ig.add(fs.readFileSync(gitignorePath, 'utf8'));
   }
-  const airignorePath = path.join(dir, '.airignore');
-  if (fs.existsSync(airignorePath)) {
-    ig.add(fs.readFileSync(airignorePath, 'utf8'));
+  const skillspaceignorePath = path.join(dir, '.skillspaceignore');
+  if (fs.existsSync(skillspaceignorePath)) {
+    ig.add(fs.readFileSync(skillspaceignorePath, 'utf8'));
   }
 
   // Get all valid files

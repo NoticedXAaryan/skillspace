@@ -1,4 +1,4 @@
-name: "@air/code-reviewer"
+name: "@skillspace/code-reviewer"
 version: "1.0.0"
 description: "A stringent, highly-skilled senior engineer persona that reviews code for security, performance, and best practices."
 type: "skill"

@@ -83,7 +83,7 @@ export function registerModelCommand(program: Command): void {
       const defaultModel = getDefaultModel();
 
       if (models.length === 0) {
-        console.log(box(['No models configured.', 'Run `air model add <provider>`'], { colorFn: c.border }));
+        console.log(box(['No models configured.', 'Run `skillspace model add <provider>`'], { colorFn: c.border }));
         return;
       }
 
@@ -134,7 +134,7 @@ export function registerModelCommand(program: Command): void {
 
         if (!apiKey && provider !== 'ollama') {
           if (!opts.yes) {
-            errorOperational('Missing API Key', { message: `No API key for "${provider}". Run \`air model add ${provider}\`` });
+            errorOperational('Missing API Key', { message: `No API key for "${provider}". Run \`skillspace model add ${provider}\`` });
           } else {
             console.error(`✗ No API key for "${provider}".`);
           }

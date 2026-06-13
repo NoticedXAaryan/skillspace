@@ -64,7 +64,7 @@ export function registerInitCommand(program: Command): void {
       }
       if (projectType === 'mcp' && !lang) lang = 'typescript';
 
-      let projectName = opts.name || 'my-air-project';
+      let projectName = opts.name || 'my-skillspace-project';
       let description = opts.description || (projectType === 'mcp' ? 'An MCP Server' : `An SkillSpace ${projectType}`);
       let author = opts.author || process.env.USER || process.env.USERNAME || 'unknown';
       let category = opts.category || 'other';
@@ -165,8 +165,8 @@ export function registerInitCommand(program: Command): void {
         if (loader) {
           loader.succeed(`Generated ${ext}`);
           successCritical('Project initialized.', `${finalProjectName} has been scaffolded successfully.`, [
-            ['Publish', `air publish`],
-            ['Run locally', `air run ${projectName === '.' ? ext : path.join(projectName, ext)}`]
+            ['Publish', `skillspace publish`],
+            ['Run locally', `skillspace run ${projectName === '.' ? ext : path.join(projectName, ext)}`]
           ]);
           outro(Date.now() - startTime);
         } else {

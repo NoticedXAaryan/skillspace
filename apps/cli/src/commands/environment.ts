@@ -112,7 +112,7 @@ envCommand
       const lockData = readLockFile(getSkillspacePath());
       
       const envYaml = {
-        name: 'air-environment',
+        name: 'skillspace-environment',
         version: '1.0.0',
         dependencies: {} as Record<string, string>,
       };

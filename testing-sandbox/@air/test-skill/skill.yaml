@@ -1,4 +1,4 @@
-name: "@air/test-skill"
+name: "@skillspace/test-skill"
 version: 1.0.0
 description: A test skill
 author: Aaryan
@@ -7,7 +7,7 @@ tags:
   - Development
 category: Development
 instructions:
-  system: You are an expert at @air/test-skill.
+  system: You are an expert at @skillspace/test-skill.
   user_template: "{{input}}"
   output_format: text
 permissions: []

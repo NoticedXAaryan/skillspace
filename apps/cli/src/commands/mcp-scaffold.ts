@@ -316,7 +316,7 @@ public class Main {
     } else if (lang === 'go') {
       nextSteps.push(['Tidy', 'go mod tidy']);
     }
-    nextSteps.push(['Test skill', `air run .\\skill.yaml`]);
+    nextSteps.push(['Test skill', `skillspace run .\\skill.yaml`]);
     
     successCritical('MCP Server initialized.', `Your boilerplate is ready.`, nextSteps as any);
     outro(Date.now() - startTime);

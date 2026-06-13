@@ -6,7 +6,7 @@ import { intro } from '../ui/states/intro.js';
 
 const docs: Record<string, { title: string; desc: string; flags: string[]; examples: string[] }> = {
   run: {
-    title: 'air run <target>',
+    title: 'skillspace run <target>',
     desc: 'The execution engine. Runs an AI Agent, Skill, or Workflow locally on your machine.',
     flags: [
       '-i, --input <text>   Provide a prompt/input directly',
@@ -14,13 +14,13 @@ const docs: Record<string, { title: string; desc: string; flags: string[]; examp
       '-y, --yes            Headless mode for scripts (JSON output)'
     ],
     examples: [
-      '$ air run notic/project-auditor',
-      '$ air run ./agent.yaml --chat',
-      '$ air run summarize-skill -i "Summarize this file"'
+      '$ skillspace run notic/project-auditor',
+      '$ skillspace run ./agent.yaml --chat',
+      '$ skillspace run summarize-skill -i "Summarize this file"'
     ]
   },
   init: {
-    title: 'air init',
+    title: 'skillspace init',
     desc: 'The universal scaffolder. Creates a new project in the current directory.',
     flags: [
       '-t, --type <type>    Skip the interactive menu (skill, agent, mcp)',
@@ -28,143 +28,143 @@ const docs: Record<string, { title: string; desc: string; flags: string[]; examp
       '-y, --yes            Headless mode'
     ],
     examples: [
-      '$ air init',
-      '$ air init --type agent --name my-jarvis'
+      '$ skillspace init',
+      '$ skillspace init --type agent --name my-jarvis'
     ]
   },
   publish: {
-    title: 'air publish',
+    title: 'skillspace publish',
     desc: 'Packages your current directory and uploads it to the global SkillSpace registry.',
     flags: [
       '--private            Publish as a private package (requires Org)',
       '-y, --yes            Headless mode'
     ],
     examples: [
-      '$ air publish',
-      '$ air publish --private'
+      '$ skillspace publish',
+      '$ skillspace publish --private'
     ]
   },
   install: {
-    title: 'air install <target>',
+    title: 'skillspace install <target>',
     desc: 'Downloads a capability from the registry and installs it locally.',
     flags: [
       '-g, --global         Install globally across all projects'
     ],
     examples: [
-      '$ air install notic/database-agent'
+      '$ skillspace install notic/database-agent'
     ]
   },
   uninstall: {
-    title: 'air uninstall <target>',
+    title: 'skillspace uninstall <target>',
     desc: 'Removes an installed package from your local system.',
     flags: [
       '-g, --global         Uninstall from the global registry'
     ],
     examples: [
-      '$ air uninstall notic/database-agent'
+      '$ skillspace uninstall notic/database-agent'
     ]
   },
   list: {
-    title: 'air list',
+    title: 'skillspace list',
     desc: 'Lists all locally installed packages and dependencies.',
     flags: [
       '--global             List globally installed packages'
     ],
     examples: [
-      '$ air list'
+      '$ skillspace list'
     ]
   },
   info: {
-    title: 'air info <target>',
+    title: 'skillspace info <target>',
     desc: 'View detailed metadata, version history, and dependencies for a specific package.',
     flags: [],
     examples: [
-      '$ air info notic/database-agent'
+      '$ skillspace info notic/database-agent'
     ]
   },
   search: {
-    title: 'air search <query>',
+    title: 'skillspace search <query>',
     desc: 'Search the global SkillSpace registry for existing AI capabilities.',
     flags: [
       '--limit <num>        Limit the number of results returned'
     ],
     examples: [
-      '$ air search "security scanner"'
+      '$ skillspace search "security scanner"'
     ]
   },
   login: {
-    title: 'air login',
+    title: 'skillspace login',
     desc: 'Authenticate your machine with the SkillSpace registry using a web browser or token.',
     flags: [
       '--token <token>      Login headlessly using an API token'
     ],
     examples: [
-      '$ air login',
-      '$ air login --token xyz_123'
+      '$ skillspace login',
+      '$ skillspace login --token xyz_123'
     ]
   },
   benchmark: {
-    title: 'air benchmark <target>',
+    title: 'skillspace benchmark <target>',
     desc: 'Run automated tests and scoring benchmarks against your agent.',
     flags: [
       '--dataset <id>       Run against a specific dataset'
     ],
     examples: [
-      '$ air benchmark ./agent.yaml'
+      '$ skillspace benchmark ./agent.yaml'
     ]
   },
   model: {
-    title: 'air model',
+    title: 'skillspace model',
     desc: 'Configure your default AI models (OpenAI, Anthropic, Ollama).',
     flags: [
       '--provider <name>    Set default provider'
     ],
     examples: [
-      '$ air model',
-      '$ air model set default ollama'
+      '$ skillspace model',
+      '$ skillspace model set default ollama'
     ]
   },
   org: {
-    title: 'air org',
+    title: 'skillspace org',
     desc: 'Manage your organization, team access, and private registry scope.',
     flags: [],
     examples: [
-      '$ air org create my-company'
+      '$ skillspace org create my-company'
     ]
   },
   env: {
-    title: 'air env',
+    title: 'skillspace env',
     desc: 'Manage environment variables, secrets, and API keys securely.',
     flags: [
       '--set <key>=<val>    Set a variable'
     ],
     examples: [
-      '$ air env --set OPENAI_API_KEY=sk-...'
+      '$ skillspace env --set OPENAI_API_KEY=sk-...'
     ]
   },
   agent: {
-    title: 'air agent',
+    title: 'skillspace agent',
     desc: 'Advanced operations for managing autonomous agents.',
     flags: [],
     examples: [
-      '$ air agent status',
-      '$ air agent kill <id>'
+      '$ skillspace agent status',
+      '$ skillspace agent kill <id>'
     ]
   },
   mcp: {
-    title: 'air mcp',
+    title: 'skillspace mcp',
     desc: 'Advanced operations for Model Context Protocol servers.',
     flags: [],
     examples: [
-      '$ air mcp inspect ./server.js'
+      '$ skillspace mcp inspect ./server.js'
     ]
   },
   workflow: {
-    title: 'air workflow',
+    title: 'skillspace workflow',
     desc: 'Manage multi-agent workflows and pipelines.',
     flags: [],
     examples: [
-      '$ air workflow run ./pipeline.yaml'
+      '$ skillspace workflow run ./pipeline.yaml'
     ]
   }
 };

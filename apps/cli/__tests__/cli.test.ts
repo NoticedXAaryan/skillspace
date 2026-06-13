@@ -11,7 +11,7 @@ describe('CLI E2E', () => {
   let tempDir: string;
 
   beforeAll(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'air-cli-test-'));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'skillspace-cli-test-'));
   });
 
   afterAll(() => {
@@ -31,7 +31,7 @@ describe('CLI E2E', () => {
     expect(stdout).toContain('Initialized');
     expect(stdout).toContain('skill');
     // Init creates a subdirectory based on project name
-    const skillPath = path.join(tempDir, 'my-air-project', 'skill.yaml');
+    const skillPath = path.join(tempDir, 'my-skillspace-project', 'skill.yaml');
     const altPath = path.join(tempDir, 'skill.yaml');
     expect(fs.existsSync(skillPath) || fs.existsSync(altPath)).toBe(true);
   });

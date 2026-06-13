@@ -48,7 +48,7 @@ workflowCommand
     const cwd = process.cwd();
     const dirs = [
       { name: 'Local Project', path: path.join(cwd, 'workflows') },
-      { name: 'Local Project (.air)', path: path.join(cwd, '.air', 'workflows') },
+      { name: 'Local Project (.skillspace)', path: path.join(cwd, '.skillspace', 'workflows') },
       { name: 'Global', path: path.join(getSkillspacePath(), 'workflows') },
     ];
 
@@ -70,7 +70,7 @@ workflowCommand
     }
 
     if (!foundAny) {
-      console.log(box(['No workflows found locally or globally.', 'Create a workflow file in ./workflows/ or ~/.air/workflows/.'], { colorFn: c.border }));
+      console.log(box(['No workflows found locally or globally.', 'Create a workflow file in ./workflows/ or ~/.skillspace/workflows/.'], { colorFn: c.border }));
       return;
     }
 

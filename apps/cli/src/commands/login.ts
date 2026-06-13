@@ -182,7 +182,7 @@ export function registerWhoamiCommand(program: Command): void {
       const token = loadCredentials();
       if (!token) {
         loader.fail('Not authenticated');
-        console.log(box(['Not logged in.', 'Run `air login` to authenticate.'], { colorFn: c.border }));
+        console.log(box(['Not logged in.', 'Run `skillspace login` to authenticate.'], { colorFn: c.border }));
         return;
       }
       try {
@@ -190,7 +190,7 @@ export function registerWhoamiCommand(program: Command): void {
         const result = await client.me();
         if (result.error) {
           loader.fail('Session expired');
-          console.log(box(['Session expired.', 'Run `air login` to re-authenticate.'], { colorFn: c.warning }));
+          console.log(box(['Session expired.', 'Run `skillspace login` to re-authenticate.'], { colorFn: c.warning }));
           return;
         }
         loader.succeed('Session active');

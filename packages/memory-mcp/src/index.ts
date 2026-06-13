@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { saveMemory, searchMemories } from './db.js';
 
 const server = new Server(
-  { name: '@air/memory-mcp', version: '0.1.0' },
+  { name: '@skillspace/memory-mcp', version: '0.1.0' },
   { capabilities: { tools: {} } }
 );
 
@@ -108,7 +108,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error('@air/memory-mcp running on stdio');
+  console.error('@skillspace/memory-mcp running on stdio');
 }
 
 main().catch((error) => {

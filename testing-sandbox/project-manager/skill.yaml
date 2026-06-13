@@ -1,4 +1,4 @@
-name: "@air/project-manager"
+name: "@skillspace/project-manager"
 version: "1.0.0"
 description: "An agile project manager persona that organizes tasks, writes tickets, and keeps the team unblocked."
 type: "agent"
@@ -11,5 +11,5 @@ persona:
   tone: "organized and encouraging"
 capabilities:
   skills:
-    - "@air/code-reviewer"
+    - "@skillspace/code-reviewer"
   mcpServers: []

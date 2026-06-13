@@ -26,7 +26,7 @@ import { c } from './ui/tokens/colors.js';
 const program = new Command();
 
 program
-  .name('air')
+  .name('skillspace')
   .description(c.brand('The universal runtime and registry for AI capabilities'))
   .version('0.2.0');
 
@@ -34,7 +34,7 @@ const customHelp = `
 ${chalk.bold(c.brand('SkillSpace CLI'))} - The universal runtime and registry for AI capabilities.
 
 ${chalk.bold('USAGE')}
-  $ air <command> [options]
+  $ skillspace <command> [options]
 
 ${chalk.bold('EXECUTION')}
   ${c.code('run')}         Execute an Agent, Skill, or Workflow locally.
@@ -64,8 +64,8 @@ ${chalk.bold('ADVANCED')}
   ${c.code('mcp')}         Advanced MCP Server operations.
   ${c.code('workflow')}    Advanced Workflow operations.
 
-${c.textFaint('Run `air <command> --help` for detailed information on specific commands.')}
-${c.info('Run `air help` to launch the interactive documentation explorer!')}
+${c.textFaint('Run `skillspace <command> --help` for detailed information on specific commands.')}
+${c.info('Run `skillspace help` to launch the interactive documentation explorer!')}
 `;
 
 program.helpInformation = () => customHelp;

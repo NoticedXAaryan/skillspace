@@ -29,7 +29,7 @@ export function outro(durationMs: number, hints: string[] = []): void {
   console.log(
     '    ' + c.textFaint('Done in ' + secs) +
     '   ' + c.textFaint(CHARS.DOT) + '   ' +
-    c.textFaint('air v' + version)
+    c.textFaint('skillspace v' + version)
   );
   if (hints.length) {
     console.log();

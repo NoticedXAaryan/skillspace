@@ -35,7 +35,7 @@ export function registerInstallCommand(program: Command): void {
       if (pkgName.endsWith('.yaml') || pkgName.startsWith('./') || pkgName.startsWith('.\\') || pkgName.startsWith('/') || pkgName.match(/^[a-zA-Z]:\\/)) {
         errorOperational('Local path provided', {
           message: `Cannot "install" a local file.`,
-          hint: `To run a local skill or agent, use: air run ${pkgName}`
+          hint: `To run a local skill or agent, use: skillspace run ${pkgName}`
         });
         process.exit(1);
       }
@@ -189,8 +189,8 @@ export function registerInstallCommand(program: Command): void {
         if (loader) {
           loader.succeed(`Installation complete`);
           successCritical('Dependencies resolved.', `${pkgName} is installed and configured.`, [
-            ['Run agent', `air run ${pkgName}`],
-            ['View env config', `air env list`]
+            ['Run agent', `skillspace run ${pkgName}`],
+            ['View env config', `skillspace env list`]
           ]);
         } else {
           successStandard(`Successfully installed ${pkgName}`);

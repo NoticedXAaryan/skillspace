@@ -51,7 +51,7 @@ export function registerInfoCommand(program: Command): void {
 
         details.push('');
         details.push(c.textFaint('Install:'));
-        details.push(`  ${c.border('air install')} ${c.brand(pkg.name)}`);
+        details.push(`  ${c.border('skillspace install')} ${c.brand(pkg.name)}`);
 
         console.log(box(details, {
           title: pkg.name,

@@ -18,11 +18,11 @@ const skills = [
 
 // 5 Agents
 const agents = [
-  { name: 'dev-team-lead', desc: 'Orchestrates frontend and backend agents', skills: ['@air/code-reviewer', '@air/project-manager'] },
-  { name: 'qa-automation', desc: 'Writes and runs e2e tests automatically', skills: ['@air/web-scraper', '@air/tester'] },
-  { name: 'growth-hacker', desc: 'Runs A/B tests and analyzes SEO', skills: ['@air/seo-expert', '@air/copywriter'] },
-  { name: 'infra-ops', desc: 'Monitors AWS and manages Terraform', skills: ['@air/aws-expert'] },
-  { name: 'research-assistant', desc: 'Deep dive literature reviews and summarization', skills: ['@air/data-analyst'] }
+  { name: 'dev-team-lead', desc: 'Orchestrates frontend and backend agents', skills: ['@skillspace/code-reviewer', '@skillspace/project-manager'] },
+  { name: 'qa-automation', desc: 'Writes and runs e2e tests automatically', skills: ['@skillspace/web-scraper', '@skillspace/tester'] },
+  { name: 'growth-hacker', desc: 'Runs A/B tests and analyzes SEO', skills: ['@skillspace/seo-expert', '@skillspace/copywriter'] },
+  { name: 'infra-ops', desc: 'Monitors AWS and manages Terraform', skills: ['@skillspace/aws-expert'] },
+  { name: 'research-assistant', desc: 'Deep dive literature reviews and summarization', skills: ['@skillspace/data-analyst'] }
 ];
 
 // 5 MCPs
@@ -35,7 +35,7 @@ const mcps = [
 ];
 
 function generateYaml(type, data) {
-  let yaml = `name: "@air/${data.name}"
+  let yaml = `name: "@skillspace/${data.name}"
 version: "1.0.0"
 description: "${data.desc}"
 type: "${type}"
@@ -86,7 +86,7 @@ allData.forEach(item => {
   }
   const yamlContent = generateYaml(item.type, item);
   fs.writeFileSync(path.join(itemDir, 'skill.yaml'), yamlContent);
-  fs.writeFileSync(path.join(itemDir, 'README.md'), `# @air/${item.name}\n\n${item.desc}`);
+  fs.writeFileSync(path.join(itemDir, 'README.md'), `# @skillspace/${item.name}\n\n${item.desc}`);
 });
 
 console.log('Successfully generated 15 seed packages in testing-sandbox/seed-data');

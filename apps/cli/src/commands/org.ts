@@ -61,7 +61,7 @@ orgCommand
         '',
         `  ${c.brand(result.token)}`,
         '',
-        c.textMuted(`They can join by running: air org join ${result.token}`),
+        c.textMuted(`They can join by running: skillspace org join ${result.token}`),
         c.textFaint(`(Token expires in ${result.expires_in})`)
       ], { title: 'Organization Invite', colorFn: c.successDim }));
     } catch (err) {
