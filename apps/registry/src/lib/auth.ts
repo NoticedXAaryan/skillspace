@@ -7,9 +7,9 @@ import { prisma } from "./prisma";
 const isDev = process.env.NODE_ENV === 'development';
 
 export const auth = betterAuth({
-  baseURL: process.env.BETTER_AUTH_URL || (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'http://localhost:3000'),
+  secret: process.env.BETTER_AUTH_SECRET,
+  baseURL: process.env.BETTER_AUTH_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'),
   trustHost: true,
-  trustedOrigins: ['https://skillspace-registry.vercel.app', 'http://localhost:3000'],
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
@@ -21,13 +21,6 @@ export const auth = betterAuth({
       clientId: process.env.GITHUB_CLIENT_ID || "",
       clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
     },
-  },
-  advanced: {
-    useSecureCookies: !isDev,
-    defaultCookieAttributes: {
-      sameSite: isDev ? "lax" : "none",
-      secure: !isDev,
-    }
   },
   plugins: [
     twoFactor({
