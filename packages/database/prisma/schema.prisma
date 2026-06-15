@@ -17,9 +17,10 @@ model User {
   updatedAt     DateTime  @default(now()) @updatedAt
 
   // Better-Auth Relations
-  sessions      Session[]
-  accounts      Account[]
-  twoFactors    TwoFactor[]
+  sessions         Session[]
+  accounts         Account[]
+  twoFactors       TwoFactor[]
+  twoFactorEnabled Boolean   @default(false)
 
   // Custom Auth Fields
   passwordHash  String?
