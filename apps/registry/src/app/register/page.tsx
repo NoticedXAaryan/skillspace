@@ -53,7 +53,7 @@ export default function RegisterPage() {
       setError(signUpError.message || 'Failed to create account');
       setLoading(false);
     } else {
-      router.push('/');
+      router.push('/dashboard');
       router.refresh();
     }
   }
@@ -62,7 +62,7 @@ export default function RegisterPage() {
     setLoading(true);
     await authClient.signIn.social({
       provider: 'github',
-      callbackURL: '/',
+      callbackURL: '/dashboard',
     });
   }
 

@@ -37,7 +37,7 @@ export default function LoginPage() {
       setError(signInError.message || 'Failed to sign in');
       setLoading(false);
     } else {
-      router.push('/');
+      router.push('/dashboard');
       router.refresh();
     }
   }
@@ -46,7 +46,7 @@ export default function LoginPage() {
     setLoading(true);
     await authClient.signIn.social({
       provider: 'github',
-      callbackURL: '/',
+      callbackURL: '/dashboard',
     });
   }
 
