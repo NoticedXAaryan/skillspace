@@ -59,31 +59,37 @@ export default function LandingPageClient({
 
       // Scroll Animations for sections
       gsap.utils.toArray<HTMLElement>(".fade-up-section").forEach((section) => {
-        gsap.from(section, {
-          scrollTrigger: {
-            trigger: section,
-            start: "top 80%",
-          },
-          opacity: 0,
-          y: 40,
-          duration: 0.8,
-          ease: "power3.out",
-        });
+        gsap.fromTo(section,
+          { opacity: 0, y: 40 },
+          {
+            scrollTrigger: {
+              trigger: section,
+              start: "top 85%",
+            },
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: "power3.out",
+          }
+        );
       });
 
       // Bento Grid Stagger
-      gsap.from(".bento-item", {
-        scrollTrigger: {
-          trigger: ".bento-container",
-          start: "top 80%",
-        },
-        opacity: 0,
-        scale: 0.95,
-        y: 20,
-        stagger: 0.1,
-        duration: 0.6,
-        ease: "back.out(1.2)",
-      });
+      gsap.fromTo(".bento-item", 
+        { opacity: 0, scale: 0.95, y: 20 },
+        {
+          scrollTrigger: {
+            trigger: ".bento-container",
+            start: "top 90%",
+          },
+          opacity: 1,
+          scale: 1,
+          y: 0,
+          stagger: 0.1,
+          duration: 0.6,
+          ease: "back.out(1.2)",
+        }
+      );
     },
     { scope: container }
   );

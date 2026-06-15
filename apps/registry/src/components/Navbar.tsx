@@ -220,15 +220,25 @@ export default function Navbar() {
           </a>
 
           {isAuth ? (
-            <>
-              <Link href="/dashboard" className={cn("transition-colors hover:text-blue-400", pathname === '/dashboard' ? 'text-blue-400' : 'text-neutral-300')}>Dashboard</Link>
-              <Button variant="ghost" onClick={handleSignOut} className="text-neutral-300 hover:text-white hover:bg-white/10">Sign Out</Button>
-            </>
+            <div className="flex items-center gap-4">
+              <Link href="/dashboard" className={cn("transition-colors hover:text-cyan-400 font-medium", pathname === '/dashboard' ? 'text-cyan-400' : 'text-neutral-300')}>Dashboard</Link>
+              <div className="flex items-center gap-2 bg-white/5 rounded-full pl-1 pr-3 py-1 border border-white/10">
+                {session?.user?.image ? (
+                  <img src={session.user.image} alt={session.user.name || "User"} className="w-6 h-6 rounded-full border border-white/20" />
+                ) : (
+                  <div className="w-6 h-6 rounded-full bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-xs text-cyan-400 font-bold">
+                    {session?.user?.name?.charAt(0).toUpperCase() || 'U'}
+                  </div>
+                )}
+                <span className="text-sm font-medium text-white max-w-[100px] truncate">{session?.user?.name || session?.user?.email?.split('@')[0]}</span>
+              </div>
+              <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-neutral-400 hover:text-white hover:bg-white/10">Sign Out</Button>
+            </div>
           ) : (
             <>
-              <Link href="/login" className={cn("transition-colors hover:text-blue-400", pathname === '/login' ? 'text-blue-400' : 'text-neutral-300')}>Sign In</Link>
+              <Link href="/login" className={cn("transition-colors hover:text-cyan-400", pathname === '/login' ? 'text-cyan-400' : 'text-neutral-300')}>Sign In</Link>
               <Link href="/register">
-                <Button size="sm" className="bg-blue-500 text-white hover:bg-blue-400 font-semibold h-8 px-3 text-xs">Get Started</Button>
+                <Button size="sm" className="bg-cyan-500 text-white hover:bg-cyan-400 font-semibold h-8 px-4 text-xs shadow-lg shadow-cyan-500/20">Get Started</Button>
               </Link>
             </>
           )}
@@ -273,13 +283,26 @@ export default function Navbar() {
               <div className="flex flex-col gap-3 mt-4">
                 {isAuth ? (
                   <>
-                    <Button variant="outline" asChild className="w-full border-white/10 text-white hover:bg-white/10 hover:text-white">
+                    <div className="flex items-center gap-3 bg-white/5 p-3 rounded-lg border border-white/10 mb-2">
+                      {session?.user?.image ? (
+                        <img src={session.user.image} alt={session.user.name || "User"} className="w-8 h-8 rounded-full border border-white/20" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-sm text-cyan-400 font-bold">
+                          {session?.user?.name?.charAt(0).toUpperCase() || 'U'}
+                        </div>
+                      )}
+                      <div className="flex flex-col">
+                        <span className="text-sm font-semibold text-white">{session?.user?.name || 'User'}</span>
+                        <span className="text-xs text-neutral-400">{session?.user?.email}</span>
+                      </div>
+                    </div>
+                    <Button variant="outline" asChild className="w-full border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300">
                       <Link href="/dashboard" onClick={() => setIsSheetOpen(false)}>Dashboard</Link>
                     </Button>
                     <Button 
                       variant="ghost" 
                       onClick={() => { handleSignOut(); setIsSheetOpen(false); }} 
-                      className="w-full text-neutral-300 hover:text-white hover:bg-white/10"
+                      className="w-full text-neutral-400 hover:text-white hover:bg-white/10"
                     >
                       Sign Out
                     </Button>
@@ -289,7 +312,7 @@ export default function Navbar() {
                     <Button variant="outline" asChild className="w-full border-white/10 text-white bg-transparent hover:bg-white/10 hover:text-white">
                       <Link href="/login" onClick={() => setIsSheetOpen(false)}>Log in</Link>
                     </Button>
-                    <Button asChild className="w-full bg-blue-500 text-white hover:bg-blue-400 font-semibold">
+                    <Button asChild className="w-full bg-cyan-500 text-white hover:bg-cyan-400 font-semibold shadow-lg shadow-cyan-500/20">
                       <Link href="/register" onClick={() => setIsSheetOpen(false)}>Sign up</Link>
                     </Button>
                   </>

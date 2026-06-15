@@ -4,11 +4,16 @@ import { twoFactor } from "better-auth/plugins";
 import { NextRequest } from "next/server";
 import { prisma } from "./prisma";
 
-const isDev = process.env.NODE_ENV === 'development';
+const getBaseURL = () => {
+  if (process.env.VERCEL) {
+    return process.env.NEXT_PUBLIC_APP_URL || `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL}`;
+  }
+  return process.env.BETTER_AUTH_URL || 'http://localhost:3000';
+};
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
-  baseURL: process.env.BETTER_AUTH_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'),
+  baseURL: getBaseURL(),
   trustHost: true,
   database: prismaAdapter(prisma, {
     provider: "postgresql",

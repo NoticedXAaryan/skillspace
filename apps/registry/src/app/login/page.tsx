@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { authClient } from '@/lib/auth-client';
 import { Loader2 } from 'lucide-react';
+import { AuthGraphic } from '@/components/auth/AuthGraphic';
+import { motion } from 'framer-motion';
 
 function GithubIcon({ className }: { className?: string }) {
   return (
@@ -51,66 +53,98 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-[80vh] items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md rounded-xl border border-border bg-card p-8 shadow-sm">
-        <h1 className="mb-2 text-center text-2xl font-bold tracking-tight text-foreground">Welcome back</h1>
-        <p className="mb-8 text-center text-sm text-muted-foreground">Sign in to your SkillSpace account</p>
+    <main className="grid min-h-screen grid-cols-1 lg:grid-cols-2 bg-background">
+      {/* Graphic Side */}
+      <div className="hidden lg:block relative h-full w-full border-r border-border/50">
+        <AuthGraphic />
+      </div>
 
-        {error && <div className="mb-6 rounded-md bg-destructive/15 p-3 text-center text-sm font-medium text-destructive">{error}</div>}
-
-        <Button 
-          variant="outline" 
-          type="button" 
-          className="w-full mb-6 relative" 
-          onClick={handleGithubSignIn}
-          disabled={loading}
+      {/* Form Side */}
+      <div className="flex h-full w-full items-center justify-center p-8 sm:p-12 lg:p-16">
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-sm space-y-8"
         >
-          {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GithubIcon className="mr-2 h-4 w-4" />}
-          Continue with GitHub
-        </Button>
+          <div className="text-center">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Welcome back</h1>
+            <p className="mt-2 text-sm text-muted-foreground">Sign in to your SkillSpace account</p>
+          </div>
 
-        <div className="relative mb-6">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-border" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-          </div>
-        </div>
+          {error && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }} 
+              animate={{ opacity: 1, scale: 1 }}
+              className="rounded-lg bg-destructive/15 p-4 text-center text-sm font-medium text-destructive border border-destructive/20"
+            >
+              {error}
+            </motion.div>
+          )}
 
-        <form onSubmit={handleEmailSignIn} className="flex flex-col gap-5">
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium leading-none text-foreground">Email</label>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              required
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium leading-none text-foreground">Password</label>
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-            />
-          </div>
-          <div className="-mt-2 mb-2 text-right">
-            <Link href="/forgot-password" className="text-sm text-muted-foreground hover:text-foreground">Forgot password?</Link>
-          </div>
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Sign In'}
-          </Button>
-        </form>
+          <div className="space-y-6">
+            <Button 
+              variant="outline" 
+              type="button" 
+              className="w-full relative h-12 bg-card/50 hover:bg-card border-border/50" 
+              onClick={handleGithubSignIn}
+              disabled={loading}
+            >
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GithubIcon className="mr-2 h-5 w-5" />}
+              <span className="font-medium">Continue with GitHub</span>
+            </Button>
 
-        <p className="mt-8 text-center text-sm text-muted-foreground">
-          Don&apos;t have an account?{' '}
-          <Link href="/register" className="font-medium text-foreground hover:underline">Create one</Link>
-        </p>
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border/50" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-4 text-muted-foreground">Or continue with email</span>
+              </div>
+            </div>
+
+            <form onSubmit={handleEmailSignIn} className="space-y-5">
+              <div className="space-y-2">
+                <label className="text-sm font-medium leading-none text-foreground">Email</label>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="h-11 bg-card/50"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium leading-none text-foreground">Password</label>
+                  <Link href="/forgot-password" className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors">
+                    Forgot password?
+                  </Link>
+                </div>
+                <Input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="h-11 bg-card/50"
+                  required
+                />
+              </div>
+              
+              <Button type="submit" className="w-full h-11 bg-cyan-500 hover:bg-cyan-600 text-white font-medium shadow-lg shadow-cyan-500/20 transition-all duration-200" disabled={loading}>
+                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Sign In'}
+              </Button>
+            </form>
+          </div>
+
+          <p className="text-center text-sm text-muted-foreground">
+            Don&apos;t have an account?{' '}
+            <Link href="/register" className="font-medium text-cyan-400 hover:text-cyan-300 hover:underline transition-colors">
+              Create one
+            </Link>
+          </p>
+        </motion.div>
       </div>
     </main>
   );
