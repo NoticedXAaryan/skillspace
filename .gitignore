@@ -46,6 +46,10 @@ task.md
 walkthrough.md
 graphify-out/
 .system_generated/
+.mimocode/
+DEEP_DIVE.md
+SKILLSPACE_FUNCTIONAL_REQUIREMENTS.md
+skills-lock.json
 
 .UI_UX
 
