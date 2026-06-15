@@ -1,5 +1,7 @@
 import type { Command } from 'commander';
-import { Executor, AgentExecutor, AgentResolver, SkillResolver, resolveEnvForPackage, startPersonaREPL } from '@skillspace/runtime';
+import * as fs from 'fs';
+import * as path from 'path';
+import { Executor, AgentExecutor, AgentResolver, SkillResolver, resolveEnvForPackage, startPersonaREPL, getRegistryUrl } from '@skillspace/runtime';
 import { isLegacyV1Skill } from '@skillspace/schema';
 import { text, isCancel } from '@clack/prompts';
 import { intro } from '../ui/states/intro.js';
@@ -7,6 +9,23 @@ import { createLoader } from '../ui/states/loader.js';
 import { successStandard } from '../ui/states/success.js';
 import { errorOperational, errorInline } from '../ui/states/error.js';
 import { c } from '../ui/tokens/colors.js';
+
+function loadLinkData(): { projectId: string; projectName: string } | null {
+  const linkPath = path.join(process.cwd(), '.skillspace-link.json');
+  if (!fs.existsSync(linkPath)) return null;
+  try { return JSON.parse(fs.readFileSync(linkPath, 'utf-8')); } catch { return null; }
+}
+
+async function streamLogToDashboard(projectId: string, type: string, data: any) {
+  try {
+    const url = `${getRegistryUrl()}/api/execution/log`;
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ projectId, type, data })
+    });
+  } catch { /* silently fail if registry is down */ }
+}
 
 export function registerRunCommand(program: Command): void {
   program
@@ -119,10 +138,15 @@ export function registerRunCommand(program: Command): void {
             }
             // Streaming mode for v1-skill
             const executor = new Executor();
+            const linkData = loadLinkData();
+            if (linkData) streamLogToDashboard(linkData.projectId, 'start', { packageName, input });
+            
             for await (const chunk of executor.runStream(runOptions)) {
               process.stdout.write(chunk);
+              if (linkData) streamLogToDashboard(linkData.projectId, 'chunk', chunk);
             }
             process.stdout.write('\n\n');
+            if (linkData) streamLogToDashboard(linkData.projectId, 'end', { status: 'success' });
           } else {
             // Normal mode
             let result;
@@ -149,6 +173,16 @@ export function registerRunCommand(program: Command): void {
             } else {
               console.log(result.output);
             }
+            
+            const linkData = loadLinkData();
+            if (linkData) streamLogToDashboard(linkData.projectId, 'result', {
+              packageName,
+              input,
+              output: result.output,
+              model: result.model,
+              durationMs: result.duration_ms,
+              usage: result.usage,
+            });
           }
         } while (isInteractive);
       } catch (err) {

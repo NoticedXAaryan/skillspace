@@ -11,6 +11,8 @@ export const metadata = {
   description: 'Recent activity from your CLI sessions.',
 };
 
+import { Suspense } from 'react';
+
 export default async function ActivityPage() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect('/login');
@@ -26,5 +28,9 @@ export default async function ActivityPage() {
     take: 50,
   });
 
-  return <ActivityFeedClient executions={executions} />;
+  return (
+    <Suspense fallback={<div className="p-10 text-center text-neutral-400">Loading activity...</div>}>
+      <ActivityFeedClient executions={executions} />
+    </Suspense>
+  );
 }

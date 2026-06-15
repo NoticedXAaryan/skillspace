@@ -1,7 +1,9 @@
 'use client';
 
-import { Clock, CheckCircle2, XCircle, Cpu, Zap, ArrowRight } from 'lucide-react';
+import { Clock, CheckCircle2, XCircle, Cpu, Zap, ArrowRight, Activity, Terminal } from 'lucide-react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState, useRef } from 'react';
 
 interface Execution {
   id: string;
@@ -31,15 +33,74 @@ function formatDuration(ms: number): string {
   return `${(ms / 1000).toFixed(1)}s`;
 }
 
-export default function ActivityFeedClient({ executions }: { executions: Execution[] }) {
+export default function ActivityFeedClient({ executions: initialExecutions }: { executions: Execution[] }) {
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get('projectId');
+  const [liveLog, setLiveLog] = useState<string>('');
+  const [isLive, setIsLive] = useState(false);
+  const [currentTask, setCurrentTask] = useState<string | null>(null);
+  const terminalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!projectId) return;
+
+    const eventSource = new EventSource(`/api/stream/execution?projectId=${projectId}`);
+
+    eventSource.addEventListener('connected', () => setIsLive(true));
+    
+    eventSource.addEventListener('start', (e) => {
+      const data = JSON.parse(e.data);
+      setCurrentTask(data.packageName);
+      setLiveLog(`> skillspace run ${data.packageName}\n`);
+    });
+
+    eventSource.addEventListener('chunk', (e) => {
+      try {
+        const chunkStr = JSON.parse(e.data);
+        setLiveLog((prev) => prev + chunkStr);
+      } catch {
+        setLiveLog((prev) => prev + e.data);
+      }
+    });
+
+    eventSource.addEventListener('end', (e) => {
+      setCurrentTask(null);
+    });
+
+    return () => eventSource.close();
+  }, [projectId]);
+
+  useEffect(() => {
+    if (terminalRef.current) {
+      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+    }
+  }, [liveLog]);
+
   return (
     <div className="p-6 md:p-10 max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">Activity</h1>
-        <p className="text-neutral-400 mt-1">Recent skill execution sessions from your CLI.</p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+            Activity 
+            {isLive && <span className="flex items-center gap-1 text-xs font-medium bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full"><Activity className="w-3 h-3 animate-pulse" /> Live Link Active</span>}
+          </h1>
+          <p className="text-neutral-400 mt-1">Recent skill execution sessions from your CLI.</p>
+        </div>
       </div>
 
-      {executions.length === 0 ? (
+      {isLive && currentTask && (
+        <div className="mb-8 rounded-xl border border-cyan-500/30 bg-cyan-500/5 overflow-hidden">
+          <div className="bg-white/5 px-4 py-2 flex items-center gap-2 border-b border-white/10 text-xs text-neutral-400 font-mono">
+            <Terminal className="w-4 h-4 text-cyan-400" />
+            Live Execution: {currentTask}
+          </div>
+          <div ref={terminalRef} className="p-4 h-48 overflow-y-auto font-mono text-sm text-neutral-300 whitespace-pre-wrap">
+            {liveLog}
+          </div>
+        </div>
+      )}
+
+      {initialExecutions.length === 0 ? (
         <div className="rounded-xl border border-dashed border-white/10 p-12 text-center">
           <Clock className="w-10 h-10 text-neutral-600 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-white mb-2">No activity yet</h3>
@@ -55,7 +116,7 @@ export default function ActivityFeedClient({ executions }: { executions: Executi
         </div>
       ) : (
         <div className="space-y-2">
-          {executions.map((exec) => (
+          {initialExecutions.map((exec) => (
             <div
               key={exec.id}
               className="flex items-center gap-4 p-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/[0.07] transition-colors"
@@ -92,19 +153,46 @@ export default function ActivityFeedClient({ executions }: { executions: Executi
               </div>
 
               {/* Meta */}
-              <div className="flex items-center gap-4 flex-shrink-0 text-xs text-neutral-500">
-                <div className="flex items-center gap-1">
-                  <Cpu className="w-3 h-3" />
-                  <span className="font-mono">{exec.modelId.split('/').pop()}</span>
+              <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                <div className="flex items-center gap-4 text-xs text-neutral-500">
+                  <div className="flex items-center gap-1">
+                    <Cpu className="w-3 h-3" />
+                    <span className="font-mono">{exec.modelId.split('/').pop()}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Zap className="w-3 h-3" />
+                    <span>{formatDuration(exec.durationMs)}</span>
+                  </div>
+                  {exec.tokensUsed > 0 && (
+                    <span>{exec.tokensUsed.toLocaleString()} tokens</span>
+                  )}
+                  <span className="text-neutral-600">{timeAgo(exec.createdAt)}</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Zap className="w-3 h-3" />
-                  <span>{formatDuration(exec.durationMs)}</span>
-                </div>
-                {exec.tokensUsed > 0 && (
-                  <span>{exec.tokensUsed.toLocaleString()} tokens</span>
+                
+                {/* Re-run Button */}
+                {projectId && (
+                  <button
+                    onClick={async () => {
+                      try {
+                        const res = await fetch('/api/execution/remote', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            projectId,
+                            command: `skillspace run ${exec.package.name}`
+                          })
+                        });
+                        if (res.ok) alert('Sent command to local CLI!');
+                        else alert('Failed to send command.');
+                      } catch(e) {
+                        alert('Error connecting to local CLI.');
+                      }
+                    }}
+                    className="text-[10px] uppercase font-bold tracking-wider text-cyan-400 bg-cyan-400/10 hover:bg-cyan-400/20 px-2 py-1 rounded transition-colors"
+                  >
+                    Re-run via CLI
+                  </button>
                 )}
-                <span className="text-neutral-600">{timeAgo(exec.createdAt)}</span>
               </div>
             </div>
           ))}

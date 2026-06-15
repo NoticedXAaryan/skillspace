@@ -20,6 +20,7 @@ import { registerHelpCommand } from './commands/help.js';
 import { registerMigrateCommand } from './commands/migrate.js';
 import { registerExportCommand } from './commands/export.js';
 import { registerLinkCommand, registerDashboardCommand } from './commands/link.js';
+import { registerListenCommand } from './commands/listen.js';
 
 import chalk from 'chalk';
 import { c } from './ui/tokens/colors.js';
@@ -92,6 +93,7 @@ registerMigrateCommand(program);
 registerExportCommand(program);
 registerLinkCommand(program);
 registerDashboardCommand(program);
+registerListenCommand(program);
 
 import { configCommand } from './commands/config.js';
 

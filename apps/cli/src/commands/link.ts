@@ -32,7 +32,7 @@ function getDeviceFingerprint(): string {
   return crypto.createHash('sha256').update(data).digest('hex').substring(0, 16);
 }
 
-function loadLinkData(): LinkData | null {
+export function loadLinkData(): LinkData | null {
   const linkPath = path.join(process.cwd(), LINK_FILE);
   if (!fs.existsSync(linkPath)) return null;
   try {
@@ -177,7 +177,7 @@ export function registerDashboardCommand(program: Command): void {
       }
 
       if (linkData && opts.page === 'dashboard') {
-        url = `${baseUrl}/dashboard/activity`;
+        url = `${baseUrl}/dashboard/activity?projectId=${linkData.projectId}`;
       }
 
       try {
