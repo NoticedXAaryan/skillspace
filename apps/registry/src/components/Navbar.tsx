@@ -196,8 +196,9 @@ export default function Navbar() {
   if (pathname.startsWith('/dashboard')) return null;
 
   return (
-    <nav className="sticky top-0 z-50 flex h-14 items-center justify-between border-b border-white/10 bg-black/80 px-4 md:px-6 backdrop-blur-md">
-      <div className="flex items-center gap-6">
+    <div className="sticky top-4 z-50 flex justify-center w-full px-4 sm:px-6 md:px-8 mb-4 pointer-events-none">
+      <nav className="pointer-events-auto flex h-14 w-full max-w-6xl items-center justify-between rounded-full border border-white/10 bg-black/40 px-4 md:px-6 backdrop-blur-xl shadow-2xl shadow-black/50 transition-all duration-300">
+        <div className="flex items-center gap-6">
         <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
           SkillSpace
         </Link>
@@ -322,6 +323,7 @@ export default function Navbar() {
           </SheetContent>
         </Sheet>
       </div>
-    </nav>
+      </nav>
+    </div>
   );
 }

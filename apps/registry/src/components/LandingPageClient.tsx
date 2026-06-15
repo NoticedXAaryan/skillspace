@@ -26,6 +26,7 @@ import PackageCard from "@/components/PackageCard";
 import { AnimatedTerminal } from "@/components/ui/animated-terminal";
 import { HeroHighlight, Highlight } from "@/components/ui/hero-highlight";
 import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
+import { TypewriterEffect } from "@/components/ui/typewriter-effect";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -116,35 +117,57 @@ export default function LandingPageClient({
                 The package manager for <Highlight>AI capabilities</Highlight>
               </h1>
 
-              <p className="hero-desc text-lg md:text-xl text-neutral-400 mb-8 max-w-lg leading-relaxed">
-                Install, share, and version AI skills across any model. One command to install.
-                One command to run.
-              </p>
+              <div className="hero-desc mb-8">
+                <TypewriterEffect 
+                  className="text-left text-lg md:text-xl text-neutral-400 font-normal leading-relaxed"
+                  words={[
+                    { text: "Install," },
+                    { text: "share," },
+                    { text: "and" },
+                    { text: "version" },
+                    { text: "AI" },
+                    { text: "skills" },
+                    { text: "across" },
+                    { text: "any" },
+                    { text: "model." },
+                    { text: "One", className: "text-blue-400" },
+                    { text: "command", className: "text-blue-400" },
+                    { text: "to" },
+                    { text: "install." },
+                  ]} 
+                />
+              </div>
 
               <div className="hero-actions flex flex-col sm:flex-row items-start gap-4 mb-12">
                 <Button
                   asChild
                   size="lg"
-                  className="bg-white text-black hover:bg-neutral-200 h-12 px-8 rounded-full text-sm font-medium transition-transform hover:scale-105 active:scale-95"
+                  className="relative group bg-blue-500 text-white hover:bg-blue-600 h-12 px-8 rounded-full text-sm font-semibold transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(59,130,246,0.5)] border border-blue-400/50 overflow-hidden"
                 >
                   <Link href="/packages">
-                    Browse Registry
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    <span className="relative z-10 flex items-center">
+                      Browse Registry
+                      <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    </span>
+                    <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-cyan-400 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </Link>
                 </Button>
                 <Button
                   asChild
                   size="lg"
                   variant="outline"
-                  className="border-white/20 text-white hover:bg-white/10 h-12 px-8 rounded-full text-sm font-medium bg-transparent transition-transform hover:scale-105 active:scale-95"
+                  className="group relative border-white/20 text-white hover:bg-white/10 h-12 px-8 rounded-full text-sm font-medium bg-black/50 backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden"
                 >
                   <a
                     href="https://github.com/NoticedXAaryan/skillspace"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    GitHub
-                    <ArrowUpRight className="ml-1.5 h-4 w-4" />
+                    <span className="relative z-10 flex items-center">
+                      GitHub
+                      <ArrowUpRight className="ml-1.5 h-4 w-4 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform" />
+                    </span>
+                    <div className="absolute inset-0 h-full w-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </a>
                 </Button>
               </div>

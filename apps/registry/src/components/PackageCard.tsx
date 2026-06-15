@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowDownToLine, Box, ChevronRight } from 'lucide-react';
+import { ArrowDownToLine, Box, ChevronRight, Copy, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
@@ -24,6 +24,15 @@ function formatDownloads(n: number): string {
 
 export default function PackageCard({ pkg, index = 0, compact = false }: { pkg: PackageData, index?: number, compact?: boolean }) {
   const [isHovered, setIsHovered] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigator.clipboard.writeText(`skillspace install ${pkg.name}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <Link
@@ -81,25 +90,31 @@ export default function PackageCard({ pkg, index = 0, compact = false }: { pkg: 
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-4 border-t border-white/10">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between pt-4 border-t border-white/10 relative">
+          <div className="flex items-center gap-2 group-hover:opacity-0 transition-opacity duration-300">
             <div className="w-5 h-5 rounded-full bg-gradient-to-br from-blue-500/20 to-blue-700/20 flex items-center justify-center text-[10px] font-bold text-blue-400 border border-blue-500/20">
               {pkg.owner?.username?.[0]?.toUpperCase() || 'S'}
             </div>
             <span className="text-xs font-medium text-neutral-400">{pkg.owner?.username || 'skillspace'}</span>
           </div>
           
-          <div className="flex items-center gap-4 text-xs font-mono text-neutral-500">
+          <div className="flex items-center gap-4 text-xs font-mono text-neutral-500 group-hover:opacity-0 transition-opacity duration-300">
             <span className="flex items-center gap-1.5">
               <ArrowDownToLine className="w-3.5 h-3.5" />
               {formatDownloads(pkg.downloads)}
             </span>
-            <motion.div
-              animate={{ x: isHovered ? 4 : 0 }}
-              className="text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity"
+          </div>
+
+          <div className="absolute inset-0 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300 pt-4 border-t border-transparent pointer-events-none group-hover:pointer-events-auto">
+            <div className="font-mono text-xs text-blue-400 bg-blue-500/10 px-2 py-1 rounded border border-blue-500/20 truncate max-w-[80%]">
+              $ skillspace install {pkg.name}
+            </div>
+            <button
+              onClick={handleCopy}
+              className="p-1.5 rounded-md text-neutral-400 hover:text-white hover:bg-white/10 transition-colors"
             >
-              <ChevronRight className="w-4 h-4" />
-            </motion.div>
+              {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+            </button>
           </div>
         </div>
       </motion.div>

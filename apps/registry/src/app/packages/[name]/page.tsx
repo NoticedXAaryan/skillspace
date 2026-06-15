@@ -6,6 +6,7 @@ import prisma from '@/lib/prisma';
 import PackageTabs from './PackageTabs';
 import { Badge } from '@/components/ui/badge';
 import { AnimatedTerminal } from '@/components/ui/animated-terminal';
+import { Play, CheckCircle2 } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -130,115 +131,154 @@ export default async function PackagePage({ params }: { params: Promise<{ name: 
 
   return (
     <main className="container mx-auto px-4 py-12">
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-[1fr_300px]">
+      <div className="grid grid-cols-1 gap-10 md:grid-cols-[1fr_320px]">
         {/* Main Content */}
         <div className="min-w-0">
-          <div className="rounded-xl border border-border bg-card shadow-sm">
-            <div className="border-t-4 border-t-foreground rounded-t-xl p-8">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <h1 className="mb-2 text-4xl font-extrabold tracking-tight text-foreground">
-                    {pkg.name}
-                  </h1>
-                  <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">
+          <div className="relative rounded-3xl border border-white/10 bg-black/40 backdrop-blur-xl overflow-hidden shadow-2xl mb-8">
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 via-cyan-400 to-purple-500" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
+            
+            <div className="p-10 relative z-10">
+              <div className="flex flex-wrap items-start justify-between gap-6">
+                <div className="flex-1">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-inner">
+                      <Box className="w-8 h-8 text-blue-400" />
+                    </div>
+                    <div>
+                      <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-1">
+                        {pkg.name}
+                      </h1>
+                      <div className="flex items-center gap-3 text-sm text-neutral-400 font-mono">
+                        <span>v{latestVersion?.version || '0.0.0'}</span>
+                        <span className="w-1 h-1 rounded-full bg-neutral-600" />
+                        <span>{pkg.owner?.username}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <p className="max-w-2xl text-lg leading-relaxed text-neutral-300 mt-6">
                     {pkg.description}
                   </p>
-                  <div className="mt-6 flex flex-wrap gap-2">
+                  
+                  <div className="mt-8 flex flex-wrap gap-2">
                     {tags.map((tag: string) => (
-                      <Badge key={tag} variant="secondary">{tag}</Badge>
+                      <span key={tag} className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-sm text-neutral-300 hover:text-white hover:border-white/20 hover:bg-white/10 transition-colors font-mono cursor-default">
+                        {tag}
+                      </span>
                     ))}
                     {(pkg as any).type && (
-                      <Badge className="bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 border-amber-500/20 border">
+                      <span className="px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-lg text-sm font-semibold uppercase tracking-wider">
                         {(pkg as any).type}
-                      </Badge>
+                      </span>
                     )}
                   </div>
 
-                  <div className="mt-6 flex flex-wrap items-center gap-4">
+                  <div className="mt-8 flex flex-wrap items-center gap-6 p-4 bg-white/[0.02] border border-white/5 rounded-2xl">
                     {pkg.verified && (
-                      <span className="flex items-center gap-1.5 text-sm font-medium text-green-500">
+                      <span className="flex items-center gap-2 text-sm font-medium text-emerald-400">
                         <Shield className="h-4 w-4" /> Verified Publisher
                       </span>
                     )}
                     {!pkg.isPrivate && (
-                      <span className="flex items-center gap-1.5 text-sm font-medium text-blue-500">
+                      <span className="flex items-center gap-2 text-sm font-medium text-blue-400">
                         <Box className="h-4 w-4" /> Open Source
                       </span>
                     )}
-                    <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                      <span className="h-2 w-2 rounded-full bg-green-500"></span> Health: 98/100
+                    <span className="flex items-center gap-2 text-sm text-neutral-400">
+                      <div className="flex gap-1"><span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse"></span></div>
+                      Health: 98/100
                     </span>
                   </div>
                 </div>
                 
                 {allVersions.length > 0 && latestVersion && (
-                  <VersionPicker 
-                    pkgName={pkg.name}
-                    currentVersion={latestVersion.version}
-                    versions={allVersions.map((v: any) => ({
-                      version: v.version,
-                      isLatest: allVersions[0].version === v.version
-                    }))}
-                  />
+                  <div className="w-full sm:w-auto">
+                    <VersionPicker 
+                      pkgName={pkg.name}
+                      currentVersion={latestVersion.version}
+                      versions={allVersions.map((v: any) => ({
+                        version: v.version,
+                        isLatest: allVersions[0].version === v.version
+                      }))}
+                    />
+                  </div>
                 )}
               </div>
               
               {/* Quick Install CLI Block */}
-              <div className="mt-10">
-                <AnimatedTerminal command={`skillspace install ${pkg.name}`} />
+              <div className="mt-10 rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+                <AnimatedTerminal command={`skillspace install ${pkg.name}`} output={`Resolving ${pkg.name}...\nFetching capabilities...\nInstalled successfully!`} />
               </div>
             </div>
           </div>
 
-          <PackageTabs 
-            pkgName={pkg.name}
-            readmeContent={
-              readme ? (
-                renderMarkdown(readme)
-              ) : (
-                <>
-                  <p className="text-muted-foreground">{pkg.description}</p>
-                  
-                  <h3 className="mb-4 mt-8 text-xl font-bold text-foreground">Installation</h3>
-                  <div className="rounded-md bg-zinc-950 p-4 font-mono text-sm shadow-sm text-zinc-300">
-                    <code>skillspace install {pkg.name}</code>
+          <div className="relative rounded-3xl border border-white/10 bg-black/40 backdrop-blur-xl shadow-2xl overflow-hidden mb-8">
+            <PackageTabs 
+              pkgName={pkg.name}
+              readmeContent={
+                readme ? (
+                  <div className="prose prose-invert prose-blue max-w-none p-8">
+                    {renderMarkdown(readme)}
                   </div>
+                ) : (
+                  <div className="p-8">
+                    <p className="text-neutral-400 text-lg leading-relaxed mb-8">{pkg.description}</p>
+                    
+                    <h3 className="mb-4 text-xl font-bold text-white flex items-center gap-2">
+                      <Terminal className="w-5 h-5 text-blue-400" /> Installation
+                    </h3>
+                    <div className="rounded-xl bg-black/60 border border-white/10 p-5 font-mono text-sm shadow-inner text-neutral-300 mb-10 group hover:border-blue-500/30 transition-colors">
+                      <code className="flex items-center gap-3"><span className="text-blue-500">$</span> skillspace install {pkg.name}</code>
+                    </div>
 
-                  <h3 className="mb-4 mt-8 text-xl font-bold text-foreground">Usage</h3>
-                  <div className="rounded-md bg-zinc-950 p-4 font-mono text-sm shadow-sm text-zinc-300">
-                    <code>skillspace run {pkg.name} --input ./src</code>
+                    <h3 className="mb-4 text-xl font-bold text-white flex items-center gap-2">
+                      <Play className="w-5 h-5 text-emerald-400" /> Usage
+                    </h3>
+                    <div className="rounded-xl bg-black/60 border border-white/10 p-5 font-mono text-sm shadow-inner text-neutral-300 group hover:border-emerald-500/30 transition-colors">
+                      <code className="flex items-center gap-3"><span className="text-emerald-500">$</span> skillspace run {pkg.name} --input ./src</code>
+                    </div>
                   </div>
-                </>
-              )
-            }
-          />
+                )
+              }
+            />
+          </div>
 
-          <div className="mt-8 rounded-xl border border-border bg-card p-8 shadow-sm">
-            <h2 className="mb-6 border-b border-border pb-4 text-2xl font-bold text-foreground">
+          <div className="relative rounded-3xl border border-white/10 bg-black/40 backdrop-blur-xl shadow-2xl p-8 mb-8">
+            <h2 className="mb-6 text-2xl font-bold text-white flex items-center gap-3">
+              <Clock className="w-6 h-6 text-blue-400" />
               Versions
             </h2>
             <div className="overflow-x-auto">
-              <table className="w-full text-left">
+              <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-border text-muted-foreground">
-                    <th className="pb-3 font-medium">Version</th>
-                    <th className="pb-3 font-medium">Published</th>
-                    <th className="pb-3 font-medium">Deprecated</th>
+                  <tr className="border-b border-white/10 text-neutral-400 text-sm tracking-wider uppercase">
+                    <th className="pb-4 font-semibold px-2">Version</th>
+                    <th className="pb-4 font-semibold px-2">Published</th>
+                    <th className="pb-4 font-semibold px-2">Status</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-white/5">
                   {allVersions.map(v => (
-                    <tr key={v.version} className="border-b border-border last:border-0">
-                      <td className="py-3 font-mono text-sm">
-                        <Link href={`/packages/${pkg.name}/${v.version}`} className="text-foreground hover:underline">
+                    <tr key={v.version} className="group hover:bg-white/[0.02] transition-colors">
+                      <td className="py-4 px-2 font-mono text-sm">
+                        <Link href={`/packages/${pkg.name}/${v.version}`} className="text-white font-medium hover:text-blue-400 transition-colors">
                           v{v.version}
                         </Link>
                       </td>
-                      <td className="py-3 text-sm text-muted-foreground">
+                      <td className="py-4 px-2 text-sm text-neutral-400">
                         {new Date(v.publishedAt).toLocaleDateString()}
                       </td>
-                      <td className="py-3 text-sm">
-                        {v.deprecated ? <span className="text-destructive">⚠ deprecated</span> : <span className="text-muted-foreground">—</span>}
+                      <td className="py-4 px-2 text-sm">
+                        {v.deprecated ? (
+                          <span className="inline-flex items-center gap-1.5 text-rose-400 bg-rose-400/10 px-2 py-1 rounded-md text-xs font-medium">
+                            <Shield className="w-3 h-3" /> Deprecated
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-md text-xs font-medium">
+                            <CheckCircle2 className="w-3 h-3" /> Active
+                          </span>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -249,38 +289,46 @@ export default async function PackagePage({ params }: { params: Promise<{ name: 
         </div>
 
         {/* Sidebar */}
-        <aside className="sticky top-24 h-max w-full">
-          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-            <div className="flex flex-col gap-5">
-              <div className="flex items-center gap-4">
-                <Box className="h-5 w-5 text-muted-foreground" />
+        <aside className="sticky top-24 h-max w-full space-y-6">
+          <div className="rounded-3xl border border-white/10 bg-black/40 backdrop-blur-xl shadow-2xl p-8">
+            <div className="flex flex-col gap-8">
+              <div className="flex items-center gap-4 group">
+                <div className="p-3 bg-white/5 rounded-xl border border-white/10 group-hover:bg-blue-500/10 group-hover:border-blue-500/30 transition-colors">
+                  <Box className="h-6 w-6 text-neutral-400 group-hover:text-blue-400 transition-colors" />
+                </div>
                 <div>
-                  <div className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Version</div>
-                  <div className="font-semibold text-foreground">{latestVersion?.version || 'N/A'}</div>
+                  <div className="text-[10px] font-bold tracking-widest text-neutral-500 uppercase mb-1">Version</div>
+                  <div className="font-mono font-semibold text-lg text-white">{latestVersion?.version || 'N/A'}</div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
-                <User className="h-5 w-5 text-muted-foreground" />
+              <div className="flex items-center gap-4 group">
+                <div className="p-3 bg-white/5 rounded-xl border border-white/10 group-hover:bg-purple-500/10 group-hover:border-purple-500/30 transition-colors">
+                  <User className="h-6 w-6 text-neutral-400 group-hover:text-purple-400 transition-colors" />
+                </div>
                 <div>
-                  <div className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Author</div>
-                  <div className="font-semibold text-foreground">{pkg.owner?.username || 'skillspace'}</div>
+                  <div className="text-[10px] font-bold tracking-widest text-neutral-500 uppercase mb-1">Author</div>
+                  <div className="font-semibold text-lg text-white">{pkg.owner?.username || 'skillspace'}</div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
-                <Download className="h-5 w-5 text-muted-foreground" />
+              <div className="flex items-center gap-4 group">
+                <div className="p-3 bg-white/5 rounded-xl border border-white/10 group-hover:bg-emerald-500/10 group-hover:border-emerald-500/30 transition-colors">
+                  <Download className="h-6 w-6 text-neutral-400 group-hover:text-emerald-400 transition-colors" />
+                </div>
                 <div>
-                  <div className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Downloads</div>
-                  <div className="font-semibold text-foreground">{pkg.downloads?.toLocaleString()}</div>
+                  <div className="text-[10px] font-bold tracking-widest text-neutral-500 uppercase mb-1">Downloads</div>
+                  <div className="font-mono font-semibold text-lg text-white">{pkg.downloads?.toLocaleString()}</div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
-                <Clock className="h-5 w-5 text-muted-foreground" />
+              <div className="flex items-center gap-4 group">
+                <div className="p-3 bg-white/5 rounded-xl border border-white/10 group-hover:bg-amber-500/10 group-hover:border-amber-500/30 transition-colors">
+                  <Clock className="h-6 w-6 text-neutral-400 group-hover:text-amber-400 transition-colors" />
+                </div>
                 <div>
-                  <div className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Published</div>
-                  <div className="font-semibold text-foreground">
+                  <div className="text-[10px] font-bold tracking-widest text-neutral-500 uppercase mb-1">Published</div>
+                  <div className="font-semibold text-lg text-white">
                     {latestVersion?.publishedAt ? new Date(latestVersion.publishedAt).toLocaleDateString() : 'N/A'}
                   </div>
                 </div>
@@ -289,14 +337,14 @@ export default async function PackagePage({ params }: { params: Promise<{ name: 
           </div>
 
           {latestVersion?.checksum && (
-            <div className="mt-6 rounded-xl border border-border bg-card p-6 shadow-sm">
-              <h3 className="mb-4 flex items-center gap-2 font-bold text-foreground">
-                <Shield className="h-5 w-5 text-green-500" /> Integrity
+            <div className="rounded-3xl border border-white/10 bg-black/40 backdrop-blur-xl shadow-2xl p-8 group hover:border-green-500/30 transition-colors">
+              <h3 className="mb-4 flex items-center gap-2 font-bold text-white text-lg">
+                <Shield className="h-5 w-5 text-emerald-400" /> Integrity Check
               </h3>
-              <p className="mb-3 text-sm text-muted-foreground">
-                Cryptographic hash ensuring package contents have not been modified.
+              <p className="mb-4 text-sm text-neutral-400 leading-relaxed">
+                Cryptographic hash ensuring package contents have not been modified or tampered with.
               </p>
-              <div className="break-all rounded-md bg-zinc-950 p-3 font-mono text-xs text-zinc-300">
+              <div className="break-all rounded-xl bg-black border border-white/10 p-4 font-mono text-xs text-neutral-300 shadow-inner group-hover:border-green-500/20 transition-colors">
                 <code>{latestVersion.checksum}</code>
               </div>
             </div>
@@ -304,30 +352,35 @@ export default async function PackagePage({ params }: { params: Promise<{ name: 
         </aside>
       </div>
 
-      <div className="mt-16 border-t border-border pt-8">
-        <h2 className="mb-6 text-2xl font-bold text-foreground">Similar Skills</h2>
+      <div className="mt-16 border-t border-white/10 pt-12">
+        <h2 className="mb-8 text-2xl font-bold text-white flex items-center gap-3">
+          <Box className="w-6 h-6 text-blue-400" />
+          Similar Skills
+        </h2>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          <Link href="/packages/vision-parser" className="block">
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition-colors hover:border-muted-foreground">
-              <h3 className="mb-2 font-semibold text-foreground">vision-parser</h3>
-              <p className="mb-4 text-sm text-muted-foreground">A robust computer vision tool for extracting text.</p>
-              <div className="text-xs text-muted-foreground"><Download className="inline-block h-3 w-3 mr-1"/> 1.2k</div>
-            </div>
-          </Link>
-          <Link href="/packages/document-qa" className="block">
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition-colors hover:border-muted-foreground">
-              <h3 className="mb-2 font-semibold text-foreground">document-qa</h3>
-              <p className="mb-4 text-sm text-muted-foreground">Question answering over large PDF documents.</p>
-              <div className="text-xs text-muted-foreground"><Download className="inline-block h-3 w-3 mr-1"/> 8.4k</div>
-            </div>
-          </Link>
-          <Link href="/packages/text-to-sql" className="block">
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm transition-colors hover:border-muted-foreground">
-              <h3 className="mb-2 font-semibold text-foreground">text-to-sql</h3>
-              <p className="mb-4 text-sm text-muted-foreground">Translate natural language queries into SQL.</p>
-              <div className="text-xs text-muted-foreground"><Download className="inline-block h-3 w-3 mr-1"/> 3.1k</div>
-            </div>
-          </Link>
+          {[
+            { name: 'vision-parser', desc: 'A robust computer vision tool for extracting text.', dl: '1.2k', type: 'tool', icon: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
+            { name: 'document-qa', desc: 'Question answering over large PDF documents.', dl: '8.4k', type: 'agent', icon: 'bg-purple-500/10 text-purple-400 border-purple-500/20' },
+            { name: 'text-to-sql', desc: 'Translate natural language queries into SQL.', dl: '3.1k', type: 'workflow', icon: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' }
+          ].map((item) => (
+            <Link key={item.name} href={`/packages/${item.name}`} className="group block">
+              <div className="rounded-3xl border border-white/10 bg-black/40 backdrop-blur-xl p-8 shadow-2xl transition-all duration-300 hover:bg-white/[0.02] hover:-translate-y-1 hover:border-blue-500/30">
+                <div className="flex items-start justify-between mb-4">
+                  <div className={`p-2.5 rounded-xl border ${item.icon}`}>
+                    <Box className="w-5 h-5" />
+                  </div>
+                  <span className="text-[10px] uppercase tracking-widest font-semibold px-2.5 py-1 bg-white/5 rounded-md border border-white/10 text-neutral-400">
+                    {item.type}
+                  </span>
+                </div>
+                <h3 className="mb-2 text-xl font-bold text-white group-hover:text-blue-400 transition-colors">{item.name}</h3>
+                <p className="mb-6 text-sm text-neutral-400 leading-relaxed">{item.desc}</p>
+                <div className="flex items-center text-xs font-mono text-neutral-500">
+                  <Download className="inline-block h-3.5 w-3.5 mr-1.5"/> {item.dl} downloads
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
     </main>

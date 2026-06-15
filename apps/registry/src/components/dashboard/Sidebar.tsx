@@ -41,7 +41,7 @@ export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle:
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-3 px-2 space-y-1">
+      <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
           return (
@@ -49,14 +49,20 @@ export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle:
               key={item.href}
               href={item.href}
               className={cn(
-                'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                'group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300',
                 isActive
-                  ? 'bg-white/10 text-white'
-                  : 'text-neutral-400 hover:text-white hover:bg-white/5',
+                  ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]'
+                  : 'text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent',
                 collapsed && 'justify-center px-0'
               )}
             >
-              <item.icon className="w-4 h-4 shrink-0" />
+              {isActive && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-1/2 bg-blue-500 rounded-r-full shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
+              )}
+              <item.icon className={cn(
+                "w-4 h-4 shrink-0 transition-transform duration-300",
+                isActive ? "scale-110" : "group-hover:scale-110"
+              )} />
               {!collapsed && <span>{item.label}</span>}
             </Link>
           );

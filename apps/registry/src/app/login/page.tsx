@@ -62,15 +62,18 @@ export default function LoginPage() {
       {/* Form Side */}
       <div className="flex h-full w-full items-center justify-center p-8 sm:p-12 lg:p-16">
         <motion.div 
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.2 } }
+          }}
           className="w-full max-w-sm space-y-8"
         >
-          <div className="text-center">
+          <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } }} className="text-center">
             <h1 className="text-3xl font-bold tracking-tight text-foreground">Welcome back</h1>
             <p className="mt-2 text-sm text-muted-foreground">Sign in to your SkillSpace account</p>
-          </div>
+          </motion.div>
 
           {error && (
             <motion.div 
@@ -82,7 +85,7 @@ export default function LoginPage() {
             </motion.div>
           )}
 
-          <div className="space-y-6">
+          <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } }} className="space-y-6">
             <Button 
               variant="outline" 
               type="button" 
@@ -136,14 +139,14 @@ export default function LoginPage() {
                 {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Sign In'}
               </Button>
             </form>
-          </div>
+          </motion.div>
 
-          <p className="text-center text-sm text-muted-foreground">
+          <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } }} className="text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{' '}
             <Link href="/register" className="font-medium text-cyan-400 hover:text-cyan-300 hover:underline transition-colors">
               Create one
             </Link>
-          </p>
+          </motion.p>
         </motion.div>
       </div>
     </main>
