@@ -38,6 +38,11 @@ export async function GET(
     return error('STORAGE_ERROR', 'Package file not found in storage', 500);
   }
 
+  await prisma.package.update({
+    where: { id: pkg.id },
+    data: { downloads: { increment: 1 } }
+  });
+
   const data = await readPackage(name, version);
   return new NextResponse(new Uint8Array(data), {
     headers: {

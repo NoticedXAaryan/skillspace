@@ -4,6 +4,7 @@ import { ExternalLink, Rocket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { HeroSection } from '@/components/ui/hero-odyssey';
+import EmptyState from '@/components/EmptyState';
 
 
 export const metadata = {
@@ -16,33 +17,6 @@ export default async function ShowcasePage() {
     orderBy: { createdAt: 'desc' },
     include: { user: true }
   });
-
-  const displayProjects = projects.length > 0 ? projects : [
-    {
-      id: '1',
-      name: 'AgenticIDE',
-      description: 'A fully autonomous Next.js IDE that uses SkillSpace to run arbitrary code actions within a sandboxed environment.',
-      url: 'https://example.com',
-      imageUrl: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80',
-      user: { username: 'skillspace-core' }
-    },
-    {
-      id: '2',
-      name: 'AutoResearcher',
-      description: 'An AI researcher that compiles arXiv papers into readable podcasts using SkillSpace workflows.',
-      url: 'https://example.com',
-      imageUrl: 'https://images.unsplash.com/photo-1507413245164-6160d8298b31?auto=format&fit=crop&w=600&q=80',
-      user: { username: 'ai-researcher' }
-    },
-    {
-      id: '3',
-      name: 'DataSmith Pro',
-      description: 'Enterprise data ETL powered entirely by community contributed data parsers on the SkillSpace registry.',
-      url: 'https://example.com',
-      imageUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80',
-      user: { username: 'data-smith' }
-    }
-  ];
 
   return (
     <main className="min-h-screen bg-black pb-24">
@@ -59,8 +33,17 @@ export default async function ShowcasePage() {
       </div>
 
       <div className="container mx-auto px-6 max-w-7xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {displayProjects.map((proj) => (
+        {projects.length === 0 ? (
+          <div className="mx-auto max-w-xl text-white">
+            <EmptyState
+              title="No showcase projects yet"
+              description="Published community projects will appear here after maintainers submit real SkillSpace-powered work."
+              icon={<Rocket className="h-8 w-8 text-cyan-400" />}
+            />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {projects.map((proj) => (
             <a key={proj.id} href={proj.url} target="_blank" rel="noopener noreferrer" className="group block">
               <Card className="bg-neutral-950 border-white/10 hover:border-cyan-500/50 hover:shadow-[0_8px_32px_rgba(34,211,238,0.15)] transition-all duration-300 h-full overflow-hidden flex flex-col">
                 <div className="relative aspect-video w-full bg-neutral-900 overflow-hidden">
@@ -91,7 +74,8 @@ export default async function ShowcasePage() {
               </Card>
             </a>
           ))}
-        </div>
+          </div>
+        )}
       </div>
     </main>
   );

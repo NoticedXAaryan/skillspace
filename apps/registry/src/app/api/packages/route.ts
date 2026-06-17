@@ -6,6 +6,7 @@ import { getUserFromRequest } from '@/lib/auth';
 import { success, error, unauthorized } from '@/lib/api-response';
 import { storePackage } from '@/lib/storage';
 import { checkRateLimit } from '@/lib/rate-limit';
+import semver from 'semver';
 
 export async function GET(req: NextRequest) {
   // Allow 100 requests per minute per IP for GET requests
@@ -105,6 +106,11 @@ export async function POST(req: NextRequest) {
     }
 
     const { name, version, description, type, tags, isPrivate, manifest } = parsed.data;
+
+    // Strict SemVer Validation
+    if (!semver.valid(version)) {
+      return error('VALIDATION_ERROR', `Invalid semantic version: ${version}`, 400);
+    }
 
     // --- SECURITY SCANNING ---
     // Enforce prompt injection firewall at publish time for v2 Skills

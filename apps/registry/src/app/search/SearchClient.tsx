@@ -22,7 +22,6 @@ export default function SearchClient({ initialData, initialQuery }: { initialDat
       // Type
       if (type !== 'all' && pkg.type !== type) return false;
       
-      // Min Stars (mocking relation count for this demo)
       const stars = pkg._count?.stars || 0;
       if (stars < minStars) return false;
       
@@ -52,10 +51,11 @@ export default function SearchClient({ initialData, initialQuery }: { initialDat
               onChange={e => setType(e.target.value)}
             >
               <option value="all">All Types</option>
-              <option value="Agent">Agent</option>
-              <option value="Workflow">Workflow</option>
-              <option value="Tool">Tool</option>
-              <option value="Model">Model</option>
+              <option value="skill">Skill</option>
+              <option value="agent">Agent</option>
+              <option value="workflow">Workflow</option>
+              <option value="mcp">MCP</option>
+              <option value="knowledge">Knowledge</option>
             </select>
           </div>
 

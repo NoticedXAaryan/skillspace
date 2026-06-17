@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
+import * as yaml from 'js-yaml';
+import semver from 'semver';
+import * as crypto from 'node:crypto';
+import { storePackage } from '@/lib/storage';
 
 export async function POST(
   req: Request,
@@ -35,25 +39,68 @@ export async function POST(
       return new NextResponse('Forbidden', { status: 403 });
     }
 
-    // A real implementation would parse the YAML and bump the semver version safely.
-    // Here we'll do a simple mock version bump for the demonstration.
-    const latestVersionStr = pkg.versions[0]?.version || '1.0.0';
-    const parts = latestVersionStr.split('.').map(Number);
-    parts[2] += 1; // Bump patch version
-    const newVersion = parts.join('.');
+    let parsedYaml: Record<string, unknown>;
+    try {
+      const loaded = yaml.load(yamlContent);
+      if (!loaded || typeof loaded !== 'object' || Array.isArray(loaded)) {
+        return new NextResponse('YAML content must be an object', { status: 400 });
+      }
+      parsedYaml = loaded as Record<string, unknown>;
+    } catch {
+      return new NextResponse('Invalid YAML format', { status: 400 });
+    }
 
-    // Update the package and add a new version entry
-    await prisma.packageVersion.create({
-      data: {
-        packageId: pkg.id,
-        version: newVersion,
-        manifest: yamlContent,
-        storagePath: pkg.versions[0]?.storagePath || '',
-        checksum: pkg.versions[0]?.checksum || '',
-      },
+    const latestVersionStr = pkg.versions[0]?.version || '0.0.0';
+    let newVersion: string | null = typeof parsedYaml.version === 'string' ? parsedYaml.version : null;
+
+    if (newVersion) {
+      if (!semver.valid(newVersion)) {
+        return new NextResponse(`Invalid semver version in YAML: ${newVersion}`, { status: 400 });
+      }
+      if (semver.lte(newVersion, latestVersionStr)) {
+        return new NextResponse(`Version must be strictly greater than ${latestVersionStr}`, { status: 400 });
+      }
+    } else {
+      newVersion = semver.inc(latestVersionStr, 'patch');
+      if (!newVersion) return new NextResponse('Failed to increment version', { status: 500 });
+      parsedYaml.version = newVersion;
+    }
+
+    const existingVersion = await prisma.packageVersion.findFirst({
+      where: { packageId: pkg.id, version: newVersion },
     });
+    if (existingVersion) {
+      return new NextResponse(`Version ${newVersion} already exists`, { status: 409 });
+    }
 
-    // Package has no updatedAt field, so we just create the version
+    const buffer = Buffer.from(yamlContent, 'utf-8');
+    const userStats = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { storageUsed: true, storageQuota: true },
+    });
+    if (userStats && userStats.storageUsed + BigInt(buffer.byteLength) > userStats.storageQuota) {
+      return new NextResponse('Global storage quota exceeded', { status: 413 });
+    }
+
+    const checksum = `sha256:${crypto.createHash('sha256').update(buffer).digest('hex')}`;
+    const storagePath = await storePackage(name, newVersion, buffer);
+
+    await prisma.$transaction([
+      prisma.packageVersion.create({
+        data: {
+          packageId: pkg.id,
+          version: newVersion,
+          manifest: JSON.stringify(parsedYaml),
+          storagePath,
+          checksum,
+          size: buffer.byteLength,
+        },
+      }),
+      prisma.user.update({
+        where: { id: session.user.id },
+        data: { storageUsed: { increment: buffer.byteLength } }
+      })
+    ]);
 
     return NextResponse.json({ success: true, version: newVersion });
   } catch (error: any) {

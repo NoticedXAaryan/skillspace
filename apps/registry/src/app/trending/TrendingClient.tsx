@@ -24,7 +24,6 @@ export default function TrendingClient({ data }: { data: TrendingData }) {
 
   const currentList = data[timeframe] || [];
 
-  // Map package data to leaderboard rankings
   const rankings = currentList.map((item, index) => ({
     userId: item.id,
     rank: index + 1,
@@ -40,10 +39,6 @@ export default function TrendingClient({ data }: { data: TrendingData }) {
     rank: r.rank,
     value: r.value,
   }));
-
-  const remainingRankings = rankings.slice(3); // Wait, usually the podium shows the top 3 and the list shows everything or the rest. Let's pass all to rankings list so they can see themselves, or maybe just all of them. 
-  // Actually, standard leaderboards show 1-3 in podium and 4+ in the list.
-  // Wait, the prompt's demo showed podium has 1-3 and rankings has 1-5. It's up to us. I will pass all to rankings so we see the full list, or maybe just 4-10. Let's pass all.
 
   const runOptions: LeaderboardRunOption[] = [
     { id: 'today', label: 'Today' },

@@ -20,10 +20,6 @@ async function getTrendingPackages() {
   const lastMonth = new Date(now);
   lastMonth.setMonth(now.getMonth() - 1);
 
-  // For a real trending algorithm, we would query ExecutionLog counts over the timeframe.
-  // Since we don't have enough granular historical execution data seeded, we will filter
-  // by `createdAt` or just use `downloads` descending as a proxy to show real data.
-  
   const [todayPkgs, weekPkgs, monthPkgs, allTimePkgs] = await Promise.all([
     prisma.package.findMany({
       where: { createdAt: { gte: today } },
@@ -58,11 +54,10 @@ async function getTrendingPackages() {
     stars: p._count.stars
   });
 
-  // If no packages were created today/week/month (due to seed data), fallback to all time to prevent empty screens
   return {
-    today: todayPkgs.length > 0 ? todayPkgs.map(mapPkg) : allTimePkgs.map(mapPkg),
-    week: weekPkgs.length > 0 ? weekPkgs.map(mapPkg) : allTimePkgs.map(mapPkg),
-    month: monthPkgs.length > 0 ? monthPkgs.map(mapPkg) : allTimePkgs.map(mapPkg),
+    today: todayPkgs.map(mapPkg),
+    week: weekPkgs.map(mapPkg),
+    month: monthPkgs.map(mapPkg),
     allTime: allTimePkgs.map(mapPkg)
   };
 }

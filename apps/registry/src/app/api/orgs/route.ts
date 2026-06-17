@@ -20,13 +20,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid slug format. Use lowercase letters, numbers, and hyphens.' }, { status: 400 });
     }
 
-    // Check if slug is taken
-    const existing = await prisma.organization.findUnique({
+    // Check if slug is taken by another org
+    const existingOrg = await prisma.organization.findUnique({
       where: { slug }
     });
 
-    if (existing) {
-      return NextResponse.json({ error: 'Slug is already taken' }, { status: 400 });
+    if (existingOrg) {
+      return NextResponse.json({ error: 'Slug is already taken by an organization' }, { status: 400 });
+    }
+
+    // Check if slug is taken by a user
+    const existingUser = await prisma.user.findUnique({
+      where: { username: slug }
+    });
+
+    if (existingUser) {
+      return NextResponse.json({ error: 'Slug is already taken by a user' }, { status: 400 });
     }
 
     // Create org and add creator as admin

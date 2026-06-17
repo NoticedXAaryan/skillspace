@@ -4,6 +4,7 @@ import { Map, CheckCircle2, CircleDashed, ArrowRightCircle, ThumbsUp } from 'luc
 import { HeroSection } from '@/components/ui/hero-odyssey';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import EmptyState from '@/components/EmptyState';
 
 
 export const metadata = {
@@ -19,16 +20,9 @@ export default async function RoadmapPage() {
     orderBy: { createdAt: 'desc' }
   });
 
-  const displayItems = items.length > 0 ? items : [
-    { id: '1', title: 'Support for Gemini 2.0 Pro', description: 'Update the core runtime to natively support the newest Gemini models with full multimodal streaming.', status: 'in_progress', _count: { votes: 142 } },
-    { id: '2', title: 'Python SDK', description: 'Create a pip-installable python SDK to interact with the SkillSpace engine from backend microservices.', status: 'planned', _count: { votes: 89 } },
-    { id: '3', title: 'Organization Workspaces', description: 'Allow teams to group their private packages and manage access control lists.', status: 'planned', _count: { votes: 65 } },
-    { id: '4', title: 'Agent Sandbox 2.0', description: 'Secure gVisor integration for the background execution of arbitrary untrusted packages.', status: 'completed', _count: { votes: 215 } }
-  ];
-
-  const planned = displayItems.filter(i => i.status === 'planned');
-  const inProgress = displayItems.filter(i => i.status === 'in_progress');
-  const completed = displayItems.filter(i => i.status === 'completed');
+  const planned = items.filter(i => i.status === 'planned');
+  const inProgress = items.filter(i => i.status === 'in_progress');
+  const completed = items.filter(i => i.status === 'completed');
 
   const Column = ({ title, icon: Icon, items, color, borderColor }: { title: string, icon: any, items: any[], color: string, borderColor: string }) => (
     <div className="flex flex-col gap-4">
@@ -75,11 +69,21 @@ export default async function RoadmapPage() {
       </div>
 
       <div className="container mx-auto px-6 max-w-7xl">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6 lg:gap-10">
-          <Column title="Planned" icon={CircleDashed} items={planned} color="text-neutral-500" borderColor="border-b-neutral-500" />
-          <Column title="In Progress" icon={ArrowRightCircle} items={inProgress} color="text-cyan-400" borderColor="border-b-cyan-400" />
-          <Column title="Completed" icon={CheckCircle2} items={completed} color="text-emerald-500" borderColor="border-b-emerald-500" />
-        </div>
+        {items.length === 0 ? (
+          <div className="mx-auto max-w-xl text-white">
+            <EmptyState
+              title="No roadmap items published"
+              description="Public roadmap items will appear here when maintainers publish planned, active, or completed work."
+              icon={<Map className="h-8 w-8 text-cyan-400" />}
+            />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6 lg:gap-10">
+            <Column title="Planned" icon={CircleDashed} items={planned} color="text-neutral-500" borderColor="border-b-neutral-500" />
+            <Column title="In Progress" icon={ArrowRightCircle} items={inProgress} color="text-cyan-400" borderColor="border-b-cyan-400" />
+            <Column title="Completed" icon={CheckCircle2} items={completed} color="text-emerald-500" borderColor="border-b-emerald-500" />
+          </div>
+        )}
       </div>
     </main>
   );

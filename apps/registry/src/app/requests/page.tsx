@@ -5,6 +5,7 @@ import { HeroSection } from '@/components/ui/hero-odyssey';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import EmptyState from '@/components/EmptyState';
 
 
 export const metadata = {
@@ -17,12 +18,6 @@ export default async function RequestsPage() {
     orderBy: { createdAt: 'desc' },
     include: { user: true }
   });
-
-  const displayRequests = requests.length > 0 ? requests : [
-    { id: '1', title: 'Video to Subtitle Parser', description: 'A skill that takes an MP4 video file, extracts audio, transcribes it using Whisper, and outputs an SRT file.', status: 'open', bounty: '$500', user: { username: 'creator-studio' } },
-    { id: '2', title: 'Figma to React Component', description: 'Accepts a Figma URL and node ID, and returns a fully styled React/Tailwind component.', status: 'claimed', bounty: '$1,200', user: { username: 'design-corp' } },
-    { id: '3', title: 'Local PDF RAG Query', description: 'Injest a PDF into a local ChromaDB instance and query it without internet access.', status: 'completed', bounty: 'None', user: { username: 'privacy-first' } }
-  ];
 
   return (
     <main className="min-h-screen bg-black pb-24">
@@ -47,8 +42,17 @@ export default async function RequestsPage() {
           <Button variant="ghost" className="text-neutral-400 hover:text-white hover:bg-white/5 rounded-full h-9">Completed</Button>
         </div>
 
-        <div className="flex flex-col gap-4">
-          {displayRequests.map((req: any) => (
+        {requests.length === 0 ? (
+          <div className="text-white">
+            <EmptyState
+              title="No skill requests yet"
+              description="Community requests will appear here after users submit real capability needs."
+              icon={<Target className="h-8 w-8 text-cyan-400" />}
+            />
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4">
+          {requests.map((req) => (
             <Card key={req.id} className="bg-neutral-950 border-white/10 hover:border-cyan-500/30 transition-colors group overflow-hidden">
               <CardContent className="p-0 flex flex-col sm:flex-row">
                 <div className="flex-1 p-6 flex flex-col justify-between">
@@ -78,7 +82,7 @@ export default async function RequestsPage() {
                     <span className="text-xs text-neutral-500 uppercase tracking-wider font-semibold mb-1">Bounty</span>
                     <span className="flex items-center gap-1.5 text-lg font-mono font-bold text-white">
                       <Coins className="w-4 h-4 text-yellow-500" /> 
-                      {req.bounty || 'Open Source'}
+                      Open Source
                     </span>
                   </div>
                   <Button 
@@ -92,7 +96,8 @@ export default async function RequestsPage() {
               </CardContent>
             </Card>
           ))}
-        </div>
+          </div>
+        )}
       </div>
     </main>
   );

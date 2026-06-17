@@ -26,14 +26,11 @@ describe('McpManager', () => {
   });
 
   describe('installServer', () => {
-    it('should install using the hardcoded fallback if fetch fails', async () => {
+    it('should fail clearly if the registry cannot be reached', async () => {
       (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Network error'));
       
-      await expect(manager.installServer('sqlite')).resolves.not.toThrow();
-      
-      const args = vi.mocked(fs.writeFileSync).mock.calls[0];
-      expect(args[0]).toContain('mcp.json');
-      expect(JSON.parse(args[1] as string).name).toBe('sqlite');
+      await expect(manager.installServer('sqlite')).rejects.toThrow('Network error');
+      expect(vi.mocked(fs.writeFileSync)).not.toHaveBeenCalled();
     });
 
     it('should install from a local file if --from is provided', async () => {

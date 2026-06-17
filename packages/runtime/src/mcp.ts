@@ -30,31 +30,6 @@ export interface McpServerConfig {
   env?: Record<string, string>;
 }
 
-// Option 1 fallback bundle
-const FALLBACK_CATALOG: Record<string, McpServerConfig> = {
-  sqlite: {
-    name: 'sqlite',
-    version: '1.0.0',
-    transport: 'stdio',
-    command: 'npx',
-    args: ['-y', '@modelcontextprotocol/server-sqlite', '--', 'test.db']
-  },
-  filesystem: {
-    name: 'filesystem',
-    version: '1.0.0',
-    transport: 'stdio',
-    command: 'npx',
-    args: ['-y', '@modelcontextprotocol/server-filesystem', '--', process.cwd()]
-  },
-  github: {
-    name: 'github',
-    version: '1.0.0',
-    transport: 'stdio',
-    command: 'npx',
-    args: ['-y', '@modelcontextprotocol/server-github']
-  }
-};
-
 export class McpManager {
   private mcpDir: string;
   private activeClients: Map<string, Client> = new Map();
@@ -68,7 +43,7 @@ export class McpManager {
   }
 
   /**
-   * Install an MCP server configuration (Option 3 with Option 2 and 1 fallbacks)
+   * Install an MCP server configuration from an explicit file/URL or the MCP registry.
    */
   async installServer(name: string, from?: string): Promise<void> {
     const serversDir = path.join(this.mcpDir, 'servers', name);
@@ -80,7 +55,6 @@ export class McpManager {
     let config: McpServerConfig | null = null;
 
     if (from) {
-      // Option 2: Local or remote explicit URL
       if (from.startsWith('http://') || from.startsWith('https://')) {
         const res = await fetch(from);
         if (!res.ok) throw new Error(`Failed to fetch config from ${from}`);
@@ -91,25 +65,19 @@ export class McpManager {
         config = JSON.parse(fs.readFileSync(localPath, 'utf-8')) as McpServerConfig;
       }
     } else {
-      // Option 3: Registry fetch
-      try {
-        const registryUrl = process.env.SKILLSPACE_MCP_REGISTRY_URL || 'https://raw.githubusercontent.com/skillspace-ai/skillspace-registry/main/registry';
-        const indexRes = await fetch(`${registryUrl}/index.json`);
-        if (!indexRes.ok) throw new Error(`Failed to fetch MCP index from registry`);
-        
-        const index = await indexRes.json() as { servers: Record<string, { config_url: string }> };
-        const serverMeta = index.servers[name];
-        
-        if (!serverMeta) throw new Error(`Server ${name} not found in registry`);
-        
-        const configRes = await fetch(`${registryUrl}/${serverMeta.config_url}`);
-        if (!configRes.ok) throw new Error(`Failed to fetch config for ${name}`);
-        
-        config = await configRes.json() as McpServerConfig;
-      } catch (err) {
-        console.warn(`Registry fetch failed: ${err instanceof Error ? err.message : String(err)}. Falling back to hardcoded catalog.`);
-        config = FALLBACK_CATALOG[name];
-      }
+      const registryUrl = process.env.SKILLSPACE_MCP_REGISTRY_URL || 'https://raw.githubusercontent.com/skillspace-ai/skillspace-registry/main/registry';
+      const indexRes = await fetch(`${registryUrl}/index.json`);
+      if (!indexRes.ok) throw new Error('Failed to fetch MCP index from registry');
+
+      const index = await indexRes.json() as { servers: Record<string, { config_url: string }> };
+      const serverMeta = index.servers[name];
+
+      if (!serverMeta) throw new Error(`Server ${name} not found in registry`);
+
+      const configRes = await fetch(`${registryUrl}/${serverMeta.config_url}`);
+      if (!configRes.ok) throw new Error(`Failed to fetch config for ${name}`);
+
+      config = await configRes.json() as McpServerConfig;
     }
 
     if (!config) {

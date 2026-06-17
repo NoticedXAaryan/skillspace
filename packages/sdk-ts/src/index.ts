@@ -1,67 +1,95 @@
-// @skillspace/sdk-ts — TypeScript SDK for building SkillSpace skills
-//
-// This package will provide helper functions for skill authors:
-// - defineSkill()   — type-safe skill definition builder
-// - testSkill()     — local test runner
-// - createAdapter() — custom model adapter creation
-//
-// Phase 2 deliverable — placeholder for now.
+import { SkillSchema, type Persona, type Skill } from '@skillspace/schema';
 
-export function defineSkill(config: {
+export type DefineSkillInput = {
   name: string;
   version: string;
-  description: string;
-  system: string;
-  userTemplate: string;
-  outputFormat?: 'text' | 'json' | 'markdown' | 'code';
-  permissions?: string[];
+  description?: string;
+  author?: string;
+  license?: string;
   tags?: string[];
-  category?: string;
-}) {
-  return {
-    ...config,
-    author: 'unknown',
-    license: 'MIT',
-    instructions: {
-      system: config.system,
-      user_template: config.userTemplate,
-      output_format: config.outputFormat || 'text',
-    },
-    config: {
-      temperature: 0.3,
-      max_tokens: 4000,
-      timeout_seconds: 30,
-    },
+  persona: Persona;
+};
+
+export type PackageSearchResult = {
+  id: string;
+  name: string;
+  description: string;
+  owner: string;
+  latestVersion: string;
+  downloads: number;
+  createdAt: string;
+  tags: string[];
+};
+
+export type UserSearchResult = {
+  id: string;
+  username: string | null;
+  bio: string | null;
+  joinedAt: string;
+  stats: {
+    packagesPublished: number;
   };
+};
+
+type ApiEnvelope<T> = {
+  success?: boolean;
+  data?: T;
+  error?: string | { message?: string };
+};
+
+export function defineSkill(config: DefineSkillInput): Skill {
+  return SkillSchema.parse({
+    schemaVersion: 2,
+    license: 'MIT',
+    tags: [],
+    ...config,
+  });
 }
 
-export function testSkill(_skill: ReturnType<typeof defineSkill>, _input: string) {
-  // Phase 2: will run the skill locally against Ollama
-  throw new Error('testSkill() is not yet implemented. Coming in Phase 2.');
+export function validateSkill(skill: unknown): Skill {
+  return SkillSchema.parse(skill);
 }
-
-// --- Phase 6 API Client ---
 
 export class SkillSpaceClient {
-  private baseUrl: string;
+  private readonly baseUrl: string;
+  private readonly fetchImpl: typeof fetch;
 
-  constructor(config?: { baseUrl?: string }) {
-    this.baseUrl = config?.baseUrl || 'https://registry.skillspace.ai/api/v1';
+  constructor(config?: { baseUrl?: string; fetch?: typeof fetch }) {
+    this.baseUrl = (config?.baseUrl ?? 'https://registry.skillspace.ai/api/v1').replace(/\/$/, '');
+    this.fetchImpl = config?.fetch ?? fetch;
   }
 
   packages = {
-    search: async (query: string, limit = 20) => {
-      const res = await fetch(`${this.baseUrl}/packages?q=${encodeURIComponent(query)}&limit=${limit}`);
-      if (!res.ok) throw new Error('Failed to fetch packages');
-      return res.json();
+    search: async (query: string, limit = 20): Promise<PackageSearchResult[]> => {
+      const params = new URLSearchParams({ q: query, limit: String(limit) });
+      return this.request<PackageSearchResult[]>(`/packages?${params}`);
     },
   };
 
   users = {
-    search: async (username: string, limit = 20) => {
-      const res = await fetch(`${this.baseUrl}/users?username=${encodeURIComponent(username)}&limit=${limit}`);
-      if (!res.ok) throw new Error('Failed to fetch users');
-      return res.json();
+    search: async (username: string, limit = 20): Promise<UserSearchResult[]> => {
+      const params = new URLSearchParams({ username, limit: String(limit) });
+      return this.request<UserSearchResult[]>(`/users?${params}`);
     },
   };
+
+  private async request<T>(path: string): Promise<T> {
+    const res = await this.fetchImpl(`${this.baseUrl}${path}`);
+    const body = (await res.json().catch(() => ({}))) as ApiEnvelope<T>;
+
+    if (!res.ok || body.success === false) {
+      const message = typeof body.error === 'string'
+        ? body.error
+        : body.error?.message ?? `SkillSpace API request failed with ${res.status}`;
+      throw new Error(message);
+    }
+
+    if (!('data' in body)) {
+      throw new Error('SkillSpace API response did not include data');
+    }
+
+    return body.data as T;
+  }
 }
+
+export type { Persona, Skill };
