@@ -6,15 +6,15 @@ import { ManifestSchema } from './manifest.schema.js';
 // v2 Schema re-exports
 // ---------------------------------------------------------------------------
 
-export { SCHEMA_VERSION } from './persona.schema.js'
-export type { Persona, PersonaRef } from './persona.schema.js'
-export { PersonaSchema, PersonaRefSchema } from './persona.schema.js'
+export { SCHEMA_VERSION } from './persona.schema.js';
+export type { Persona, PersonaRef } from './persona.schema.js';
+export { PersonaSchema, PersonaRefSchema } from './persona.schema.js';
 
-export type { Skill } from './skill.schema.js'
-export { SkillSchema, isLegacyV1Skill } from './skill.schema.js'
+export type { Skill } from './skill.schema.js';
+export { SkillSchema, isLegacyV1Skill } from './skill.schema.js';
 
-export type { Agent, SubAgentRef, MCPRef } from './agent.schema.js'
-export { AgentSchema, SubAgentRefSchema, MCPRefSchema } from './agent.schema.js'
+export type { Agent, SubAgentRef, MCPRef } from './agent.schema.js';
+export { AgentSchema, SubAgentRefSchema, MCPRefSchema } from './agent.schema.js';
 
 // ---------------------------------------------------------------------------
 // Other inferred TypeScript types from Zod schemas

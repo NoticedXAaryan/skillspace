@@ -23,10 +23,10 @@ export default function ActivationWidget() {
     if (!token) return;
 
     fetch('/api/onboarding', {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}` },
     })
-      .then(r => r.json())
-      .then(res => {
+      .then((r) => r.json())
+      .then((res) => {
         if (res.data && !res.data.onboardingCompleted) {
           setData(res.data);
           setVisible(true);
@@ -45,7 +45,7 @@ export default function ActivationWidget() {
     { label: 'Publish First Skill', completed: data.firstSkillPublished },
   ];
 
-  const completedCount = steps.filter(s => s.completed).length;
+  const completedCount = steps.filter((s) => s.completed).length;
   const progress = (completedCount / steps.length) * 100;
 
   return (
@@ -61,19 +61,21 @@ export default function ActivationWidget() {
             <div className="flex items-center justify-between border-b p-4">
               <div>
                 <h3 className="text-sm font-semibold">Getting Started</h3>
-                <span className="text-xs text-muted-foreground">{Math.round(progress)}% Complete</span>
+                <span className="text-xs text-muted-foreground">
+                  {Math.round(progress)}% Complete
+                </span>
               </div>
-              <button 
-                className="rounded-sm p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" 
+              <button
+                className="rounded-sm p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                 onClick={() => setOpen(false)}
               >
                 <ChevronDown className="h-4 w-4" />
               </button>
             </div>
-            
+
             <div className="h-0.5 w-full bg-muted">
-              <motion.div 
-                className="h-full bg-green-500" 
+              <motion.div
+                className="h-full bg-green-500"
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
                 transition={{ duration: 0.4 }}
@@ -82,11 +84,21 @@ export default function ActivationWidget() {
 
             <div className="flex flex-col gap-3 p-4">
               {steps.map((step, i) => (
-                <div key={i} className={cn("flex items-center gap-3 text-sm transition-colors", step.completed ? "text-foreground" : "text-muted-foreground")}>
-                  <div className={cn(
-                    "flex h-4 w-4 items-center justify-center rounded border transition-colors",
-                    step.completed ? "border-green-500 bg-green-500 text-background" : "border-muted-foreground"
-                  )}>
+                <div
+                  key={i}
+                  className={cn(
+                    'flex items-center gap-3 text-sm transition-colors',
+                    step.completed ? 'text-foreground' : 'text-muted-foreground',
+                  )}
+                >
+                  <div
+                    className={cn(
+                      'flex h-4 w-4 items-center justify-center rounded border transition-colors',
+                      step.completed
+                        ? 'border-green-500 bg-green-500 text-background'
+                        : 'border-muted-foreground',
+                    )}
+                  >
                     {step.completed && <Check className="h-3 w-3" />}
                   </div>
                   <span>{step.label}</span>
@@ -107,9 +119,15 @@ export default function ActivationWidget() {
           <span className="flex items-center justify-center">
             <svg width="24" height="24" viewBox="0 0 24 24" className="rotate-[-90deg]">
               <circle cx="12" cy="12" r="10" fill="none" className="stroke-muted" strokeWidth="2" />
-              <circle 
-                cx="12" cy="12" r="10" fill="none" className="stroke-green-500" strokeWidth="2" 
-                strokeDasharray="62.8" strokeDashoffset={62.8 - (62.8 * progress) / 100}
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
+                fill="none"
+                className="stroke-green-500"
+                strokeWidth="2"
+                strokeDasharray="62.8"
+                strokeDashoffset={62.8 - (62.8 * progress) / 100}
                 style={{ transition: 'stroke-dashoffset 0.4s ease' }}
               />
             </svg>

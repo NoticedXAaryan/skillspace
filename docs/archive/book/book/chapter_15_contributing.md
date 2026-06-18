@@ -11,9 +11,9 @@ We welcome contributions to SkillSpace! Whether you are fixing a bug in the CLI,
 3.  **Test Locally:** Run `pnpm run test` and `pnpm run test:e2e` to ensure your changes didn't break existing functionality.
 4.  **Lint:** Run `pnpm run lint`.
 5.  **Commit:** We use [Conventional Commits](https://www.conventionalcommits.org/). Your commit messages must follow this format, as they are used to automatically generate Changelogs and determine semantic version bumps.
-    *   `feat: add support for groq models`
-    *   `fix(cli): resolve checksum mismatch on windows`
-    *   `docs: update chapter 15`
+    - `feat: add support for groq models`
+    - `fix(cli): resolve checksum mismatch on windows`
+    - `docs: update chapter 15`
 6.  **Push and PR:** Push your branch and open a Pull Request against `main`. Fill out the provided PR template completely.
 
 ---
@@ -35,16 +35,18 @@ A common contribution is adding support for a new LLM provider. To do this:
 Changing `packages/schema/src/skill.schema.ts` is the most dangerous operation in the codebase, as it can break backward compatibility for all previously published `.skillpkg` files.
 
 If you must change the schema:
+
 1.  **Additions:** Adding an optional field is safe.
 2.  **Deprecations:** Do not remove fields. Mark them as deprecated in the TypeScript types and handle them gracefully in the runtime.
-3.  **Breaking Changes:** If a breaking change is absolutely necessary, it requires a major version bump of the entire `@skillspace/schema` package and a coordinated migration script for the Registry database. Discuss this in a GitHub Issue *before* writing code.
+3.  **Breaking Changes:** If a breaking change is absolutely necessary, it requires a major version bump of the entire `@skillspace/schema` package and a coordinated migration script for the Registry database. Discuss this in a GitHub Issue _before_ writing code.
 
 ---
 
 ## 4. Code Review Expectations
 
 When your PR is reviewed by a maintainer, expect scrutiny on:
-*   **Type Safety:** Are you using `unknown` and Zod instead of `any`?
-*   **Error Handling:** Are network requests wrapped in `try/catch` and retried using the `callWithRetry` utility?
-*   **Security:** Does this change bypass the `PermissionEnforcer` or the `LocalModelScreener`?
-*   **Performance:** Does this change introduce synchronous blocking operations (`fs.readFileSync`) in the main execution loop instead of async equivalents?
+
+- **Type Safety:** Are you using `unknown` and Zod instead of `any`?
+- **Error Handling:** Are network requests wrapped in `try/catch` and retried using the `callWithRetry` utility?
+- **Security:** Does this change bypass the `PermissionEnforcer` or the `LocalModelScreener`?
+- **Performance:** Does this change introduce synchronous blocking operations (`fs.readFileSync`) in the main execution loop instead of async equivalents?

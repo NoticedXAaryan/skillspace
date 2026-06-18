@@ -20,19 +20,19 @@ connection.onInitialize((_params: InitializeParams) => {
   const result: InitializeResult = {
     capabilities: {
       textDocumentSync: TextDocumentSyncKind.Incremental,
-    }
+    },
   };
   return result;
 });
 
-documents.onDidChangeContent(change => {
+documents.onDidChangeContent((change) => {
   validateTextDocument(change.document);
 });
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   const text = textDocument.getText();
   const uri = textDocument.uri;
-  
+
   const diagnostics: Diagnostic[] = [];
 
   // Determine which schema to use based on filename
@@ -51,7 +51,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 
   try {
     const yamlDoc = parseDocument(text, { keepSourceTokens: true });
-    
+
     // Check for YAML syntax errors
     if (yamlDoc.errors && yamlDoc.errors.length > 0) {
       yamlDoc.errors.forEach((err: YAMLParseError) => {
@@ -61,10 +61,10 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
             severity: DiagnosticSeverity.Error,
             range: {
               start: { line: linePos[0].line - 1, character: linePos[0].col - 1 },
-              end: { line: linePos[0].line - 1, character: linePos[0].col }
+              end: { line: linePos[0].line - 1, character: linePos[0].col },
             },
             message: err.message,
-            source: 'SkillSpace'
+            source: 'SkillSpace',
           });
         }
       });
@@ -85,13 +85,13 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 
     if (!result.success) {
       const zodError = result.error as ZodError;
-      
-      zodError.errors.forEach(issue => {
+
+      zodError.errors.forEach((issue) => {
         const pathStr = issue.path.join('.');
-        
+
         // Find the node in the YAML AST to report exact line numbers
         let nodeRange = { start: { line: 0, character: 0 }, end: { line: 0, character: 1 } };
-        
+
         try {
           const node = yamlDoc.getIn(issue.path, true) as any;
           if (node && node.range) {
@@ -101,13 +101,13 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
           } else {
             // fallback: check if we can get the parent node
             if (issue.path.length > 0) {
-               const parentPath = issue.path.slice(0, -1);
-               const parentNode = yamlDoc.getIn(parentPath, true) as any;
-               if (parentNode && parentNode.range) {
-                 const startPos = textDocument.positionAt(parentNode.range[0]);
-                 const endPos = textDocument.positionAt(parentNode.range[1]);
-                 nodeRange = { start: startPos, end: endPos };
-               }
+              const parentPath = issue.path.slice(0, -1);
+              const parentNode = yamlDoc.getIn(parentPath, true) as any;
+              if (parentNode && parentNode.range) {
+                const startPos = textDocument.positionAt(parentNode.range[0]);
+                const endPos = textDocument.positionAt(parentNode.range[1]);
+                nodeRange = { start: startPos, end: endPos };
+              }
             }
           }
         } catch (e) {
@@ -118,20 +118,19 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
           severity: DiagnosticSeverity.Error,
           range: nodeRange,
           message: (pathStr ? '[' + pathStr + ']: ' : '') + issue.message,
-          source: 'SkillSpace'
+          source: 'SkillSpace',
         });
       });
     }
-
   } catch (error: any) {
     diagnostics.push({
       severity: DiagnosticSeverity.Error,
       range: {
         start: { line: 0, character: 0 },
-        end: { line: 0, character: 1 }
+        end: { line: 0, character: 1 },
       },
       message: error.message || 'Unknown validation error',
-      source: 'SkillSpace'
+      source: 'SkillSpace',
     });
   }
 

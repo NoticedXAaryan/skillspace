@@ -9,21 +9,31 @@ export function registerInfoCommand(program: Command): void {
   program
     .command('info <package>')
     .description('Show detailed information about a package')
-    .action(async (pkgName: string) => {
-      const loader = createLoader(`Fetching info for ${pkgName}...`);
+    .option('--json', 'Output result as JSON (for scripting)')
+    .action(async (pkgName: string, opts) => {
+      const loader = opts.json ? null : createLoader(`Fetching info for ${pkgName}...`);
       try {
         const client = new RegistryClient();
         const result = await client.getPackage(pkgName);
 
         if (result.error) {
-          loader.fail('Failed to fetch package');
+          loader?.fail('Failed to fetch package');
+          if (opts.json) {
+            console.log(JSON.stringify({ success: false, error: result.error.message }));
+            process.exit(1);
+          }
           errorOperational('Registry Error', { message: result.error.message });
           process.exit(1);
         }
 
-        loader.succeed(`Found ${pkgName}`);
+        loader?.succeed(`Found ${pkgName}`);
 
         const pkg = result.data;
+        if (opts.json) {
+          console.log(JSON.stringify({ success: true, package: pkg }));
+          return;
+        }
+
         const tags = Array.isArray(pkg.tags) ? pkg.tags : [];
         const latestVersion = pkg.latestVersion;
 
@@ -43,7 +53,9 @@ export function registerInfoCommand(program: Command): void {
           details.push('');
           details.push(c.textFaint('Latest Version:'));
           details.push(`  ${c.textFaint('Version:')}   ${c.brand(latestVersion.version)}`);
-          details.push(`  ${c.textFaint('Published:')} ${c.textMuted(new Date(latestVersion.publishedAt).toLocaleDateString())}`);
+          details.push(
+            `  ${c.textFaint('Published:')} ${c.textMuted(new Date(latestVersion.publishedAt).toLocaleDateString())}`,
+          );
           if (latestVersion.checksum) {
             details.push(`  ${c.textFaint('Checksum:')}  ${c.textMuted(latestVersion.checksum)}`);
           }
@@ -53,13 +65,21 @@ export function registerInfoCommand(program: Command): void {
         details.push(c.textFaint('Install:'));
         details.push(`  ${c.border('skillspace install')} ${c.brand(pkg.name)}`);
 
-        console.log(box(details, {
-          title: pkg.name,
-          colorFn: pkg.verified ? c.success : c.brand
-        }));
+        console.log(
+          box(details, {
+            title: pkg.name,
+            colorFn: pkg.verified ? c.success : c.brand,
+          }),
+        );
       } catch (err) {
-        loader.fail('Failed to fetch package');
-        errorOperational('Registry Error', { message: err instanceof Error ? err.message : String(err) });
+        loader?.fail('Failed to fetch package');
+        if (opts.json) {
+          console.log(JSON.stringify({ success: false, error: err instanceof Error ? err.message : String(err) }));
+          process.exit(1);
+        }
+        errorOperational('Registry Error', {
+          message: err instanceof Error ? err.message : String(err),
+        });
         process.exit(1);
       }
     });

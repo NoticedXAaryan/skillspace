@@ -17,7 +17,7 @@ export function registerBenchmarkCommand(program: Command): void {
     .action(async (suitePath: string) => {
       const loader = createLoader(`Loading benchmark suite from ${suitePath}...`);
       const fullPath = path.resolve(process.cwd(), suitePath);
-      
+
       if (!fs.existsSync(fullPath)) {
         loader.fail('Suite not found');
         errorOperational('File Error', { message: `Benchmark suite not found at ${fullPath}` });
@@ -25,7 +25,7 @@ export function registerBenchmarkCommand(program: Command): void {
       }
 
       const raw = fs.readFileSync(fullPath, 'utf-8');
-      
+
       let parsed: unknown;
       try {
         parsed = YAML.parse(raw);
@@ -34,7 +34,9 @@ export function registerBenchmarkCommand(program: Command): void {
           parsed = JSON.parse(raw);
         } catch {
           loader.fail('Invalid format');
-          errorOperational('Parse Error', { message: 'Benchmark suite must be valid YAML or JSON' });
+          errorOperational('Parse Error', {
+            message: 'Benchmark suite must be valid YAML or JSON',
+          });
           process.exit(1);
         }
       }
@@ -49,11 +51,16 @@ export function registerBenchmarkCommand(program: Command): void {
 
       const suite = validation.data;
       loader.succeed(`Loaded ${suite.name}@${suite.version}`);
-      
-      console.log(box([
-        `${c.textFaint('Target Package:')} ${c.brand(suite.target_package)}`,
-        `${c.textFaint('Test Cases:')}     ${c.text(suite.tests.length.toString())}`
-      ], { title: `Running Benchmark: ${suite.name}`, colorFn: c.successDim }));
+
+      console.log(
+        box(
+          [
+            `${c.textFaint('Target Package:')} ${c.brand(suite.target_package)}`,
+            `${c.textFaint('Test Cases:')}     ${c.text(suite.tests.length.toString())}`,
+          ],
+          { title: `Running Benchmark: ${suite.name}`, colorFn: c.successDim },
+        ),
+      );
 
       const skillExecutor = new Executor();
       const agentExecutor = new AgentExecutor();
@@ -64,14 +71,18 @@ export function registerBenchmarkCommand(program: Command): void {
       for (let i = 0; i < suite.tests.length; i++) {
         const test = suite.tests[i]!;
         const testLoader = createLoader(`Test [${i + 1}/${suite.tests.length}]: ${test.id}`);
-        
+
         let output = '';
         const startTime = Date.now();
         let error = null;
 
         try {
           try {
-            const res = await skillExecutor.run({ skill: suite.target_package, input: test.input, model: 'ollama/llama3.2' });
+            const res = await skillExecutor.run({
+              skill: suite.target_package,
+              input: test.input,
+              model: 'ollama/llama3.2',
+            });
             output = res.output;
           } catch (e) {
             const res = await agentExecutor.run({ agent: suite.target_package, input: test.input });
@@ -86,9 +97,12 @@ export function registerBenchmarkCommand(program: Command): void {
 
         if (error) {
           testLoader.fail(`Failed (Execution Error) in ${duration}ms`);
-          console.log(box([
-            `${c.error('Error:')} ${error instanceof Error ? error.message : String(error)}`
-          ], { colorFn: c.error }));
+          console.log(
+            box(
+              [`${c.error('Error:')} ${error instanceof Error ? error.message : String(error)}`],
+              { colorFn: c.error },
+            ),
+          );
         } else if (test.match_type === 'exact') {
           passed = output.trim() === test.expected_output?.trim();
         } else if (test.match_type === 'contains') {
@@ -107,27 +121,32 @@ export function registerBenchmarkCommand(program: Command): void {
           testLoader.succeed(`Passed in ${duration}ms`);
         } else if (!error) {
           testLoader.fail(`Failed (Mismatch) in ${duration}ms`);
-          console.log(box([
-            `${c.textFaint('Expected:')} ${c.textMuted(test.expected_output?.substring(0, 50))}...`,
-            `${c.textFaint('Received:')} ${c.text(output.substring(0, 50))}...`
-          ], { colorFn: c.warning }));
+          console.log(
+            box(
+              [
+                `${c.textFaint('Expected:')} ${c.textMuted(test.expected_output?.substring(0, 50))}...`,
+                `${c.textFaint('Received:')} ${c.text(output.substring(0, 50))}...`,
+              ],
+              { colorFn: c.warning },
+            ),
+          );
         }
       }
 
       totalScore = (passedCount / suite.tests.length) * 100;
-      
+
       const scoreStr = `${totalScore.toFixed(1)}%`;
       const passRateStr = `${passedCount} / ${suite.tests.length}`;
-      
+
       if (totalScore < 100) {
         errorOperational('Benchmark Failed', {
-          message: `Score: ${scoreStr}\nPassed: ${passRateStr}`
+          message: `Score: ${scoreStr}\nPassed: ${passRateStr}`,
         });
         process.exit(1);
       } else {
         successStandard('Benchmark Passed', {
           Score: scoreStr,
-          Passed: passRateStr
+          Passed: passRateStr,
         });
       }
     });

@@ -1,7 +1,7 @@
 schemaVersion: 2
-name: "@skillspace/unit-test-gen"
-version: "1.0.0"
-description: "Generates unit tests for code functions including edge cases and error handling."
+name: '@skillspace/unit-test-gen'
+version: '1.0.0'
+description: 'Generates unit tests for code functions including edge cases and error handling.'
 author: skillspace
 license: MIT
 tags:
@@ -14,6 +14,6 @@ persona:
     unit tests. Cover normal cases, edge cases, error handling, and boundary
     conditions. Use the same testing framework as the existing codebase.
   behavioral_guidelines:
-    - "Match the existing test framework and style"
-    - "Include descriptive test names that explain the scenario"
+    - 'Match the existing test framework and style'
+    - 'Include descriptive test names that explain the scenario'
   capabilities: []

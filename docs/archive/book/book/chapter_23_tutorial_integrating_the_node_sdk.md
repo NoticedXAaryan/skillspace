@@ -31,10 +31,10 @@ const client = new SkillSpaceClient({
   configOverride: {
     providers: {
       openai: {
-        api_key: process.env.OPENAI_API_KEY // Pull from Vercel environment
-      }
-    }
-  }
+        api_key: process.env.OPENAI_API_KEY, // Pull from Vercel environment
+      },
+    },
+  },
 });
 
 export default client;
@@ -59,7 +59,7 @@ import { z } from 'zod';
 // Define the expected input from the frontend
 const RequestSchema = z.object({
   documentText: z.string().min(10),
-  skillName: z.string()
+  skillName: z.string(),
 });
 
 export async function POST(req: Request) {
@@ -67,8 +67,8 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { documentText, skillName } = RequestSchema.parse(body);
 
-    // 1. Resolve the skill. 
-    // The client will check the local cache (~/.skillspace). 
+    // 1. Resolve the skill.
+    // The client will check the local cache (~/.skillspace).
     // If not found, it can be configured to auto-download from the registry.
     const skill = await client.resolveSkill(skillName, { version: 'latest' });
 
@@ -82,15 +82,11 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       output: result.output,
-      usage: result.usage // Contains token counts for billing
+      usage: result.usage, // Contains token counts for billing
     });
-
   } catch (error) {
     console.error('Execution failed:', error);
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 ```
@@ -108,32 +104,32 @@ Let's modify our route to handle strict JSON extraction.
 
 // ... [previous code]
 
-    const result = await client.execute(skill, {
-      input: documentText,
-      model: 'openai/gpt-4o',
-    });
+const result = await client.execute(skill, {
+  input: documentText,
+  model: 'openai/gpt-4o',
+});
 
-    // If the skill defines output_format: 'json', result.output 
-    // will be a stringified JSON object. We can parse it safely.
-    let structuredData = null;
-    if (skill.instructions.output_format === 'json') {
-        try {
-            structuredData = JSON.parse(result.output);
-        } catch (e) {
-            // The Executor attempts to parse and throw VALIDATION_FAILED internally,
-            // but this is a secondary safety net.
-            return NextResponse.json(
-                { success: false, error: 'LLM returned malformed JSON' },
-                { status: 502 }
-            );
-        }
-    }
+// If the skill defines output_format: 'json', result.output
+// will be a stringified JSON object. We can parse it safely.
+let structuredData = null;
+if (skill.instructions.output_format === 'json') {
+  try {
+    structuredData = JSON.parse(result.output);
+  } catch (e) {
+    // The Executor attempts to parse and throw VALIDATION_FAILED internally,
+    // but this is a secondary safety net.
+    return NextResponse.json(
+      { success: false, error: 'LLM returned malformed JSON' },
+      { status: 502 },
+    );
+  }
+}
 
-    return NextResponse.json({
-      success: true,
-      data: structuredData || result.output,
-      tokensUsed: result.usage.totalTokens
-    });
+return NextResponse.json({
+  success: true,
+  data: structuredData || result.output,
+  tokensUsed: result.usage.totalTokens,
+});
 ```
 
 ---
@@ -148,9 +144,9 @@ import client from '@/lib/skillspace';
 
 export async function POST(req: Request) {
   const body = await req.json();
-  
+
   const skill = await client.resolveSkill(body.skillName);
-  
+
   // Get the async generator from the SDK
   const stream = await client.executeStream(skill, {
     input: body.documentText,
@@ -168,14 +164,14 @@ export async function POST(req: Request) {
       } catch (e) {
         controller.error(e);
       }
-    }
+    },
   });
 
   return new Response(readableStream, {
     headers: {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
+      Connection: 'keep-alive',
     },
   });
 }
@@ -197,12 +193,13 @@ const result = await client.execute(skill, {
   toolHandler: async (toolCall) => {
     if (toolCall.name === 'mcp_db_get_record') {
       const record = await myPrismaClient.records.findUnique({
-          where: { id: toolCall.arguments.id }
+        where: { id: toolCall.arguments.id },
       });
       return JSON.stringify(record);
     }
     throw new Error(`Unknown tool: ${toolCall.name}`);
-  }
+  },
 });
 ```
+
 This entirely bypasses the internal `McpRegistry`, giving you absolute control over execution within your own backend architecture.

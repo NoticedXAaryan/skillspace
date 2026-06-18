@@ -51,6 +51,7 @@ export class PermissionEnforcer {
     if (!this.declared.has(required)) {
       throw new PermissionDeniedError(required, this.skillName);
     }
+    console.warn(`[Permission] Agent/Skill "${this.skillName}" is exercising declared permission: ${required}`);
   }
 
   /**
@@ -102,5 +103,46 @@ export class PermissionEnforcer {
     const validSet = new Set<string>(VALID_PERMISSIONS);
     const invalid = permissions.filter((p) => !validSet.has(p));
     return { valid: invalid.length === 0, invalid };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Allowlist Enforcer
+// ---------------------------------------------------------------------------
+
+import { getAllowlist } from './config.js';
+
+export class NotAllowlistedError extends Error {
+  constructor(public readonly skillName: string) {
+    super(
+      `Execution blocked: skill "${skillName}" is not on the organization allowlist. ` +
+        `Contact your administrator to add this package.`,
+    );
+    this.name = 'NotAllowlistedError';
+  }
+}
+
+/**
+ * Validates a skill name against the organization allowlist.
+ */
+export class AllowlistEnforcer {
+  static check(skillName: string): void {
+    const allowlist = getAllowlist();
+    if (allowlist && allowlist.length > 0) {
+      // Direct exact match
+      if (allowlist.includes(skillName)) return;
+
+      // Scope match (e.g. "@skillspace/*")
+      const isScopeAllowed = allowlist.some((allowed) => {
+        if (allowed.endsWith('/*') && skillName.startsWith(allowed.replace('/*', '/'))) {
+          return true;
+        }
+        return false;
+      });
+
+      if (!isScopeAllowed) {
+        throw new NotAllowlistedError(skillName);
+      }
+    }
   }
 }

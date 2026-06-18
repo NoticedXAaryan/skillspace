@@ -26,7 +26,7 @@ class StreamManager {
 
   broadcast(sessionId: string, event: string, data: any) {
     if (!this.connections.has(sessionId)) return;
-    
+
     const connections = this.connections.get(sessionId)!;
     const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
     const encoded = new TextEncoder().encode(payload);
@@ -48,6 +48,6 @@ const globalForStreamManager = globalThis as unknown as {
 
 export const streamManager = globalForStreamManager.streamManager ?? new StreamManager();
 
-if (process.env.NODE_ENV !== "production") {
+if (process.env.NODE_ENV !== 'production') {
   globalForStreamManager.streamManager = streamManager;
 }

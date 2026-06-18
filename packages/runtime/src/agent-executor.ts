@@ -35,16 +35,22 @@ export class AgentExecutor {
 
     // 1. Resolve agent
     // Cast to any for backward compatibility with v1 agent field access
-    const { agent, skills } = this.resolver.resolveWithDependencies(options.agent) as { agent: any; skills: any[] };
+    const { agent, skills } = this.resolver.resolveWithDependencies(options.agent) as {
+      agent: any;
+      skills: any[];
+    };
 
     // 2. Determine permissions and enforce for input reading
     const combinedPermissions = new Set(agent.permissions || []);
     for (const skill of skills) {
-      for (const p of (skill.permissions || [])) {
+      for (const p of skill.permissions || []) {
         combinedPermissions.add(p);
       }
     }
-    const enforcer = new PermissionEnforcer(agent.name, Array.from(combinedPermissions) as string[]);
+    const enforcer = new PermissionEnforcer(
+      agent.name,
+      Array.from(combinedPermissions) as string[],
+    );
     this.enforceInputPermissions(enforcer, options);
 
     // 3. Resolve model and adapter
@@ -52,7 +58,10 @@ export class AgentExecutor {
     const { adapter, modelName } = adapterRegistry.getAdapter(modelId);
 
     if (!adapter.buildChatRequest) {
-      throw new ExecutionError(`Adapter ${adapter.providerName} does not support Chat/Agent functionality yet.`, 'UNSUPPORTED_ADAPTER');
+      throw new ExecutionError(
+        `Adapter ${adapter.providerName} does not support Chat/Agent functionality yet.`,
+        'UNSUPPORTED_ADAPTER',
+      );
     }
 
     const provider = modelId.split('/')[0]!;
@@ -69,7 +78,9 @@ export class AgentExecutor {
       timeoutSeconds: 60,
       baseUrl: getBaseUrl(provider),
     };
-    console.error(`[AgentExecutor] Provider: ${provider}, BaseURL: ${runtimeConfig.baseUrl}, from config: ${JSON.stringify(loadConfig())}`);
+    console.error(
+      `[AgentExecutor] Provider: ${provider}, BaseURL: ${runtimeConfig.baseUrl}, from config: ${JSON.stringify(loadConfig())}`,
+    );
 
     const fsSandbox = new FileSystemSandbox();
     const input = this.resolveInput(options.input, enforcer, fsSandbox);
@@ -79,17 +90,17 @@ export class AgentExecutor {
     if (options.session_id) {
       messages = this.sessionManager.loadSession(options.session_id);
     }
-    
+
     if (messages.length === 0) {
       messages.push({
         role: 'system',
-        content: `You are an agent named ${agent.name}.\n${agent.description}`
+        content: `You are an agent named ${agent.name}.\n${agent.description}`,
       });
     }
 
     messages.push({
       role: 'user',
-      content: input
+      content: input,
     });
 
     // 5. Start declared MCP servers
@@ -97,21 +108,23 @@ export class AgentExecutor {
       try {
         await this.mcpManager.startServer(srv.name);
       } catch (err) {
-        console.warn(`Warning: Failed to start MCP server ${srv.name}: ${err instanceof Error ? err.message : String(err)}`);
+        console.warn(
+          `Warning: Failed to start MCP server ${srv.name}: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
     }
 
     // 6. Generate tools from agent's skill dependencies + MCP servers + builtins
-    const tools: Tool[] = skills.map(s => ({
+    const tools: Tool[] = skills.map((s) => ({
       name: `skill_${s.name.replace(/[^a-zA-Z0-9_-]/g, '_')}`, // prefix to avoid collisions
       description: s.description,
       parameters: {
         input: {
           type: 'string',
-          description: s.instructions.user_template
-        }
+          description: s.instructions.user_template,
+        },
       },
-      required: ['input']
+      required: ['input'],
     }));
 
     const mcpTools = this.mcpManager.getAttachedTools();
@@ -122,7 +135,7 @@ export class AgentExecutor {
         name: `mcp_${serverName}_${safeToolName}`,
         description: tool.description || `Tool from ${serverName}`,
         parameters: (tool.inputSchema?.properties || {}) as any,
-        required: tool.inputSchema?.required || []
+        required: tool.inputSchema?.required || [],
       });
     }
 
@@ -131,19 +144,21 @@ export class AgentExecutor {
       tools.push({
         name: 'builtin_filesystem_read',
         description: 'Read the contents of a local file',
-        parameters: { path: { type: 'string', description: 'Absolute or relative path to the file' } },
-        required: ['path']
+        parameters: {
+          path: { type: 'string', description: 'Absolute or relative path to the file' },
+        },
+        required: ['path'],
       });
     }
     if (combinedPermissions.has('filesystem.write')) {
       tools.push({
         name: 'builtin_filesystem_write',
         description: 'Write content to a local file',
-        parameters: { 
+        parameters: {
           path: { type: 'string', description: 'Absolute or relative path to the file' },
-          content: { type: 'string', description: 'Content to write to the file' }
+          content: { type: 'string', description: 'Content to write to the file' },
         },
-        required: ['path', 'content']
+        required: ['path', 'content'],
       });
     }
     if (combinedPermissions.has('network.fetch')) {
@@ -151,7 +166,7 @@ export class AgentExecutor {
         name: 'builtin_network_fetch',
         description: 'Fetch content from a URL',
         parameters: { url: { type: 'string', description: 'The URL to fetch' } },
-        required: ['url']
+        required: ['url'],
       });
     }
 
@@ -165,7 +180,7 @@ export class AgentExecutor {
       const request = adapter.buildChatRequest(messages, tools, runtimeConfig);
       const rawResponse = await this.callWithRetry(request, runtimeConfig.timeoutSeconds ?? 60);
       const result = adapter.parseResponse(rawResponse);
-      
+
       const assistantMsg = result.message;
       if (!assistantMsg) {
         throw new ExecutionError('Adapter returned no assistant message', 'API_ERROR');
@@ -178,7 +193,7 @@ export class AgentExecutor {
         for (const tc of assistantMsg.tool_calls) {
           try {
             const args = JSON.parse(tc.function.arguments);
-            
+
             if (tc.function.name.startsWith('builtin_')) {
               // Built-in tools
               if (tc.function.name === 'builtin_filesystem_read') {
@@ -188,67 +203,95 @@ export class AgentExecutor {
               } else if (tc.function.name === 'builtin_filesystem_write') {
                 enforcer.check('filesystem.write');
                 fsSandbox.writeFileSync(args.path, args.content, 'utf-8');
-                messages.push({ role: 'tool', tool_call_id: tc.id, content: `Successfully wrote to ${args.path}` });
+                messages.push({
+                  role: 'tool',
+                  tool_call_id: tc.id,
+                  content: `Successfully wrote to ${args.path}`,
+                });
               } else if (tc.function.name === 'builtin_network_fetch') {
                 enforcer.check('network.fetch');
                 const res = await NetworkSandbox.fetch(args.url);
                 const text = await res.text();
                 messages.push({ role: 'tool', tool_call_id: tc.id, content: text });
               } else {
-                messages.push({ role: 'tool', tool_call_id: tc.id, content: `Error: Unknown builtin tool ${tc.function.name}` });
+                messages.push({
+                  role: 'tool',
+                  tool_call_id: tc.id,
+                  content: `Error: Unknown builtin tool ${tc.function.name}`,
+                });
               }
             } else if (tc.function.name.startsWith('skill_')) {
               // It's a Skill
               const skillName = tc.function.name.substring(6);
-              const toolSkill = skills.find(s => s.name.replace(/[^a-zA-Z0-9_-]/g, '_') === skillName);
-              
+              const toolSkill = skills.find(
+                (s) => s.name.replace(/[^a-zA-Z0-9_-]/g, '_') === skillName,
+              );
+
               if (!toolSkill) {
-                messages.push({ role: 'tool', tool_call_id: tc.id, content: `Error: Unknown skill tool ${tc.function.name}` });
+                messages.push({
+                  role: 'tool',
+                  tool_call_id: tc.id,
+                  content: `Error: Unknown skill tool ${tc.function.name}`,
+                });
                 continue;
               }
 
               const toolResult = await this.skillExecutor.run({
                 skill: toolSkill.name,
                 input: typeof args.input === 'string' ? args.input : JSON.stringify(args),
-                model: modelId
+                model: modelId,
               });
 
               messages.push({
                 role: 'tool',
                 tool_call_id: tc.id,
-                content: toolResult.output
+                content: toolResult.output,
               });
-
             } else if (tc.function.name.startsWith('mcp_')) {
               // It's an MCP tool
               // Format is mcp_serverName_toolName
               const parts = tc.function.name.split('_');
               const serverName = parts[1];
               // Reconstruct original tool name by matching against our known MCP tools
-              const originalTool = mcpTools.find(m => m.serverName === serverName && m.tool.name.replace(/[^a-zA-Z0-9_-]/g, '_') === parts.slice(2).join('_'));
-              
+              const originalTool = mcpTools.find(
+                (m) =>
+                  m.serverName === serverName &&
+                  m.tool.name.replace(/[^a-zA-Z0-9_-]/g, '_') === parts.slice(2).join('_'),
+              );
+
               if (!originalTool) {
-                messages.push({ role: 'tool', tool_call_id: tc.id, content: `Error: Unknown MCP tool ${tc.function.name}` });
+                messages.push({
+                  role: 'tool',
+                  tool_call_id: tc.id,
+                  content: `Error: Unknown MCP tool ${tc.function.name}`,
+                });
                 continue;
               }
 
               // Execute via MCP Manager
-              const toolResult = await this.mcpManager.callTool(serverName!, originalTool.tool.name, args);
-              
+              const toolResult = await this.mcpManager.callTool(
+                serverName!,
+                originalTool.tool.name,
+                args,
+              );
+
               messages.push({
                 role: 'tool',
                 tool_call_id: tc.id,
-                content: toolResult
+                content: toolResult,
               });
             } else {
-              messages.push({ role: 'tool', tool_call_id: tc.id, content: `Error: Unknown tool type ${tc.function.name}` });
+              messages.push({
+                role: 'tool',
+                tool_call_id: tc.id,
+                content: `Error: Unknown tool type ${tc.function.name}`,
+              });
             }
-            
           } catch (err) {
             messages.push({
               role: 'tool',
               tool_call_id: tc.id,
-              content: `Error executing tool: ${err instanceof Error ? err.message : String(err)}`
+              content: `Error executing tool: ${err instanceof Error ? err.message : String(err)}`,
             });
           }
         }
@@ -261,7 +304,10 @@ export class AgentExecutor {
     }
 
     if (!finalResult) {
-      throw new ExecutionError('Agent execution exceeded max steps (infinite tool loop detected)', 'MAX_STEPS_EXCEEDED');
+      throw new ExecutionError(
+        'Agent execution exceeded max steps (infinite tool loop detected)',
+        'MAX_STEPS_EXCEEDED',
+      );
     }
 
     // Save session
@@ -270,13 +316,13 @@ export class AgentExecutor {
     }
 
     finalResult.duration_ms = Date.now() - startTime;
-    
+
     TelemetryClient.sendEventSafe({
       packageId: agent.name,
       version: agent.version,
       modelId,
       durationMs: finalResult.duration_ms,
-      status: 'success'
+      status: 'success',
     });
 
     return finalResult;
@@ -288,7 +334,11 @@ export class AgentExecutor {
     }
   }
 
-  private resolveInput(input: string, _enforcer: PermissionEnforcer, fsSandbox: FileSystemSandbox): string {
+  private resolveInput(
+    input: string,
+    _enforcer: PermissionEnforcer,
+    fsSandbox: FileSystemSandbox,
+  ): string {
     if (fsSandbox.existsSync(input)) {
       const stat = fsSandbox.statSync(input);
       if (stat.isFile()) {
@@ -327,12 +377,15 @@ export class AgentExecutor {
           throw new ExecutionError(`Request timed out after ${timeoutSeconds} seconds`, 'TIMEOUT');
         }
         if (attempt < 2) {
-          await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+          await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 1000));
         }
       } finally {
         clearTimeout(timeout);
       }
     }
-    throw new ExecutionError(`Failed after 3 attempts: ${lastError?.message ?? 'Unknown error'}`, 'MAX_RETRIES');
+    throw new ExecutionError(
+      `Failed after 3 attempts: ${lastError?.message ?? 'Unknown error'}`,
+      'MAX_RETRIES',
+    );
   }
 }

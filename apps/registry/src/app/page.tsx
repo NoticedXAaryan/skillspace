@@ -2,6 +2,8 @@ export const dynamic = 'force-dynamic';
 
 import { prisma } from '@/lib/prisma';
 import LandingPageClient from '@/components/LandingPageClient';
+import { inferModelCompatibility } from '@/lib/model-compatibility';
+import yaml from 'js-yaml';
 
 async function getCommunityStats() {
   try {
@@ -30,10 +32,11 @@ async function getFeaturedPackages() {
         versions: { orderBy: { publishedAt: 'desc' }, take: 1 },
       },
     });
-    return packages.map(pkg => ({
+    return packages.map((pkg) => ({
       ...pkg,
       tags: typeof pkg.tags === 'string' ? JSON.parse(pkg.tags || '[]') : pkg.tags,
       latestVersion: pkg.versions[0]?.version,
+      compatibleModels: pkg.versions[0]?.manifest ? inferModelCompatibility(yaml.load(pkg.versions[0].manifest as string) as Record<string, unknown>) : [],
     }));
   } catch {
     return [];
@@ -50,10 +53,11 @@ async function getRecentPackages() {
         versions: { orderBy: { publishedAt: 'desc' }, take: 1 },
       },
     });
-    return packages.map(pkg => ({
+    return packages.map((pkg) => ({
       ...pkg,
       tags: typeof pkg.tags === 'string' ? JSON.parse(pkg.tags || '[]') : pkg.tags,
       latestVersion: pkg.versions[0]?.version,
+      compatibleModels: pkg.versions[0]?.manifest ? inferModelCompatibility(yaml.load(pkg.versions[0].manifest as string) as Record<string, unknown>) : [],
     }));
   } catch {
     return [];
@@ -67,11 +71,7 @@ export default async function HomePage() {
 
   return (
     <main>
-      <LandingPageClient
-        stats={stats}
-        packages={packages}
-        recentPackages={recentPackages}
-      />
+      <LandingPageClient stats={stats} packages={packages} recentPackages={recentPackages} />
     </main>
   );
 }

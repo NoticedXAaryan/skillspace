@@ -1,4 +1,9 @@
-import { S3Client, PutObjectCommand, GetObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  HeadObjectCommand,
+} from '@aws-sdk/client-s3';
 
 const MINIO_ENDPOINT = process.env.MINIO_ENDPOINT || 'http://localhost:9000';
 const MINIO_ACCESS_KEY = process.env.MINIO_ACCESS_KEY || 'minioadmin';
@@ -22,7 +27,7 @@ export async function storePackage(name: string, version: string, data: Buffer):
       Bucket: BUCKET_NAME,
       Key: key,
       Body: data,
-    })
+    }),
   );
   return key; // We return the key as the storagePath
 }
@@ -42,7 +47,7 @@ export async function readPackage(name: string, version: string): Promise<Buffer
   const key = `${name}-${version}.skillpkg`;
   const response = await s3Client.send(new GetObjectCommand({ Bucket: BUCKET_NAME, Key: key }));
   if (!response.Body) throw new Error('Package file not found in storage');
-  
+
   // Convert Node.js readable stream to Buffer
   const stream = response.Body as NodeJS.ReadableStream;
   const chunks: Buffer[] = [];

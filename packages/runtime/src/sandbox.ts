@@ -2,7 +2,10 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 export class SandboxError extends Error {
-  constructor(message: string, public readonly type: 'filesystem' | 'network') {
+  constructor(
+    message: string,
+    public readonly type: 'filesystem' | 'network',
+  ) {
     super(message);
     this.name = 'SandboxError';
   }
@@ -21,14 +24,17 @@ export class FileSystemSandbox {
    */
   private resolveAndEnforce(targetPath: string): string {
     const resolved = path.resolve(this.workspaceDir, targetPath);
-    
+
     // Check if the resolved path starts with the workspace directory
     // Adding a trailing separator ensures we don't match partial folder names
     // e.g. /workspace-hack/ isn't allowed if workspaceDir is /workspace
     const workspacePrefix = this.workspaceDir + path.sep;
-    
+
     if (resolved !== this.workspaceDir && !resolved.startsWith(workspacePrefix)) {
-      throw new SandboxError(`Path traversal blocked. Access denied to: ${targetPath}`, 'filesystem');
+      throw new SandboxError(
+        `Path traversal blocked. Access denied to: ${targetPath}`,
+        'filesystem',
+      );
     }
 
     return resolved;
@@ -39,7 +45,11 @@ export class FileSystemSandbox {
     return fs.readFileSync(safePath, encoding);
   }
 
-  public writeFileSync(targetPath: string, content: string | Buffer, encoding: BufferEncoding = 'utf-8'): void {
+  public writeFileSync(
+    targetPath: string,
+    content: string | Buffer,
+    encoding: BufferEncoding = 'utf-8',
+  ): void {
     const safePath = this.resolveAndEnforce(targetPath);
     fs.writeFileSync(safePath, content, { encoding });
   }
@@ -70,7 +80,7 @@ export class NetworkSandbox {
     '127.0.0.1',
     '0.0.0.0',
     '::1',
-    '169.254.169.254' // AWS Metadata
+    '169.254.169.254', // AWS Metadata
   ];
 
   /**
@@ -82,9 +92,9 @@ export class NetworkSandbox {
       if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
         return false;
       }
-      
+
       const hostname = parsed.hostname.toLowerCase();
-      
+
       if (this.BLOCKED_DOMAINS.includes(hostname)) {
         return false;
       }
@@ -96,7 +106,7 @@ export class NetworkSandbox {
       if (/^172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}$/.test(hostname)) return false;
       // 192.168.0.0 - 192.168.255.255
       if (/^192\.168\.\d{1,3}\.\d{1,3}$/.test(hostname)) return false;
-      
+
       return true;
     } catch {
       return false; // Invalid URL

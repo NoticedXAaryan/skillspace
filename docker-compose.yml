@@ -10,7 +10,9 @@ services:
     environment:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/skillspace?schema=public
-      - JWT_SECRET=super_secret_for_self_hosting_change_me
+      - BETTER_AUTH_SECRET=super_secret_for_self_hosting_change_me
+      - BETTER_AUTH_URL=http://localhost:3000
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
       - STORAGE_PROVIDER=s3
       - S3_ENDPOINT=http://minio:9000
       - S3_ACCESS_KEY_ID=minioadmin
@@ -23,6 +25,19 @@ services:
         condition: service_healthy
       minio:
         condition: service_started
+      db-init:
+        condition: service_completed_successfully
+
+  db-init:
+    build:
+      context: .
+      dockerfile: apps/registry/Dockerfile
+    command: ["sh", "-c", "cd packages/database && npx prisma migrate deploy"]
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/skillspace?schema=public
+    depends_on:
+      db:
+        condition: service_healthy
 
   db:
     image: postgres:15-alpine

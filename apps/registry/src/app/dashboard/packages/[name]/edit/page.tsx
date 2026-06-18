@@ -33,7 +33,8 @@ export default async function EditPackagePage({ params }: { params: Promise<{ na
   if (pkg.ownerId !== session.user.id) redirect('/dashboard/packages');
 
   const latestVersion = pkg.versions[0];
-  const initialCode = latestVersion?.manifest || `name: ${name}\nversion: 1.0.0\ntype: skill\ndescription: ""\n`;
+  const initialCode =
+    latestVersion?.manifest || `name: ${name}\nversion: 1.0.0\ntype: skill\ndescription: ""\n`;
 
   return (
     <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-6">

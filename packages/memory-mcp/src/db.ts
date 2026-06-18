@@ -61,12 +61,19 @@ export function saveMemory(content: string, tags: string[] = []): number {
 export function searchMemories(query: string, limit: number = 10): Memory[] {
   // If the query is empty, just return the most recent memories
   if (!query.trim()) {
-    return db.prepare('SELECT * FROM memories ORDER BY timestamp DESC LIMIT ?').all(limit) as Memory[];
+    return db
+      .prepare('SELECT * FROM memories ORDER BY timestamp DESC LIMIT ?')
+      .all(limit) as Memory[];
   }
-  
+
   // Use FTS5 for keyword search. We'll wrap the query in quotes or handle basic FTS syntax.
   // A simple strategy is to just match words.
-  const ftsQuery = query.replace(/['"]/g, '').split(/\s+/).filter(Boolean).map(w => `"${w}"*`).join(' OR ');
+  const ftsQuery = query
+    .replace(/['"]/g, '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => `"${w}"*`)
+    .join(' OR ');
   if (!ftsQuery) return [];
 
   const stmt = db.prepare(`
@@ -77,6 +84,6 @@ export function searchMemories(query: string, limit: number = 10): Memory[] {
     ORDER BY rank 
     LIMIT ?
   `);
-  
+
   return stmt.all(ftsQuery, limit) as Memory[];
 }

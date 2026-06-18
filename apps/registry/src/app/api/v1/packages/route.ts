@@ -8,7 +8,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q') || '';
     const limit = parseInt(searchParams.get('limit') || '50', 10);
-    
+
     // Only return public packages via API
     const packages = await prisma.package.findMany({
       where: {
@@ -19,11 +19,11 @@ export async function GET(request: Request) {
       orderBy: { downloads: 'desc' },
       include: {
         owner: { select: { username: true } },
-        versions: { orderBy: { publishedAt: 'desc' }, take: 1 }
-      }
+        versions: { orderBy: { publishedAt: 'desc' }, take: 1 },
+      },
     });
 
-    const response = packages.map(pkg => ({
+    const response = packages.map((pkg) => ({
       id: pkg.id,
       name: pkg.name,
       description: pkg.description,
@@ -32,7 +32,7 @@ export async function GET(request: Request) {
       downloads: pkg.downloads,
       createdAt: pkg.createdAt,
 
-      tags: typeof pkg.tags === 'string' ? JSON.parse(pkg.tags || '[]') : pkg.tags
+      tags: typeof pkg.tags === 'string' ? JSON.parse(pkg.tags || '[]') : pkg.tags,
     }));
 
     return NextResponse.json({
@@ -40,13 +40,10 @@ export async function GET(request: Request) {
       data: response,
       meta: {
         count: response.length,
-        query
-      }
+        query,
+      },
     });
   } catch (error) {
-    return NextResponse.json(
-      { success: false, error: 'Internal Server Error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
   }
 }

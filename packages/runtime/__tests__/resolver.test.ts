@@ -19,7 +19,7 @@ describe('SkillResolver', () => {
 
     // Setup some test skills
     const versions = ['1.0.0', '1.0.1', '1.1.0', '2.0.0'];
-    
+
     for (const version of versions) {
       const skillYaml = YAML.stringify({
         schemaVersion: 2,

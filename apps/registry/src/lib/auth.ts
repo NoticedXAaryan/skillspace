@@ -1,12 +1,15 @@
-import { betterAuth } from "better-auth";
-import { prismaAdapter } from "better-auth/adapters/prisma";
-import { twoFactor } from "better-auth/plugins";
-import { NextRequest } from "next/server";
-import { prisma } from "./prisma";
+import { betterAuth } from 'better-auth';
+import { prismaAdapter } from 'better-auth/adapters/prisma';
+import { twoFactor } from 'better-auth/plugins';
+import { NextRequest } from 'next/server';
+import { prisma } from './prisma';
 
 const getBaseURL = () => {
   if (process.env.VERCEL) {
-    return process.env.NEXT_PUBLIC_APP_URL || `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL}`;
+    return (
+      process.env.NEXT_PUBLIC_APP_URL ||
+      `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL}`
+    );
   }
   return process.env.BETTER_AUTH_URL || 'http://localhost:3000';
 };
@@ -16,36 +19,38 @@ export const auth = betterAuth({
   baseURL: getBaseURL(),
   trustHost: true,
   database: prismaAdapter(prisma, {
-    provider: "postgresql",
+    provider: 'postgresql',
   }),
   emailAndPassword: {
     enabled: true,
   },
   socialProviders: {
     github: {
-      clientId: process.env.GITHUB_CLIENT_ID || "",
-      clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
+      clientId: process.env.GITHUB_CLIENT_ID || '',
+      clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
       mapProfileToUser: (profile) => ({
-        name: profile.name || profile.login || "User",
+        name: profile.name || profile.login || 'User',
         username: profile.login,
-      })
+      }),
     },
   },
   plugins: [
     twoFactor({
-      issuer: "SkillSpace Registry",
+      issuer: 'SkillSpace Registry',
     }),
-  ]
+  ],
 });
 
 /**
  * Extract authenticated user from a request.
  * Supports both BetterAuth session cookies (browser) and Bearer tokens (CLI).
  */
-export async function getUserFromRequest(req: NextRequest): Promise<{ userId: string; username: string; email: string } | null> {
+export async function getUserFromRequest(
+  req: NextRequest,
+): Promise<{ userId: string; username: string; email: string } | null> {
   // 1. Try Bearer token (CLI flow)
-  const authHeader = req.headers.get("authorization");
-  if (authHeader?.startsWith("Bearer ")) {
+  const authHeader = req.headers.get('authorization');
+  if (authHeader?.startsWith('Bearer ')) {
     const token = authHeader.slice(7);
     try {
       const session = await prisma.session.findUnique({
@@ -55,7 +60,7 @@ export async function getUserFromRequest(req: NextRequest): Promise<{ userId: st
       if (session && session.expiresAt > new Date()) {
         return {
           userId: session.user.id,
-          username: session.user.name || session.user.email.split("@")[0],
+          username: session.user.name || session.user.email.split('@')[0],
           email: session.user.email,
         };
       }
@@ -72,7 +77,7 @@ export async function getUserFromRequest(req: NextRequest): Promise<{ userId: st
     if (!session?.user) return null;
     return {
       userId: session.user.id,
-      username: session.user.name || session.user.email.split("@")[0],
+      username: session.user.name || session.user.email.split('@')[0],
       email: session.user.email,
     };
   } catch {

@@ -14,21 +14,21 @@ export async function GET(req: Request) {
   const stream = new ReadableStream({
     start(controller) {
       streamManager.addConnection(projectId, controller);
-      
+
       // Send initial connection event
       const connectEvent = `event: connected\ndata: ${JSON.stringify({ status: 'ok' })}\n\n`;
       controller.enqueue(new TextEncoder().encode(connectEvent));
     },
     cancel(controller) {
       streamManager.removeConnection(projectId, controller);
-    }
+    },
   });
 
   return new NextResponse(stream, {
     headers: {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache, no-transform',
-      'Connection': 'keep-alive',
+      Connection: 'keep-alive',
     },
   });
 }

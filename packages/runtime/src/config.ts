@@ -20,6 +20,7 @@ export interface SkillSpaceConfig {
   default_model?: string;
   registry_url: string;
   registries?: string[]; // Ordered list of registry URLs for fallback
+  allowlist?: string[]; // Allowed packages or organizations
   models: Record<
     string,
     {
@@ -151,9 +152,30 @@ export function getRegistries(): string[] {
 }
 
 /**
+ * Get the current package allowlist. Returns undefined if no allowlist is configured.
+ */
+export function getAllowlist(): string[] | undefined {
+  const config = loadConfig();
+  return config.allowlist;
+}
+
+/**
+ * Set the package allowlist.
+ */
+export function setAllowlist(allowlist: string[] | undefined): void {
+  const config = loadConfig();
+  config.allowlist = allowlist;
+  saveConfig(config);
+}
+
+/**
  * List all configured model providers.
  */
-export function listConfiguredModels(): Array<{ provider: string; hasKey: boolean; baseUrl?: string }> {
+export function listConfiguredModels(): Array<{
+  provider: string;
+  hasKey: boolean;
+  baseUrl?: string;
+}> {
   const config = loadConfig();
   return Object.entries(config.models).map(([provider, conf]) => ({
     provider,

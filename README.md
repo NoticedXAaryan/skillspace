@@ -7,6 +7,7 @@ SkillSpace allows you to install, share, version, and execute AI skills, agents,
 ## Overview
 
 SkillSpace is built as a monorepo consisting of:
+
 - **Registry (`apps/registry`)**: A Next.js 15 App Router web interface for discovering, managing, and analyzing published AI capabilities.
 - **Runtime (`packages/runtime`)**: The core execution engine that translates and runs capabilities across multiple models (Claude, OpenAI, Gemini).
 - **Schema (`packages/schema`)**: Shared Zod schemas for validation and type-safety across the platform.
@@ -14,6 +15,7 @@ SkillSpace is built as a monorepo consisting of:
 ## Quick Start
 
 ### Prerequisites
+
 - Node.js (v18+)
 - pnpm (v10)
 - PostgreSQL (via Neon or local)
@@ -21,6 +23,7 @@ SkillSpace is built as a monorepo consisting of:
 ### Setup
 
 1. Install dependencies:
+
    ```bash
    pnpm install
    ```
@@ -29,6 +32,7 @@ SkillSpace is built as a monorepo consisting of:
    Copy `.env.example` to `.env.local` and fill in the required database and API keys.
 
 3. Database Migrations:
+
    ```bash
    cd apps/registry
    npx prisma migrate deploy
@@ -42,6 +46,7 @@ SkillSpace is built as a monorepo consisting of:
 ## Registry Features
 
 The registry is a Next.js application backed by Prisma and PostgreSQL.
+
 - `/packages` - Browse published AI skills and workflows.
 - `/search` - Global search across the registry.
 - `/docs` - Documentation for publishing and integrating capabilities.
@@ -49,6 +54,15 @@ The registry is a Next.js application backed by Prisma and PostgreSQL.
 - `/organization` - Manage team members and package allowlists.
 - `/profile` - User dashboard and published packages.
 
+## Resources & Documentation
+
+- [Public Registry](https://registry.skillspace.ai)
+- [Official Documentation](docs/architecture.md)
+- [Self-Hosting Guide](docs/SELF_HOSTED.md)
+- [Examples](examples/)
+- [Contribution Guide](CONTRIBUTING.md)
+- [Security Policy](SECURITY.md)
+
 ## License
 
-MIT
+[MIT](LICENSE)

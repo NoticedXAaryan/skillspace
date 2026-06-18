@@ -4,6 +4,6 @@ description: A test skill
 author: testuser
 license: MIT
 instructions:
-  system: "You are a test."
-  user_template: "Do this: {{input}}"
-  output_format: "text"
+  system: 'You are a test.'
+  user_template: 'Do this: {{input}}'
+  output_format: 'text'

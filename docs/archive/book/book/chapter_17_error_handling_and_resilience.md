@@ -14,7 +14,7 @@ export class ExecutionError extends Error {
     message: string,
     public code: string,
     public retryable: boolean = false,
-    public details?: any
+    public details?: any,
   ) {
     super(message);
     this.name = 'ExecutionError';
@@ -24,15 +24,15 @@ export class ExecutionError extends Error {
 
 ### Common Error Codes
 
-| Code | Description | Retryable? | CLI Action |
-| :--- | :--- | :--- | :--- |
-| `VALIDATION_FAILED` | The `skill.yaml` or JSON output failed Zod validation. | No | Halts. Shows exact validation path. |
-| `PERMISSION_DENIED` | The skill attempted an I/O op without declaring the permission. | No | Halts. Explains the security breach. |
-| `FIREWALL_BLOCKED` | The `LocalModelScreener` detected an injection attack. | No | Halts. Logs the threat. |
-| `AUTH_ERROR` | Missing or invalid API key for the LLM provider. | No | Prompts user to run `skillspace model add`. |
-| `RATE_LIMITED` | HTTP 429 from OpenAI/Anthropic. | **Yes** | Engages exponential backoff. |
-| `SERVICE_UNAVAILABLE`| HTTP 503 from OpenAI/Anthropic. | **Yes** | Engages exponential backoff. |
-| `MCP_CRASH` | The local MCP child process died unexpectedly. | No | Halts. Suggests checking the MCP server logs. |
+| Code                  | Description                                                     | Retryable? | CLI Action                                    |
+| :-------------------- | :-------------------------------------------------------------- | :--------- | :-------------------------------------------- |
+| `VALIDATION_FAILED`   | The `skill.yaml` or JSON output failed Zod validation.          | No         | Halts. Shows exact validation path.           |
+| `PERMISSION_DENIED`   | The skill attempted an I/O op without declaring the permission. | No         | Halts. Explains the security breach.          |
+| `FIREWALL_BLOCKED`    | The `LocalModelScreener` detected an injection attack.          | No         | Halts. Logs the threat.                       |
+| `AUTH_ERROR`          | Missing or invalid API key for the LLM provider.                | No         | Prompts user to run `skillspace model add`.   |
+| `RATE_LIMITED`        | HTTP 429 from OpenAI/Anthropic.                                 | **Yes**    | Engages exponential backoff.                  |
+| `SERVICE_UNAVAILABLE` | HTTP 503 from OpenAI/Anthropic.                                 | **Yes**    | Engages exponential backoff.                  |
+| `MCP_CRASH`           | The local MCP child process died unexpectedly.                  | No         | Halts. Suggests checking the MCP server logs. |
 
 ---
 
@@ -68,11 +68,13 @@ This ensures that ephemeral API blips do not crash a complex, long-running workf
 When a skill specifies `output_format: json`, the runtime must parse the LLM's text output. LLMs frequently hallucinate markdown blocks around JSON (e.g., \`\`\`json { ... } \`\`\`).
 
 The runtime employs a robust extraction regex before attempting `JSON.parse()`:
-```typescript
+
+````typescript
 const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/) || text.match(/{[\s\S]*}/);
 const cleanText = jsonMatch ? jsonMatch[1] || jsonMatch[0] : text;
 return JSON.parse(cleanText);
-```
+````
+
 If the parse still fails, it throws a `VALIDATION_FAILED` error, detailing exactly where the JSON was malformed.
 
 ---
@@ -82,6 +84,7 @@ If the parse still fails, it throws a `VALIDATION_FAILED` error, detailing exact
 As noted in Chapter 6, `stdio` MCP servers are spawned as detached child processes. If the CLI is forcefully killed (`Ctrl+C` / `SIGINT`), these processes could remain alive.
 
 To prevent this, the CLI registers process-level event listeners:
+
 ```typescript
 process.on('SIGINT', async () => {
   console.log('\nGracefully shutting down MCP servers...');
@@ -89,4 +92,5 @@ process.on('SIGINT', async () => {
   process.exit(0);
 });
 ```
+
 Furthermore, the `Executor` wraps all execution in `try...finally { await mcpRegistry.disconnectAll(); }` ensuring that even if an unhandled exception occurs, the runtime cleans up its IPC sockets and child processes before dying.

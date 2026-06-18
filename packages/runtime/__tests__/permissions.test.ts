@@ -14,6 +14,13 @@ describe('PermissionEnforcer', () => {
     expect(() => enforcer.check('network.fetch')).toThrow(PermissionDeniedError);
   });
 
+  it('blocks undeclared filesystem access', async () => {
+    // test that undeclared permission throws or returns error
+    const enforcer = new PermissionEnforcer('test-skill', ['network.fetch']);
+    expect(() => enforcer.check('filesystem.read')).toThrow(PermissionDeniedError);
+    expect(() => enforcer.check('filesystem.write')).toThrow(PermissionDeniedError);
+  });
+
   it('includes skill name in error message', () => {
     const enforcer = new PermissionEnforcer('my-skill', []);
     try {

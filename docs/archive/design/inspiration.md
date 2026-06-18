@@ -9,6 +9,7 @@ Reference for replicating the feel of top-tier developer tool UIs without copyin
 **Aesthetic category**: Sharp Dark + minimal glow
 
 **What makes it work**:
+
 - Near-black base (`#09090b`) with zinc surface cards
 - Hairline borders at `rgba(255,255,255,0.08)` — barely there, never boxy
 - Primary font: Geist — same weight for body and headings, differentiated only by size and opacity
@@ -19,11 +20,12 @@ Reference for replicating the feel of top-tier developer tool UIs without copyin
 - Feature cards: no icons unless absolutely necessary; rely on type hierarchy instead
 
 **Signature patterns to replicate**:
+
 ```css
 /* The "ghost card" — nearly invisible until you look closely */
 .better-auth-card {
-  background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.07);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 8px;
 }
 
@@ -47,6 +49,7 @@ Reference for replicating the feel of top-tier developer tool UIs without copyin
 **Aesthetic category**: Sharp Dark + motion-forward
 
 **What makes it work**:
+
 - Deep purple-tinted blacks (`#0f0e17`, `#16141f`) — not pure zinc
 - Smooth sidebar transitions, not instant
 - Typography: very tight letter-spacing on headings (`-0.03em`)
@@ -63,6 +66,7 @@ Reference for replicating the feel of top-tier developer tool UIs without copyin
 **Aesthetic category**: Monochrome Sharp Dark
 
 **What makes it work**:
+
 - Pure monochrome — no color except red/green for deployment status
 - Heavy use of `font-weight: 500` — everything feels intentional
 - Max contrast: `#000` background, `#fff` primary text
@@ -77,6 +81,7 @@ Reference for replicating the feel of top-tier developer tool UIs without copyin
 **Aesthetic category**: Soft Light + glassmorphism hybrid
 
 **What makes it work**:
+
 - Off-white background (`#f9f9f9`), not pure white
 - Component cards: white with very soft shadow (`0 1px 3px rgba(0,0,0,0.08)`)
 - Purple brand accent used sparingly — only CTAs and active states
@@ -90,6 +95,7 @@ Reference for replicating the feel of top-tier developer tool UIs without copyin
 **Aesthetic category**: Editorial Dark
 
 **What makes it work**:
+
 - Helvetica Neue / system-ui at tight letter spacing — brutally clean
 - Section backgrounds alternate slightly: `#000` and `#0a0a0a`
 - Feature sections: oversized monospace labels as "section titles"
@@ -104,6 +110,7 @@ Reference for replicating the feel of top-tier developer tool UIs without copyin
 **Aesthetic category**: Dense Data + Pastel Accents
 
 **What makes it work**:
+
 - Dark base with muted pastel service color dots (each service gets a color)
 - Graph nodes as primary UI metaphor — design follows the product
 - Monospace everywhere in the dashboard

@@ -23,12 +23,9 @@ interface LinkData {
 }
 
 function getDeviceFingerprint(): string {
-  const data = [
-    os.platform(),
-    os.arch(),
-    os.hostname(),
-    os.cpus()[0]?.model || 'unknown_cpu',
-  ].join('|');
+  const data = [os.platform(), os.arch(), os.hostname(), os.cpus()[0]?.model || 'unknown_cpu'].join(
+    '|',
+  );
   return crypto.createHash('sha256').update(data).digest('hex').substring(0, 16);
 }
 
@@ -66,21 +63,31 @@ export function registerLinkCommand(program: Command): void {
       if (opts.status) {
         const linkData = loadLinkData();
         if (!linkData) {
-          console.log(box([
-            `${c.textFaint('No project linked.')}`,
-            ``,
-            `Run ${c.code('skillspace link')} to link this directory to a dashboard project.`,
-          ], { title: 'Link Status', colorFn: c.warning }));
+          console.log(
+            box(
+              [
+                `${c.textFaint('No project linked.')}`,
+                ``,
+                `Run ${c.code('skillspace link')} to link this directory to a dashboard project.`,
+              ],
+              { title: 'Link Status', colorFn: c.warning },
+            ),
+          );
           outro(0);
           return;
         }
 
-        console.log(box([
-          padLabel('Project') + c.brand(linkData.projectName),
-          padLabel('ID') + c.code(linkData.projectId),
-          padLabel('Linked') + new Date(linkData.linkedAt).toLocaleString(),
-          padLabel('Device') + c.code(linkData.deviceFingerprint),
-        ], { title: 'Link Status' }));
+        console.log(
+          box(
+            [
+              padLabel('Project') + c.brand(linkData.projectName),
+              padLabel('ID') + c.code(linkData.projectId),
+              padLabel('Linked') + new Date(linkData.linkedAt).toLocaleString(),
+              padLabel('Device') + c.code(linkData.deviceFingerprint),
+            ],
+            { title: 'Link Status' },
+          ),
+        );
         outro(0);
         return;
       }
@@ -89,7 +96,9 @@ export function registerLinkCommand(program: Command): void {
       if (opts.unlink) {
         const linkData = loadLinkData();
         if (!linkData) {
-          errorOperational('Not linked', { message: 'This project is not linked to any dashboard project.' });
+          errorOperational('Not linked', {
+            message: 'This project is not linked to any dashboard project.',
+          });
           process.exit(1);
         }
         removeLinkData();
@@ -101,11 +110,16 @@ export function registerLinkCommand(program: Command): void {
       // Link
       const existingLink = loadLinkData();
       if (existingLink) {
-        console.log(box([
-          `This project is already linked to ${c.brand(existingLink.projectName)}.`,
-          ``,
-          `Run ${c.code('skillspace link --unlink')} to remove the existing link first.`,
-        ], { title: 'Already Linked', colorFn: c.warning }));
+        console.log(
+          box(
+            [
+              `This project is already linked to ${c.brand(existingLink.projectName)}.`,
+              ``,
+              `Run ${c.code('skillspace link --unlink')} to remove the existing link first.`,
+            ],
+            { title: 'Already Linked', colorFn: c.warning },
+          ),
+        );
         outro(0);
         return;
       }
@@ -128,7 +142,11 @@ export function registerLinkCommand(program: Command): void {
 
         const dirName = path.basename(process.cwd());
         const fingerprint = getDeviceFingerprint();
-        const projectId = crypto.createHash('sha256').update(`${dirName}-${fingerprint}`).digest('hex').substring(0, 12);
+        const projectId = crypto
+          .createHash('sha256')
+          .update(`${dirName}-${fingerprint}`)
+          .digest('hex')
+          .substring(0, 12);
 
         const linkData: LinkData = {
           projectId,
@@ -139,17 +157,21 @@ export function registerLinkCommand(program: Command): void {
 
         saveLinkData(linkData);
 
-        console.log(box([
-          padLabel('Project') + c.brand(dirName),
-          padLabel('ID') + c.code(projectId),
-          padLabel('Device') + c.code(fingerprint),
-        ], { title: 'Link Details' }));
+        console.log(
+          box(
+            [
+              padLabel('Project') + c.brand(dirName),
+              padLabel('ID') + c.code(projectId),
+              padLabel('Device') + c.code(fingerprint),
+            ],
+            { title: 'Link Details' },
+          ),
+        );
 
         successStandard('Project linked', {
           detail: 'This directory is now linked to your dashboard.',
           hint: 'Run `skillspace run` to stream sessions to the dashboard',
         });
-
       } catch (err: any) {
         loader?.fail('Link failed');
         errorOperational('Link failed', { message: err.message });

@@ -6,7 +6,7 @@ export async function mockInstallPackage(
   cache: SkillCache,
   name: string,
   version: string,
-  files: Map<string, Buffer>
+  files: Map<string, Buffer>,
 ): Promise<string> {
   const pkgDir = cache.getPackageDir(name, version);
   fs.mkdirSync(pkgDir, { recursive: true });

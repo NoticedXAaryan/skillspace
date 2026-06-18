@@ -29,7 +29,9 @@ export function registerUninstallCommand(program: Command): void {
 
       if (versions.length === 0) {
         if (!opts.yes) {
-          errorOperational('Package not found', { message: `Package "${pkgName}" is not installed.` });
+          errorOperational('Package not found', {
+            message: `Package "${pkgName}" is not installed.`,
+          });
           process.exit(1);
         } else {
           console.error(`✗ Package "${pkgName}" is not installed.`);
@@ -43,7 +45,9 @@ export function registerUninstallCommand(program: Command): void {
       for (const version of versionsToRemove) {
         if (!cache.isInstalled(pkgName, version)) {
           if (!opts.yes) {
-            warn('Version not found', [`Version ${version} of ${pkgName} is not installed, skipping.`]);
+            warn('Version not found', [
+              `Version ${version} of ${pkgName} is not installed, skipping.`,
+            ]);
           } else {
             console.warn(`⚠ ${pkgName}@${version} is not installed, skipping.`);
           }
@@ -67,7 +71,7 @@ export function registerUninstallCommand(program: Command): void {
         if (removedCount > 0) {
           successStandard('Uninstalled Successfully', {
             Package: pkgName,
-            Versions: removedCount.toString()
+            Versions: removedCount.toString(),
           });
           outro(Date.now() - startTime);
         } else {

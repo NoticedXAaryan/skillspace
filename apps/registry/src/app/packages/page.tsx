@@ -58,7 +58,7 @@ function PackagesContent() {
         let url = `/api/packages?limit=${limit}&page=${pageParam}&sort=${sortParam}`;
         if (debouncedQuery) url += `&search=${encodeURIComponent(debouncedQuery)}`;
         if (typeParam !== 'all') url += `&type=${typeParam}`;
-        
+
         const res = await fetch(url);
         if (res.ok) {
           const data = await res.json();
@@ -110,7 +110,10 @@ function PackagesContent() {
 
       <div className="mx-auto mb-8 flex max-w-3xl flex-col gap-4">
         <div className="relative w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
+          <Search
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
+            size={20}
+          />
           <input
             type="text"
             className="w-full rounded-xl border border-input bg-background py-3 pl-12 pr-4 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
@@ -123,15 +126,15 @@ function PackagesContent() {
         <div className="flex flex-wrap items-center justify-between gap-6">
           <div className="flex flex-wrap items-center gap-2">
             <span className="mr-2 text-sm font-medium text-muted-foreground">Type:</span>
-            {['all', 'skill', 'agent', 'workflow'].map(t => (
+            {['all', 'skill', 'agent', 'workflow'].map((t) => (
               <button
                 key={t}
                 onClick={() => handleTypeChange(t)}
                 className={cn(
-                  "rounded-full border px-3 py-1 text-sm font-medium transition-colors",
-                  typeParam === t 
-                    ? "bg-foreground text-background border-foreground" 
-                    : "bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  'rounded-full border px-3 py-1 text-sm font-medium transition-colors',
+                  typeParam === t
+                    ? 'bg-foreground text-background border-foreground'
+                    : 'bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground',
                 )}
               >
                 {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -140,15 +143,15 @@ function PackagesContent() {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="mr-2 text-sm font-medium text-muted-foreground">Sort:</span>
-            {['popular', 'recent', 'name'].map(s => (
+            {['popular', 'recent', 'name'].map((s) => (
               <button
                 key={s}
                 onClick={() => handleSortChange(s)}
                 className={cn(
-                  "rounded-full border px-3 py-1 text-sm font-medium transition-colors",
-                  sortParam === s 
-                    ? "bg-foreground text-background border-foreground" 
-                    : "bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                  'rounded-full border px-3 py-1 text-sm font-medium transition-colors',
+                  sortParam === s
+                    ? 'bg-foreground text-background border-foreground'
+                    : 'bg-background text-muted-foreground border-border hover:bg-muted hover:text-foreground',
                 )}
               >
                 {s === 'name' ? 'Name A-Z' : s.charAt(0).toUpperCase() + s.slice(1)}
@@ -177,8 +180,8 @@ function PackagesContent() {
             title="No packages match your search"
             description="We couldn't find any capabilities matching your current filters and query."
             actionText="Clear all filters"
-            onAction={() => { 
-              setQuery(''); 
+            onAction={() => {
+              setQuery('');
               const params = new URLSearchParams(searchParams.toString());
               params.delete('q');
               params.delete('type');
@@ -232,7 +235,13 @@ function PackagesContent() {
 export default function PackagesPage() {
   return (
     <main className="min-h-screen">
-      <Suspense fallback={<div className="container mx-auto flex min-h-[60vh] items-center justify-center">Loading...</div>}>
+      <Suspense
+        fallback={
+          <div className="container mx-auto flex min-h-[60vh] items-center justify-center">
+            Loading...
+          </div>
+        }
+      >
         <PackagesContent />
       </Suspense>
     </main>

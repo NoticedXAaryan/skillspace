@@ -8,10 +8,10 @@ async function main() {
       data: {
         email: 'test@example.com',
         name: 'Test User',
-      }
+      },
     });
     console.log('User created:', user);
-    
+
     // cleanup
     await prisma.user.delete({ where: { id: user.id } });
   } catch (e) {

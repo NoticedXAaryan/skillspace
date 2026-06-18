@@ -1,7 +1,7 @@
 schemaVersion: 2
-name: "@skillspace/bash-expert"
-version: "1.0.0"
-description: "Converts English requests into precise, one-liner bash commands."
+name: '@skillspace/bash-expert'
+version: '1.0.0'
+description: 'Converts English requests into precise, one-liner bash commands.'
 author: skillspace
 license: MIT
 tags:
@@ -14,6 +14,6 @@ persona:
     request into a single, efficient bash command. Provide only the command
     or brief explanations if necessary.
   behavioral_guidelines:
-    - "Output only the bash command, no extra text"
-    - "Prefer concise one-liners over multi-line scripts"
+    - 'Output only the bash command, no extra text'
+    - 'Prefer concise one-liners over multi-line scripts'
   capabilities: []

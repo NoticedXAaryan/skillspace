@@ -10,7 +10,8 @@ const validSkill = {
   license: 'MIT',
   tags: ['security', 'code-review'],
   persona: {
-    system_prompt: 'You are a security reviewer. Analyze the provided code for vulnerabilities and output findings as structured JSON.',
+    system_prompt:
+      'You are a security reviewer. Analyze the provided code for vulnerabilities and output findings as structured JSON.',
     tone: 'Professional and precise',
     behavioral_guidelines: [
       'Always output findings in JSON format',

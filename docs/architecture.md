@@ -68,6 +68,7 @@ The execution engine. Model-agnostic. Given a Skill or Agent definition, it runs
 it against any supported provider.
 
 Major subsystems:
+
 - **Model Adapter Layer (MAL)** — one adapter per provider (Anthropic, OpenAI,
   Google, Ollama). Each translates a model-agnostic request into a
   provider-specific API call.
@@ -90,6 +91,7 @@ Next.js 15 App Router + Prisma + PostgreSQL. **This is the index, not the
 store.** (See the implementation plan for the GitHub-backed storage direction.)
 
 Subsystems:
+
 - **Auth** — BetterAuth: email/password + GitHub OAuth + 2FA. Session cookies
   (browser) and Bearer tokens (CLI) via `getUserFromRequest`.
 - **Package API** — CRUD with rate limiting, semver validation, prompt-injection

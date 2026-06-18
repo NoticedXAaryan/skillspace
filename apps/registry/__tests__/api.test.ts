@@ -20,8 +20,8 @@ vi.mock('@/lib/prisma', () => ({
     },
     organization: {
       findUnique: vi.fn(),
-    }
-  }
+    },
+  },
 }));
 
 vi.mock('@/lib/auth', () => ({
@@ -62,7 +62,7 @@ describe('Registry API', () => {
           isPrivate: false,
           createdAt: new Date(),
           versions: [{ version: '1.0.0', publishedAt: new Date() } as any],
-        }
+        },
       ]);
       vi.mocked(prisma.package.count).mockResolvedValue(1);
 

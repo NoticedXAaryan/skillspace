@@ -1,7 +1,15 @@
 import type { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
-import { Executor, AgentExecutor, AgentResolver, SkillResolver, resolveEnvForPackage, startPersonaREPL, getRegistryUrl } from '@skillspace/runtime';
+import {
+  Executor,
+  AgentExecutor,
+  AgentResolver,
+  SkillResolver,
+  resolveEnvForPackage,
+  startPersonaREPL,
+  getRegistryUrl,
+} from '@skillspace/runtime';
 import { isLegacyV1Skill } from '@skillspace/schema';
 import { text, isCancel } from '@clack/prompts';
 import { intro } from '../ui/states/intro.js';
@@ -13,7 +21,11 @@ import { c } from '../ui/tokens/colors.js';
 function loadLinkData(): { projectId: string; projectName: string } | null {
   const linkPath = path.join(process.cwd(), '.skillspace-link.json');
   if (!fs.existsSync(linkPath)) return null;
-  try { return JSON.parse(fs.readFileSync(linkPath, 'utf-8')); } catch { return null; }
+  try {
+    return JSON.parse(fs.readFileSync(linkPath, 'utf-8'));
+  } catch {
+    return null;
+  }
 }
 
 async function streamLogToDashboard(projectId: string, type: string, data: any) {
@@ -22,9 +34,11 @@ async function streamLogToDashboard(projectId: string, type: string, data: any) 
     await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ projectId, type, data })
+      body: JSON.stringify({ projectId, type, data }),
     });
-  } catch { /* silently fail if registry is down */ }
+  } catch {
+    /* silently fail if registry is down */
+  }
 }
 
 export function registerRunCommand(program: Command): void {
@@ -59,7 +73,7 @@ export function registerRunCommand(program: Command): void {
         } catch (err) {
           errorOperational('Package not found', {
             message: `Could not resolve "${packageName}" as a skill or agent.`,
-            hint: 'Run `skillspace list` to see installed packages.'
+            hint: 'Run `skillspace list` to see installed packages.',
           });
           process.exit(1);
         }
@@ -70,7 +84,7 @@ export function registerRunCommand(program: Command): void {
         if (opts.yes || opts.input) {
           errorOperational('Unsupported mode', {
             message: 'v2 Skills are personas that run in an interactive REPL.',
-            hint: 'Remove --yes and --input flags to start the session.'
+            hint: 'Remove --yes and --input flags to start the session.',
           });
           process.exit(1);
         }
@@ -89,7 +103,7 @@ export function registerRunCommand(program: Command): void {
       if (isInteractive && opts.yes) {
         errorOperational('Input required', {
           message: `Input is required for "${packageName}" in headless mode.`,
-          hint: 'Use --input "your input".'
+          hint: 'Use --input "your input".',
         });
         process.exit(1);
       }
@@ -103,12 +117,12 @@ export function registerRunCommand(program: Command): void {
         do {
           if (isInteractive) {
             const inputPrompt = await text({ message: c.brand('❯') });
-            if (isCancel(inputPrompt)) { 
-              errorInline('Session ended.'); 
-              process.exit(0); 
+            if (isCancel(inputPrompt)) {
+              errorInline('Session ended.');
+              process.exit(0);
             }
             input = (inputPrompt as string).trim();
-            
+
             if (input.toLowerCase() === 'exit' || input.toLowerCase() === 'quit') {
               successStandard('Session ended.');
               break;
@@ -132,7 +146,9 @@ export function registerRunCommand(program: Command): void {
               if (isInteractive) {
                 errorInline(`Streaming mode is not yet supported for agents.`);
               } else {
-                errorOperational('Streaming error', { message: 'Streaming mode (--stream) is not yet supported for agents.' });
+                errorOperational('Streaming error', {
+                  message: 'Streaming mode (--stream) is not yet supported for agents.',
+                });
               }
               process.exit(1);
             }
@@ -140,7 +156,7 @@ export function registerRunCommand(program: Command): void {
             const executor = new Executor();
             const linkData = loadLinkData();
             if (linkData) streamLogToDashboard(linkData.projectId, 'start', { packageName, input });
-            
+
             for await (const chunk of executor.runStream(runOptions)) {
               process.stdout.write(chunk);
               if (linkData) streamLogToDashboard(linkData.projectId, 'chunk', chunk);
@@ -165,32 +181,32 @@ export function registerRunCommand(program: Command): void {
             if (!opts.yes) {
               console.log('\n' + result.output + '\n');
               successStandard('Execution Stats', {
-                'Model': result.model,
-                'Duration': `${result.duration_ms}ms`,
-                'Tokens': `${result.usage.promptTokens} in / ${result.usage.completionTokens} out`,
-                'Status': result.status
+                Model: result.model,
+                Duration: `${result.duration_ms}ms`,
+                Tokens: `${result.usage.promptTokens} in / ${result.usage.completionTokens} out`,
+                Status: result.status,
               });
             } else {
               console.log(result.output);
             }
-            
+
             const linkData = loadLinkData();
-            if (linkData) streamLogToDashboard(linkData.projectId, 'result', {
-              packageName,
-              input,
-              output: result.output,
-              model: result.model,
-              durationMs: result.duration_ms,
-              usage: result.usage,
-            });
+            if (linkData)
+              streamLogToDashboard(linkData.projectId, 'result', {
+                packageName,
+                input,
+                output: result.output,
+                model: result.model,
+                durationMs: result.duration_ms,
+                usage: result.usage,
+              });
           }
         } while (isInteractive);
       } catch (err) {
         errorOperational('Execution failed', {
-          message: err instanceof Error ? err.message : String(err)
+          message: err instanceof Error ? err.message : String(err),
         });
         process.exit(1);
       }
     });
 }
-

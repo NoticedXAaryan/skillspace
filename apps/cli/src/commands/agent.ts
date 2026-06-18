@@ -6,8 +6,7 @@ import { warn } from '../ui/states/warning.js';
 import { box } from '../ui/layout/box.js';
 import { c } from '../ui/tokens/colors.js';
 
-export const agentCommand = new Command('agent')
-  .description('Manage and execute agents');
+export const agentCommand = new Command('agent').description('Manage and execute agents');
 
 agentCommand
   .command('run <agent> [positionalInput...]')
@@ -54,7 +53,7 @@ agentCommand
   .action(async (agentName) => {
     warn('Deprecated Command', [
       'To install an agent, use the unified install command:',
-      `  ${c.brand(`skillspace install ${agentName}`)}`
+      `  ${c.brand(`skillspace install ${agentName}`)}`,
     ]);
   });
 
@@ -78,5 +77,7 @@ agentCommand
       rows.push('');
     }
 
-    console.log(box(rows, { title: `Installed Agents (${installed.length})`, colorFn: c.successDim }));
+    console.log(
+      box(rows, { title: `Installed Agents (${installed.length})`, colorFn: c.successDim }),
+    );
   });

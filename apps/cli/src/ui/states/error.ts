@@ -23,16 +23,16 @@ export function errorOperational(headline: string, props: OperationalErrorProps)
   console.log();
   console.log('  ' + c.error(CHARS.CROSS) + '  ' + c.text(chalk.bold(headline)));
   console.log();
-  
+
   const detailLines = [
-    props.code    ? (c.textMuted(padLabel('Code'))    + c.error(props.code)) : null,
-    props.message ? (c.textMuted(padLabel('Message')) + c.text(props.message)) : null,
-    props.cause   ? (c.textMuted(padLabel('Cause'))   + c.textFaint(props.cause)) : null,
+    props.code ? c.textMuted(padLabel('Code')) + c.error(props.code) : null,
+    props.message ? c.textMuted(padLabel('Message')) + c.text(props.message) : null,
+    props.cause ? c.textMuted(padLabel('Cause')) + c.textFaint(props.cause) : null,
   ].filter(Boolean) as string[];
 
   const hintLines = [
     props.hint ? c.text(props.hint) : null,
-    props.link ? (c.textMuted('Details › ') + c.info(props.link)) : null,
+    props.link ? c.textMuted('Details › ') + c.info(props.link) : null,
   ].filter(Boolean) as string[];
 
   const linesToBox: string[] = [];
@@ -49,7 +49,7 @@ export function errorOperational(headline: string, props: OperationalErrorProps)
     }
     linesToBox.push(...hintLines);
   }
-  
+
   console.log(box(linesToBox, { title: 'Error', colorFn: c.errorDim }));
   console.log();
 }

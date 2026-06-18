@@ -5,8 +5,9 @@ import { errorOperational } from '../ui/states/error.js';
 import { box } from '../ui/layout/box.js';
 import { c } from '../ui/tokens/colors.js';
 
-export const workflowCommand = new Command('workflow')
-  .description('Manage and run multi-step workflows');
+export const workflowCommand = new Command('workflow').description(
+  'Manage and run multi-step workflows',
+);
 
 workflowCommand
   .command('run <name>')
@@ -17,22 +18,27 @@ workflowCommand
     try {
       const resolver = new WorkflowResolver();
       const workflow = await resolver.resolve(name);
-      
+
       loader.update('Executing workflow...');
       const engine = new WorkflowEngine();
       const result = await engine.run({
         workflow,
         input: options.input || '',
       });
-      
+
       loader.succeed('Workflow completed');
-      
-      console.log(box([
-        c.text(JSON.stringify(result, null, 2))
-      ], { title: 'Workflow Result', colorFn: c.successDim }));
+
+      console.log(
+        box([c.text(JSON.stringify(result, null, 2))], {
+          title: 'Workflow Result',
+          colorFn: c.successDim,
+        }),
+      );
     } catch (err) {
       loader.fail('Workflow failed');
-      errorOperational('Execution Error', { message: err instanceof Error ? err.message : String(err) });
+      errorOperational('Execution Error', {
+        message: err instanceof Error ? err.message : String(err),
+      });
       process.exit(1);
     }
   });
@@ -57,7 +63,9 @@ workflowCommand
 
     for (const dir of dirs) {
       if (fs.existsSync(dir.path)) {
-        const files = fs.readdirSync(dir.path).filter(f => f.endsWith('.yaml') || f.endsWith('.yml'));
+        const files = fs
+          .readdirSync(dir.path)
+          .filter((f) => f.endsWith('.yaml') || f.endsWith('.yml'));
         if (files.length > 0) {
           rows.push(`${c.textFaint('Directory:')} ${c.textMuted(dir.path)}`);
           for (const file of files) {
@@ -70,7 +78,15 @@ workflowCommand
     }
 
     if (!foundAny) {
-      console.log(box(['No workflows found locally or globally.', 'Create a workflow file in ./workflows/ or ~/.skillspace/workflows/.'], { colorFn: c.border }));
+      console.log(
+        box(
+          [
+            'No workflows found locally or globally.',
+            'Create a workflow file in ./workflows/ or ~/.skillspace/workflows/.',
+          ],
+          { colorFn: c.border },
+        ),
+      );
       return;
     }
 

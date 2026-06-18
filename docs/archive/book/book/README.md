@@ -1,42 +1,42 @@
 # SkillSpace: A Complete Technical Guide
 
-*From First Principles to Production*
+_From First Principles to Production_
 
 ---
 
 **About This Book**
 
-This book is the definitive, exhaustive guide to the SkillSpace project. Built from the ground up to solve the persistent issues of prompt drift, platform lock-in, and discoverability in AI development, SkillSpace represents a fundamental shift in how teams package and distribute AI capabilities. 
+This book is the definitive, exhaustive guide to the SkillSpace project. Built from the ground up to solve the persistent issues of prompt drift, platform lock-in, and discoverability in AI development, SkillSpace represents a fundamental shift in how teams package and distribute AI capabilities.
 
 This guide meticulously dissects every facet of the codebase, leaving no stone unturned. Whether you are debugging the Model Adapter Layer, extending the CLI with new subcommands, or deploying the Next.js Registry Server for your enterprise, this book serves as your authoritative reference.
 
 **Who This Book Is For**
 
-*   **New Team Members:** To rapidly onboard and understand the architecture, data flow, and development environment.
-*   **Senior Engineers:** As a deep-dive reference for extending core systems like the SkillSpace Runtime (SSR) or the execution sandbox.
-*   **Open-Source Contributors:** To understand the coding conventions, testing strategies, and the pull request lifecycle.
-*   **Enterprise Administrators:** For understanding the deployment architecture, PostgreSQL schema migrations, and security boundaries.
+- **New Team Members:** To rapidly onboard and understand the architecture, data flow, and development environment.
+- **Senior Engineers:** As a deep-dive reference for extending core systems like the SkillSpace Runtime (SSR) or the execution sandbox.
+- **Open-Source Contributors:** To understand the coding conventions, testing strategies, and the pull request lifecycle.
+- **Enterprise Administrators:** For understanding the deployment architecture, PostgreSQL schema migrations, and security boundaries.
 
 **How This Book Is Organized**
 
 This book is divided into meticulously detailed chapters spanning the entire monorepo:
 
-*   **Part I — Foundations (Chapters 1-4):** The core problem statement, environment setup, architecture, and the complete data model.
-*   **Part II — Feature Deep Dives (Chapters 5-8):** Extensive breakdowns of the SkillSpace Runtime, Model Adapter Layer, MCP Integration, and the Next.js Registry.
-*   **Part III — The CLI Deep Dive (Chapters 9-10):** A microscopic look at every single CLI command (`init`, `login`, `install`, `run`, etc.), exploring their exact execution paths and edge cases.
-*   **Part IV — API Reference (Chapter 11):** The complete REST API specification for the Registry Server.
-*   **Part V — Configuration & Operations (Chapters 12-15):** Exhaustive details on environment variables, testing strategies, deployment, and security models.
-*   **Part VI — Developer Guide (Chapters 16-17):** Code style, file organization conventions, and contribution workflows.
-*   **Part VII — Internals & Advanced Topics (Chapters 18-20):** Performance tuning, error handling (including firewall blocks), and a file-by-file source code tour.
-*   **Part VIII — Reference (Chapters 21-23):** Complete dependency tables, script lists, and troubleshooting guides.
+- **Part I — Foundations (Chapters 1-4):** The core problem statement, environment setup, architecture, and the complete data model.
+- **Part II — Feature Deep Dives (Chapters 5-8):** Extensive breakdowns of the SkillSpace Runtime, Model Adapter Layer, MCP Integration, and the Next.js Registry.
+- **Part III — The CLI Deep Dive (Chapters 9-10):** A microscopic look at every single CLI command (`init`, `login`, `install`, `run`, etc.), exploring their exact execution paths and edge cases.
+- **Part IV — API Reference (Chapter 11):** The complete REST API specification for the Registry Server.
+- **Part V — Configuration & Operations (Chapters 12-15):** Exhaustive details on environment variables, testing strategies, deployment, and security models.
+- **Part VI — Developer Guide (Chapters 16-17):** Code style, file organization conventions, and contribution workflows.
+- **Part VII — Internals & Advanced Topics (Chapters 18-20):** Performance tuning, error handling (including firewall blocks), and a file-by-file source code tour.
+- **Part VIII — Reference (Chapters 21-23):** Complete dependency tables, script lists, and troubleshooting guides.
 
 **Conventions Used in This Book**
 
-*   `# Chapter N: Title` for chapters.
-*   Triple-backtick fenced code blocks with language tags for all code snippets.
-*   > **Note:** Important architectural context or design rationale.
-*   > **Warning:** Critical security implications or potential pitfalls.
-*   File paths are specified relative to the repository root (e.g., `packages/runtime/src/executor.ts`).
+- `# Chapter N: Title` for chapters.
+- Triple-backtick fenced code blocks with language tags for all code snippets.
+- > **Note:** Important architectural context or design rationale.
+- > **Warning:** Critical security implications or potential pitfalls.
+- File paths are specified relative to the repository root (e.g., `packages/runtime/src/executor.ts`).
 
 ---
 

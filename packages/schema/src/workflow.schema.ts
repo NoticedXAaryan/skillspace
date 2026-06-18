@@ -27,20 +27,14 @@ export const WorkflowStepSchema = z.union([ActionStepSchema, ParallelStepSchema]
 // Main Workflow Schema
 // ---------------------------------------------------------------------------
 export const WorkflowSchema = z.object({
-  name: z
-    .string()
-    .min(1)
-    .max(214)
-    .regex(kebabCaseRegex, 'Name must be kebab-case'),
-  version: z
-    .string()
-    .regex(/^\d+\.\d+\.\d+$/, 'Version must be valid semver'),
+  name: z.string().min(1).max(214).regex(kebabCaseRegex, 'Name must be kebab-case'),
+  version: z.string().regex(/^\d+\.\d+\.\d+$/, 'Version must be valid semver'),
   description: z.string().min(1).max(200),
   author: z.string().min(1),
   license: z.string().min(1),
 
   steps: z.array(WorkflowStepSchema).min(1),
-  
+
   outputs: z.record(z.string()).optional(), // Maps output keys to expressions e.g., {{steps.1.output}}
 });
 

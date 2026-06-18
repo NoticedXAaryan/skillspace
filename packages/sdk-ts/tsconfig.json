@@ -5,8 +5,5 @@
     "rootDir": "./src"
   },
   "include": ["src/**/*"],
-  "references": [
-    { "path": "../schema" },
-    { "path": "../runtime" }
-  ]
+  "references": [{ "path": "../schema" }, { "path": "../runtime" }]
 }

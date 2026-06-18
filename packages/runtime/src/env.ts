@@ -11,7 +11,7 @@ export interface EnvStore {
 
 const DEFAULT_STORE: EnvStore = {
   global: {},
-  packages: {}
+  packages: {},
 };
 
 /**
@@ -107,10 +107,10 @@ export function resolveEnvForPackage(pkgName: string): Record<string, string> {
   const store = loadEnvStore();
   const globalEnv = store.global || {};
   const pkgEnv = store.packages?.[pkgName] || {};
-  
+
   // Package-specific vars override global vars
   return {
     ...globalEnv,
-    ...pkgEnv
+    ...pkgEnv,
   };
 }

@@ -23,7 +23,9 @@ SkillSpace = npm for AI capabilities. Monorepo (pnpm + Turborepo) with registry,
 ## Packages
 
 ### packages/schema (95% — complete)
+
 11 Zod schema files. Key exports:
+
 - **PersonaSchema**: system_prompt, tone, behavioral_guidelines, greeting, preferred_model, capabilities
 - **SkillSchema**: schemaVersion=2, name (@scope/name), version (semver), persona
 - **AgentSchema**: persona (inline or ref), mcps[], memory{}, permissions[], sub_agents[] (DAG orchestration with depends_on, execution order, timeout, on_failure, input_mapping)
@@ -32,30 +34,37 @@ SkillSpace = npm for AI capabilities. Monorepo (pnpm + Turborepo) with registry,
 - Missing: tests for agent/workflow/lockfile/manifest schemas
 
 ### packages/runtime (85% — core engine)
+
 22 source files, 12 test files (74 tests). Key components:
+
 - **Executor** (v1 legacy): resolve → permissions → model → firewall → adapter → API → response (uses `any` types for v1/v2 compat)
 - **REPL Executor** (v2): scanPersona → resolveModel → composeSystemPrompt → readline loop
 - **Agent Executor** (v2): resolve persona → resolve MCPs → buildExecutionPlan → execute waves
 - **Model Adapter Layer**: ModelAdapter interface with 4 implementations (Claude/OpenAI/Gemini/Ollama). Each builds provider-specific API requests from model-agnostic skill definitions
 - **Agent Orchestrator**: DAG resolver — builds execution waves from sub_agents[], handles parallel/sequential, dependency ordering, circular detection, input_mapping
 - **Persona Firewall**: 8 regex rules (critical/high/medium/low) scanning for prompt injection. Returns SAFE/WARNING/BLOCKED
-- **PermissionEnforcer**: Runtime enforcement of declared permissions (filesystem.read/write, network.fetch, tools.*)
+- **PermissionEnforcer**: Runtime enforcement of declared permissions (filesystem.read/write, network.fetch, tools.\*)
 - **Model Resolution Chain**: CLI flag > persona.preferred_model > user config > system default (claude-haiku-4-5)
 - **Other**: SkillCache, SkillResolver, AgentResolver, WorkflowResolver, WorkflowEngine, McpManager, FileSystemSandbox, TelemetryClient, SessionManager
 
 ### packages/database (90%)
+
 24 Prisma models: User, Session, Account, TwoFactor, Verification, UserSettings, UserOnboarding, Organization, OrgMember, Package, PackageVersion, ExecutionLog, BenchmarkScore, RateLimit, Invite, PackageAllowlist, AccessPolicy, PlaygroundSession, Star, Follower, Collection, Review, Discussion, SkillRequest, ShowcaseProject, RoadmapItem. Only 1 migration exists (needs prisma migrate dev).
 
 ### packages/sdk-ts (30% — placeholder)
+
 Only defineSkill() and SkillSpaceClient stub. Needs real implementation.
 
 ### packages/lsp (90%)
+
 YAML validation LSP for skill.yaml/agent.yaml. Used by VSCode extension.
 
 ### packages/memory-mcp (80%)
+
 SQLite FTS5 MCP server with save_memory/search_memories tools. Keyword-only search (no semantic).
 
 ### packages/config-typescript, config-eslint (complete)
+
 Shared TS config (base/nextjs/react) + ESLint flat config.
 
 ---
@@ -63,17 +72,21 @@ Shared TS config (base/nextjs/react) + ESLint flat config.
 ## Applications
 
 ### apps/cli — @skillspace/cli (80%)
+
 21 commands: init, install, uninstall, run, search, info, list, publish, login, whoami, model (add/test/list), agent (status/kill), mcp (inspect/install/list), workflow (run/list), org (create/invite/join), env, benchmark, config, help, migrate, export.
 Binary: `skillspace`. Uses commander + @clack/prompts. 3 E2E tests. Needs: per-command tests, --json flag.
 
 ### apps/registry — @skillspace/registry (70%)
+
 Next.js 15 App Router + Tailwind + Prisma + BetterAuth. 27+ pages (landing, packages, search, create, login, register, profile, dashboard, playground, docs, collections, trending, examples, analytics, organization, etc). 12+ API routes (packages CRUD with rate limiting, auth, search, analytics, benchmarks, playground, orgs, health).
+
 - **Auth**: BetterAuth — email/password + GitHub OAuth + 2FA. Session cookies (browser) + Bearer tokens (CLI). Config issue: useSecureCookies=false + sameSite="none".
 - **Storage**: S3-compatible (MinIO local, R2 production). 50MB limit, 10GB/user quota.
 - **Security**: Rate limits (100/min read, 15/min publish), SHA-256 checksums, prompt injection scanning, org membership checks.
 - **Issues**: Some pages may use new PrismaClient() directly. No sitemap/OG images.
 
 ### apps/vscode (90%)
+
 VSCode extension connecting to LSP for skill.yaml/agent.yaml validation.
 
 ---

@@ -8,11 +8,11 @@ This chapter provides a step-by-step guide to cloning, configuring, and running 
 
 Before touching the codebase, ensure that your local machine meets the following strict requirements. The monorepo heavily relies on specific toolchain versions.
 
-*   **Node.js (>= 20.0.0):** Required for the Next.js server, CLI, and general TypeScript compilation. Use `nvm` or `fnm` to manage this.
-*   **pnpm (>= 11.5.0):** SkillSpace strictly uses `pnpm` for workspace management. Do not use `npm` or `yarn`. 
-*   **PostgreSQL:** Required for the local Registry Server backend. You can install it locally via Homebrew/apt, or run it via Docker (`docker run --name skillspace-db -e POSTGRES_PASSWORD=password -p 5432:5432 -d postgres`).
-*   **Docker (Optional but recommended):** For spinning up isolated database and S3/MinIO instances.
-*   **Bun (Optional but recommended):** While the CLI can run on Node, Bun is highly recommended for faster execution and is used internally for bundling the final binaries.
+- **Node.js (>= 20.0.0):** Required for the Next.js server, CLI, and general TypeScript compilation. Use `nvm` or `fnm` to manage this.
+- **pnpm (>= 11.5.0):** SkillSpace strictly uses `pnpm` for workspace management. Do not use `npm` or `yarn`.
+- **PostgreSQL:** Required for the local Registry Server backend. You can install it locally via Homebrew/apt, or run it via Docker (`docker run --name skillspace-db -e POSTGRES_PASSWORD=password -p 5432:5432 -d postgres`).
+- **Docker (Optional but recommended):** For spinning up isolated database and S3/MinIO instances.
+- **Bun (Optional but recommended):** While the CLI can run on Node, Bun is highly recommended for faster execution and is used internally for bundling the final binaries.
 
 ---
 
@@ -38,25 +38,25 @@ pnpm run build
 
 ## 3. Environment Configuration
 
-SkillSpace relies on environment variables for both global security features and local registry database connections. 
+SkillSpace relies on environment variables for both global security features and local registry database connections.
 
 **Global Environment Configuration (`.env`)**
 Copy the `.env.example` in the root of the project to `.env`. This controls the execution sandbox and Model Context Protocol (MCP) bounds.
 
-| Variable | Default Value | Description | What Breaks if Wrong |
-| :--- | :--- | :--- | :--- |
-| `FIREWALL_ENABLED` | `true` | Enables the `LocalModelScreener` which intercepts inputs looking for LLM injection attacks. | If `true` but `FIREWALL_MODEL` is misconfigured, execution halts with a `FirewallBlockedError`. |
-| `FIREWALL_MODEL` | `ollama/llama3` | The model used exclusively for inspecting incoming requests for malicious content. | The screener will fail to instantiate. |
-| `MCP_ALLOWED_TRANSPORTS`| `stdio,http` | The transport layers authorized for local MCP tools. | MCP server connections will be refused. |
-| `MCP_HTTP_ALLOWLIST` | `http://localhost:3001...` | Comma-separated list of allowed URLs for remote MCP servers. | Remote MCP tools will be blocked by the `McpRegistry`. |
+| Variable                 | Default Value              | Description                                                                                 | What Breaks if Wrong                                                                            |
+| :----------------------- | :------------------------- | :------------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------------------- |
+| `FIREWALL_ENABLED`       | `true`                     | Enables the `LocalModelScreener` which intercepts inputs looking for LLM injection attacks. | If `true` but `FIREWALL_MODEL` is misconfigured, execution halts with a `FirewallBlockedError`. |
+| `FIREWALL_MODEL`         | `ollama/llama3`            | The model used exclusively for inspecting incoming requests for malicious content.          | The screener will fail to instantiate.                                                          |
+| `MCP_ALLOWED_TRANSPORTS` | `stdio,http`               | The transport layers authorized for local MCP tools.                                        | MCP server connections will be refused.                                                         |
+| `MCP_HTTP_ALLOWLIST`     | `http://localhost:3001...` | Comma-separated list of allowed URLs for remote MCP servers.                                | Remote MCP tools will be blocked by the `McpRegistry`.                                          |
 
 **Registry Environment Configuration (`apps/registry/.env`)**
 You must also configure the Registry Server. Create a `.env` inside `apps/registry/`:
 
-| Variable | Required | Description |
-| :--- | :--- | :--- |
-| `DATABASE_URL` | Yes | Your local PostgreSQL connection string (e.g., `postgresql://postgres:password@localhost:5432/skillspace`). |
-| `JWT_SECRET` | Yes | A 32+ character random string used for signing authentication tokens. |
+| Variable       | Required | Description                                                                                                 |
+| :------------- | :------- | :---------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL` | Yes      | Your local PostgreSQL connection string (e.g., `postgresql://postgres:password@localhost:5432/skillspace`). |
+| `JWT_SECRET`   | Yes      | A 32+ character random string used for signing authentication tokens.                                       |
 
 ---
 
@@ -88,6 +88,7 @@ pnpm run dev
 ```
 
 **What this command does:**
+
 1.  **Starts the Next.js Registry Server** on `http://localhost:3000`. Watch the terminal for `ready - started server on 0.0.0.0:3000`.
 2.  **Starts the TypeScript compilers** in watch mode for `@skillspace/runtime`, `@skillspace/schema`, and the `apps/cli`.
 3.  Any changes made to the `packages/runtime/src/executor.ts` will instantly trigger a recompilation, making those changes immediately testable via the CLI.
@@ -134,25 +135,26 @@ A passing E2E test suite will spin up a mock registry, simulate user logins, pub
 
 ## 8. Common Setup Problems and Solutions
 
-| Problem | Cause | Solution |
-| :--- | :--- | :--- |
-| **`PrismaClientInitializationError`** | The Next.js API cannot reach the database. | Ensure PostgreSQL is running on port 5432 and the credentials in `apps/registry/.env` are correct. |
-| **`Cannot find module '@skillspace/schema'`** | Monorepo symlinks are broken or the package hasn't been built. | Run `pnpm install` then `pnpm run build` from the root. |
-| **`EADDRINUSE: address already in use :3000`** | Another service is using port 3000. | Kill the process using port 3000, or change the Next.js port in `package.json`. |
-| **`API key not configured for "openai"`** | Missing CLI configuration. | Run `skillspace model add openai` to store your key in `~/.skillspace/config.yaml`. |
-| **`Checksum mismatch` during `install`** | Corrupted local cache or manipulated `.skillpkg`. | Run `skillspace uninstall <package>` and try installing again. |
+| Problem                                        | Cause                                                          | Solution                                                                                           |
+| :--------------------------------------------- | :------------------------------------------------------------- | :------------------------------------------------------------------------------------------------- |
+| **`PrismaClientInitializationError`**          | The Next.js API cannot reach the database.                     | Ensure PostgreSQL is running on port 5432 and the credentials in `apps/registry/.env` are correct. |
+| **`Cannot find module '@skillspace/schema'`**  | Monorepo symlinks are broken or the package hasn't been built. | Run `pnpm install` then `pnpm run build` from the root.                                            |
+| **`EADDRINUSE: address already in use :3000`** | Another service is using port 3000.                            | Kill the process using port 3000, or change the Next.js port in `package.json`.                    |
+| **`API key not configured for "openai"`**      | Missing CLI configuration.                                     | Run `skillspace model add openai` to store your key in `~/.skillspace/config.yaml`.                |
+| **`Checksum mismatch` during `install`**       | Corrupted local cache or manipulated `.skillpkg`.              | Run `skillspace uninstall <package>` and try installing again.                                     |
 
 ---
 
 ## 9. Editor Setup
 
-We heavily recommend **Visual Studio Code (VS Code)** or **Cursor**. 
+We heavily recommend **Visual Studio Code (VS Code)** or **Cursor**.
 
 **Recommended Extensions:**
-*   `Prisma` (for `.prisma` syntax highlighting)
-*   `Prettier - Code formatter`
-*   `ESLint`
-*   `YAML` (by RedHat, for editing `skill.yaml` manifests)
+
+- `Prisma` (for `.prisma` syntax highlighting)
+- `Prettier - Code formatter`
+- `ESLint`
+- `YAML` (by RedHat, for editing `skill.yaml` manifests)
 
 Ensure your editor is configured to use the workspace's TypeScript version rather than its bundled version to prevent false-positive type errors.
 

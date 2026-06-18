@@ -17,9 +17,7 @@ import { box } from '../ui/layout/box.js';
 import { c } from '../ui/tokens/colors.js';
 
 export function registerModelCommand(program: Command): void {
-  const model = program
-    .command('model')
-    .description('Manage model provider configurations');
+  const model = program.command('model').description('Manage model provider configurations');
 
   model
     .command('add <provider>')
@@ -32,7 +30,9 @@ export function registerModelCommand(program: Command): void {
       const providers = adapterRegistry.listProviders();
       if (!providers.includes(provider)) {
         if (!opts.yes) {
-          errorOperational('Unknown provider', { message: `Available providers: ${providers.join(', ')}` });
+          errorOperational('Unknown provider', {
+            message: `Available providers: ${providers.join(', ')}`,
+          });
         } else {
           console.error(`✗ Unknown provider "${provider}". Available: ${providers.join(', ')}`);
         }
@@ -44,17 +44,22 @@ export function registerModelCommand(program: Command): void {
 
       if (!opts.yes && !key && provider !== 'ollama') {
         intro('model add', `SkillSpace Model Setup: ${provider}`);
-        
+
         const keyInput = await passwordPrompt({
           message: `API Key for ${provider}:`,
         });
-        if (isCancel(keyInput)) { cancel('Operation cancelled.'); process.exit(0); }
+        if (isCancel(keyInput)) {
+          cancel('Operation cancelled.');
+          process.exit(0);
+        }
         key = keyInput;
       }
 
       if (!key && provider !== 'ollama') {
         if (!opts.yes) {
-          errorOperational('API key missing', { message: 'API key is required for this provider.' });
+          errorOperational('API key missing', {
+            message: 'API key is required for this provider.',
+          });
           process.exit(1);
         } else {
           console.error('✗ API key is required.');
@@ -63,7 +68,7 @@ export function registerModelCommand(program: Command): void {
       }
 
       setApiKey(provider, key || '', url);
-      
+
       if (!opts.yes) {
         const details: Record<string, string> = { Provider: provider };
         if (url) details['Base URL'] = url;
@@ -83,7 +88,11 @@ export function registerModelCommand(program: Command): void {
       const defaultModel = getDefaultModel();
 
       if (models.length === 0) {
-        console.log(box(['No models configured.', 'Run `skillspace model add <provider>`'], { colorFn: c.border }));
+        console.log(
+          box(['No models configured.', 'Run `skillspace model add <provider>`'], {
+            colorFn: c.border,
+          }),
+        );
         return;
       }
 
@@ -116,7 +125,9 @@ export function registerModelCommand(program: Command): void {
         setDefaultModel(modelId);
         successStandard('Default Model Set', { Model: modelId });
       } catch (err) {
-        errorOperational('Invalid Model', { message: err instanceof Error ? err.message : String(err) });
+        errorOperational('Invalid Model', {
+          message: err instanceof Error ? err.message : String(err),
+        });
         process.exit(1);
       }
     });
@@ -134,7 +145,9 @@ export function registerModelCommand(program: Command): void {
 
         if (!apiKey && provider !== 'ollama') {
           if (!opts.yes) {
-            errorOperational('Missing API Key', { message: `No API key for "${provider}". Run \`skillspace model add ${provider}\`` });
+            errorOperational('Missing API Key', {
+              message: `No API key for "${provider}". Run \`skillspace model add ${provider}\``,
+            });
           } else {
             console.error(`✗ No API key for "${provider}".`);
           }
@@ -164,13 +177,17 @@ export function registerModelCommand(program: Command): void {
           config: { temperature: 0.3, max_tokens: 100, timeout_seconds: 15 },
         };
 
-        const request = adapter.buildRequest(testSkill, 'Say "SkillSpace works!" and nothing else.', {
-          apiKey,
-          modelId: modelName,
-          temperature: 0.3,
-          maxTokens: 100,
-          timeoutSeconds: 15,
-        });
+        const request = adapter.buildRequest(
+          testSkill,
+          'Say "SkillSpace works!" and nothing else.',
+          {
+            apiKey,
+            modelId: modelName,
+            temperature: 0.3,
+            maxTokens: 100,
+            timeoutSeconds: 15,
+          },
+        );
 
         const res = await fetch(request.url, {
           method: 'POST',
@@ -181,26 +198,32 @@ export function registerModelCommand(program: Command): void {
 
         if (!res.ok) {
           if (loader) loader.fail('Test failed.');
-          errorOperational('API Error', { message: `API returned ${res.status}: ${await res.text()}` });
+          errorOperational('API Error', {
+            message: `API returned ${res.status}: ${await res.text()}`,
+          });
           process.exit(1);
         }
 
         const data = await res.json();
         const result = adapter.parseResponse(data);
-        
+
         if (loader) {
           loader.succeed('Test complete');
           successStandard('Model Response', {
             Output: result.output,
-            Tokens: `${result.usage.promptTokens} prompt + ${result.usage.completionTokens} completion`
+            Tokens: `${result.usage.promptTokens} prompt + ${result.usage.completionTokens} completion`,
           });
           outro(Date.now() - startTime);
         } else {
           console.log(`✓ Response: ${result.output}`);
-          console.log(`  Tokens: ${result.usage.promptTokens} prompt + ${result.usage.completionTokens} completion`);
+          console.log(
+            `  Tokens: ${result.usage.promptTokens} prompt + ${result.usage.completionTokens} completion`,
+          );
         }
       } catch (err) {
-        errorOperational('Test Failed', { message: err instanceof Error ? err.message : String(err) });
+        errorOperational('Test Failed', {
+          message: err instanceof Error ? err.message : String(err),
+        });
         process.exit(1);
       }
     });

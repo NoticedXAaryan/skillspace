@@ -10,9 +10,7 @@ import { SkillCache } from './cache.js';
 
 export class SkillNotFoundError extends Error {
   constructor(public readonly skillName: string) {
-    super(
-      `Skill "${skillName}" is not installed. Run \`skillspace install ${skillName}\` first.`,
-    );
+    super(`Skill "${skillName}" is not installed. Run \`skillspace install ${skillName}\` first.`);
     this.name = 'SkillNotFoundError';
   }
 }
@@ -27,9 +25,7 @@ export class VersionNotFoundError extends Error {
       availableVersions.length > 0
         ? `Available versions: ${availableVersions.join(', ')}`
         : 'No versions installed.';
-    super(
-      `No version of "${skillName}" matching "${versionRange}" is installed. ${available}`,
-    );
+    super(`No version of "${skillName}" matching "${versionRange}" is installed. ${available}`);
     this.name = 'VersionNotFoundError';
   }
 }
@@ -58,7 +54,13 @@ export class SkillResolver {
    */
   resolve(name: string, versionRange?: string): Skill {
     // 1. Check if name is a local file path
-    if (name.endsWith('.yaml') || name.startsWith('./') || name.startsWith('.\\') || name.startsWith('/') || name.match(/^[a-zA-Z]:\\/)) {
+    if (
+      name.endsWith('.yaml') ||
+      name.startsWith('./') ||
+      name.startsWith('.\\') ||
+      name.startsWith('/') ||
+      name.match(/^[a-zA-Z]:\\/)
+    ) {
       if (fs.existsSync(name)) {
         const content = fs.readFileSync(name, 'utf-8');
         const parsed = YAML.parse(content);
@@ -89,9 +91,7 @@ export class SkillResolver {
     }
 
     // Try semver range matching
-    const matching = versions
-      .filter((v) => semver.satisfies(v, range))
-      .sort(semver.rcompare);
+    const matching = versions.filter((v) => semver.satisfies(v, range)).sort(semver.rcompare);
 
     if (matching.length === 0) {
       throw new VersionNotFoundError(name, range, versions);
@@ -105,10 +105,7 @@ export class SkillResolver {
   /**
    * Resolve a skill and return both the skill and its resolved version.
    */
-  resolveWithVersion(
-    name: string,
-    versionRange?: string,
-  ): { skill: Skill; version: string } {
+  resolveWithVersion(name: string, versionRange?: string): { skill: Skill; version: string } {
     const skill = this.resolve(name, versionRange);
     return { skill, version: skill.version };
   }

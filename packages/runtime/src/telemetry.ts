@@ -21,9 +21,9 @@ export class TelemetryClient {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {})
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
-          body: JSON.stringify(event)
+          body: JSON.stringify(event),
         });
 
         if (res.ok) {

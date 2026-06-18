@@ -21,7 +21,7 @@ with SkillSpaceClient() as client:
         input_data="SELECT * FROM users WHERE age > 20",
         model="openai/gpt-4o"
     )
-    
+
     print(f"Optimized SQL:\n{result['output']}")
     print(f"Tokens used: {result['usage']['total_tokens']}")
 ```
@@ -29,6 +29,7 @@ with SkillSpaceClient() as client:
 ## Configuration
 
 You can configure the client using environment variables:
+
 - `SKILLSPACE_API_KEY`: Your authentication token (if querying a private registry).
 - `SKILLSPACE_REGISTRY_URL`: The base URL of the registry (defaults to `https://registry.skillspace.ai`).
 
@@ -42,4 +43,5 @@ client = SkillSpaceClient(
 ```
 
 ## License
+
 MIT

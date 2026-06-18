@@ -3,7 +3,13 @@
 import { useState } from 'react';
 import { Terminal, Copy, Check } from 'lucide-react';
 
-export default function InstallCard({ pkgName, children }: { pkgName: string, children?: React.ReactNode }) {
+export default function InstallCard({
+  pkgName,
+  children,
+}: {
+  pkgName: string;
+  children?: React.ReactNode;
+}) {
   const [copied, setCopied] = useState(false);
   const command = `skillspace install ${pkgName}`;
 

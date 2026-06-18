@@ -51,9 +51,7 @@ export class AdapterRegistry {
     const adapter = this.adapters.get(providerId);
     if (!adapter) {
       const available = Array.from(this.adapters.keys()).join(', ');
-      throw new Error(
-        `Unknown model provider "${providerId}". Available providers: ${available}`,
-      );
+      throw new Error(`Unknown model provider "${providerId}". Available providers: ${available}`);
     }
 
     return { adapter, modelName };

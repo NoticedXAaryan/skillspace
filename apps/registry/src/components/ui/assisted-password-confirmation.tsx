@@ -1,37 +1,35 @@
-"use client"
+'use client';
 
-import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 
 export function AssistedPasswordConfirmation({
-  password, 
-  onMatch
+  password,
+  onMatch,
 }: {
-  password: string, 
-  onMatch?: (matches: boolean) => void
+  password: string;
+  onMatch?: (matches: boolean) => void;
 }) {
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [shake, setShake] = useState(false)
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [shake, setShake] = useState(false);
 
-  const handleConfirmPasswordChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (
       confirmPassword.length >= password.length &&
       e.target.value.length > confirmPassword.length
     ) {
-      setShake(true)
+      setShake(true);
     } else {
-      setConfirmPassword(e.target.value)
+      setConfirmPassword(e.target.value);
     }
-  }
+  };
 
   useEffect(() => {
     if (shake) {
-      const timer = setTimeout(() => setShake(false), 500)
-      return () => clearTimeout(timer)
+      const timer = setTimeout(() => setShake(false), 500);
+      return () => clearTimeout(timer);
     }
-  }, [shake])
+  }, [shake]);
 
   const passwordsMatch = password === confirmPassword && password.length > 0;
 
@@ -42,32 +40,30 @@ export function AssistedPasswordConfirmation({
   }, [passwordsMatch, onMatch]);
 
   const getLetterStatus = (letter: string, index: number) => {
-    if (!confirmPassword[index]) return ''
-    return confirmPassword[index] === letter
-      ? 'bg-green-500/20'
-      : 'bg-red-500/20'
-  }
+    if (!confirmPassword[index]) return '';
+    return confirmPassword[index] === letter ? 'bg-green-500/20' : 'bg-red-500/20';
+  };
 
   const bounceAnimation = {
     x: shake ? [-10, 10, -10, 10, 0] : 0,
     transition: { duration: 0.5 },
-  }
+  };
 
   const matchAnimation = {
     scale: passwordsMatch ? [1, 1.02, 1] : 1,
     transition: { duration: 0.3 },
-  }
+  };
 
   const borderAnimation = {
     borderColor: passwordsMatch ? '#10B981' : '',
     transition: { duration: 0.3 },
-  }
+  };
 
   return (
     <div className="flex w-full flex-col gap-4">
       <div className="relative flex w-full flex-col items-start justify-center gap-2">
         <label className="text-sm font-medium leading-none text-foreground">Confirm Password</label>
-        
+
         {/* Visual password representation */}
         <motion.div
           className="h-[52px] w-full rounded-xl border border-input bg-background px-2 py-2 shadow-sm"
@@ -80,10 +76,7 @@ export function AssistedPasswordConfirmation({
           <div className="relative h-full w-full overflow-hidden rounded-lg">
             <div className="z-10 flex h-full items-center justify-start bg-transparent px-2 tracking-[0.15em]">
               {password.split('').map((_, index) => (
-                <div
-                  key={index}
-                  className="flex h-full w-4 shrink-0 items-center justify-center"
-                >
+                <div key={index} className="flex h-full w-4 shrink-0 items-center justify-center">
                   <span className="size-[5px] rounded-full bg-foreground/50"></span>
                 </div>
               ))}
@@ -108,10 +101,7 @@ export function AssistedPasswordConfirmation({
         </motion.div>
 
         {/* Input field */}
-        <motion.div
-          className="h-[52px] w-full overflow-hidden rounded-xl"
-          animate={matchAnimation}
-        >
+        <motion.div className="h-[52px] w-full overflow-hidden rounded-xl" animate={matchAnimation}>
           <motion.input
             className="h-full w-full rounded-xl border border-input bg-background px-3.5 py-3 tracking-[0.4em] outline-none placeholder:tracking-normal focus:border-ring text-foreground shadow-sm transition-colors"
             type="password"
@@ -123,5 +113,5 @@ export function AssistedPasswordConfirmation({
         </motion.div>
       </div>
     </div>
-  )
+  );
 }

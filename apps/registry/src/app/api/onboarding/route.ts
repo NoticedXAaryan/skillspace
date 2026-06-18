@@ -30,11 +30,15 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const updateData: any = {};
-    if (typeof body.walkthroughCompleted === 'boolean') updateData.walkthroughCompleted = body.walkthroughCompleted;
-    if (typeof body.firstSkillInstalled === 'boolean') updateData.firstSkillInstalled = body.firstSkillInstalled;
+    if (typeof body.walkthroughCompleted === 'boolean')
+      updateData.walkthroughCompleted = body.walkthroughCompleted;
+    if (typeof body.firstSkillInstalled === 'boolean')
+      updateData.firstSkillInstalled = body.firstSkillInstalled;
     if (typeof body.firstSkillRun === 'boolean') updateData.firstSkillRun = body.firstSkillRun;
-    if (typeof body.firstSkillPublished === 'boolean') updateData.firstSkillPublished = body.firstSkillPublished;
-    if (typeof body.onboardingCompleted === 'boolean') updateData.onboardingCompleted = body.onboardingCompleted;
+    if (typeof body.firstSkillPublished === 'boolean')
+      updateData.firstSkillPublished = body.firstSkillPublished;
+    if (typeof body.onboardingCompleted === 'boolean')
+      updateData.onboardingCompleted = body.onboardingCompleted;
     if (typeof body.currentStep === 'number') updateData.currentStep = body.currentStep;
 
     const onboarding = await prisma.userOnboarding.update({

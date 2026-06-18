@@ -24,9 +24,8 @@ export default function ExamplesClient({ examples }: { examples: Example[] }) {
 
   const categories = ['All', ...Array.from(new Set(examples.map((e) => e.category)))];
 
-  const filteredExamples = activeCategory === 'All' 
-    ? examples 
-    : examples.filter((e) => e.category === activeCategory);
+  const filteredExamples =
+    activeCategory === 'All' ? examples : examples.filter((e) => e.category === activeCategory);
 
   return (
     <div className="flex flex-col gap-8">
@@ -46,17 +45,30 @@ export default function ExamplesClient({ examples }: { examples: Example[] }) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {filteredExamples.map(ex => (
-          <Card key={ex.id} className="bg-neutral-950 border-white/10 hover:border-cyan-500/30 transition-colors group flex flex-col">
+        {filteredExamples.map((ex) => (
+          <Card
+            key={ex.id}
+            className="bg-neutral-950 border-white/10 hover:border-cyan-500/30 transition-colors group flex flex-col"
+          >
             <CardContent className="p-6 flex flex-col flex-1">
               <div className="flex justify-between items-start mb-2">
-                <h2 className="text-xl font-bold text-white group-hover:text-cyan-400 transition-colors">{ex.name}</h2>
+                <h2 className="text-xl font-bold text-white group-hover:text-cyan-400 transition-colors">
+                  {ex.name}
+                </h2>
                 <div className="flex items-center gap-3 text-sm font-mono text-neutral-500">
-                  <span className="flex items-center gap-1"><Download className="w-4 h-4 text-neutral-600" /> {ex.downloads.toLocaleString()}</span>
-                  <span className="flex items-center gap-1"><Star className="w-4 h-4 text-amber-500" /> {ex.stars.toLocaleString()}</span>
+                  <span className="flex items-center gap-1">
+                    <Download className="w-4 h-4 text-neutral-600" />{' '}
+                    {ex.downloads.toLocaleString()}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Star className="w-4 h-4 text-amber-500" /> {ex.stars.toLocaleString()}
+                  </span>
                 </div>
               </div>
-              <Link href={`/packages/${ex.name.toLowerCase().replace(/\s+/g, '-')}`} className="text-sm font-medium text-neutral-400 hover:text-cyan-400 mb-6 block w-fit">
+              <Link
+                href={`/packages/${ex.name.toLowerCase().replace(/\s+/g, '-')}`}
+                className="text-sm font-medium text-neutral-400 hover:text-cyan-400 mb-6 block w-fit"
+              >
                 @{ex.author}
               </Link>
 
@@ -67,21 +79,36 @@ export default function ExamplesClient({ examples }: { examples: Example[] }) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1 mb-6">
                 <div className="flex flex-col gap-2">
-                  <div className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Input</div>
+                  <div className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
+                    Input
+                  </div>
                   <div className="flex-1 bg-black border border-white/10 rounded-lg overflow-hidden [&_pre]:!bg-transparent [&_pre]:!m-0 [&_pre]:!p-4">
-                    <CodeBlockClient html={`<pre><code>${ex.input}</code></pre>`} rawCode={ex.input} language="text" />
+                    <CodeBlockClient
+                      html={`<pre><code>${ex.input}</code></pre>`}
+                      rawCode={ex.input}
+                      language="text"
+                    />
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <div className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Output</div>
+                  <div className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
+                    Output
+                  </div>
                   <div className="flex-1 bg-black border border-white/10 rounded-lg overflow-hidden [&_pre]:!bg-transparent [&_pre]:!m-0 [&_pre]:!p-4">
-                    <CodeBlockClient html={`<pre><code>${ex.output}</code></pre>`} rawCode={ex.output} language="markdown" />
+                    <CodeBlockClient
+                      html={`<pre><code>${ex.output}</code></pre>`}
+                      rawCode={ex.output}
+                      language="markdown"
+                    />
                   </div>
                 </div>
               </div>
 
               <div className="mt-auto">
-                <Button variant="secondary" className="w-full bg-white/5 text-white hover:bg-white/10 border border-white/10">
+                <Button
+                  variant="secondary"
+                  className="w-full bg-white/5 text-white hover:bg-white/10 border border-white/10"
+                >
                   View Source Code <ExternalLink className="w-4 h-4 ml-2" />
                 </Button>
               </div>

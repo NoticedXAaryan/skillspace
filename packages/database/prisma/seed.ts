@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
 
 async function main() {
   console.log('Seeding database...');
-  
+
   // Create system user
   const hashedPassword = await bcrypt.hash('password123', 12);
   const user = await prisma.user.upsert({
@@ -59,21 +59,21 @@ async function main() {
       instructions: {
         system: `You are an expert at ${s.name}.`,
         user_template: `{{input}}`,
-        output_format: 'text'
+        output_format: 'text',
       },
       tags: ['tool'],
       category: 'other',
-      permissions: []
+      permissions: [],
     });
 
     const tempDir = path.join(process.cwd(), '.temp_seed_skill');
     if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
     fs.writeFileSync(path.join(tempDir, 'skill.yaml'), manifestStr);
-    
+
     const outPath = path.join(process.cwd(), '.temp_seed_skill.tar.gz');
     await tar.c({ gzip: true, file: outPath, C: tempDir }, ['.']);
     const tarBuffer = fs.readFileSync(outPath);
-    
+
     const storageDir = path.join(process.cwd(), '.storage');
     if (!fs.existsSync(storageDir)) fs.mkdirSync(storageDir, { recursive: true });
     fs.writeFileSync(path.join(storageDir, `${s.name}-1.0.0.skillpkg`), tarBuffer);

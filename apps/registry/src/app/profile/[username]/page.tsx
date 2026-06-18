@@ -3,7 +3,6 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import ProfileClient from './ProfileClient';
 
-
 export default async function ProfilePage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = await params;
 
@@ -12,17 +11,17 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
     include: {
       packages: {
         include: {
-          _count: { select: { stars: true } }
-        }
+          _count: { select: { stars: true } },
+        },
       },
       _count: {
         select: {
           followers: true,
           following: true,
           packages: true,
-        }
-      }
-    }
+        },
+      },
+    },
   });
 
   if (!user) notFound();

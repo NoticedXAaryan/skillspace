@@ -77,6 +77,7 @@ mcpServers:
 ```
 
 **Security Analysis of this block:**
+
 1.  We declared `filesystem.read` globally.
 2.  We defined an `mcpServer` named `filesystem`. We restricted it to only have access to `/Users/notic/Documents/financials`.
 3.  We declared `network.fetch` globally.
@@ -96,24 +97,30 @@ const http = require('http');
 const server = http.createServer((req, res) => {
   if (req.method === 'POST' && req.url === '/mcp') {
     let body = '';
-    req.on('data', chunk => { body += chunk.toString(); });
+    req.on('data', (chunk) => {
+      body += chunk.toString();
+    });
     req.on('end', () => {
       const payload = JSON.parse(body);
-      
+
       // Handle Tool Listing
       if (payload.method === 'listTools') {
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          tools: [{
-            name: 'get_price',
-            description: 'Get the current stock price for a ticker',
-            inputSchema: {
-              type: 'object',
-              properties: { ticker: { type: 'string' } },
-              required: ['ticker']
-            }
-          }]
-        }));
+        res.end(
+          JSON.stringify({
+            tools: [
+              {
+                name: 'get_price',
+                description: 'Get the current stock price for a ticker',
+                inputSchema: {
+                  type: 'object',
+                  properties: { ticker: { type: 'string' } },
+                  required: ['ticker'],
+                },
+              },
+            ],
+          }),
+        );
         return;
       }
 
@@ -121,12 +128,14 @@ const server = http.createServer((req, res) => {
       if (payload.method === 'callTool' && payload.params.name === 'get_price') {
         const { ticker } = payload.params.arguments;
         // Mock data
-        const price = ticker === 'AAPL' ? 150.25 : 100.00;
-        
+        const price = ticker === 'AAPL' ? 150.25 : 100.0;
+
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          content: [{ type: 'text', text: `The current price of ${ticker} is $${price}` }]
-        }));
+        res.end(
+          JSON.stringify({
+            content: [{ type: 'text', text: `The current price of ${ticker} is $${price}` }],
+          }),
+        );
         return;
       }
     });
@@ -145,21 +154,24 @@ Run this server in a separate terminal: `node stock-server.js`.
 Now, we will execute our newly created skill.
 
 Create a mock financial document `/Users/notic/Documents/financials/q3-earnings.txt`:
+
 ```text
 Apple Inc. (AAPL) reported strong Q3 earnings today, driven by services revenue.
 However, supply chain constraints remain a risk factor for the upcoming holiday season.
 ```
 
 Run the skill:
+
 ```bash
 skillspace run . --input /Users/notic/Documents/financials/q3-earnings.txt --model anthropic/claude-3-5-sonnet
 ```
 
 ### What happens under the hood?
+
 1.  **Parsing:** The runtime parses `skill.yaml`.
-2.  **MCP Connections:** 
-    *   It spawns `npx @modelcontextprotocol/server-filesystem` via `stdio`.
-    *   It establishes a connection to `http://localhost:8080/mcp`.
+2.  **MCP Connections:**
+    - It spawns `npx @modelcontextprotocol/server-filesystem` via `stdio`.
+    - It establishes a connection to `http://localhost:8080/mcp`.
 3.  **LLM Call 1:** The `ClaudeAdapter` constructs a payload. It injects the system prompt, the user template with the file path, and the two tools (`mcp_filesystem_read_file` and `mcp_stock_api_get_price`).
 4.  **LLM Response 1:** Claude realizes it needs the file contents. It returns a `tool_call` for `mcp_filesystem_read_file` with the path.
 5.  **Tool Execution 1:** The SkillSpace Executor intercepts the call, verifies `filesystem.read` is allowed, and passes the request to the `stdio` child process. The child process returns the text file contents.
@@ -180,9 +192,10 @@ To share this financial analyst with your team, you must evaluate and publish it
 skillspace publish
 ```
 
-Because we require an external HTTP MCP server, it is best practice to include a `README.md` in the directory explaining how to stand up the stock server before running the capability. 
+Because we require an external HTTP MCP server, it is best practice to include a `README.md` in the directory explaining how to stand up the stock server before running the capability.
 
 Once published, your colleagues can run:
+
 ```bash
 skillspace install financial-analyst
 skillspace run financial-analyst --input ./their-file.txt

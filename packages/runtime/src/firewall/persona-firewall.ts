@@ -1,24 +1,24 @@
-export type ScanSeverity = 'low' | 'medium' | 'high' | 'critical'
-export type ScanStatus = 'SAFE' | 'WARNING' | 'BLOCKED'
+export type ScanSeverity = 'low' | 'medium' | 'high' | 'critical';
+export type ScanStatus = 'SAFE' | 'WARNING' | 'BLOCKED';
 
 export interface ScanFinding {
-  severity: ScanSeverity
-  rule: string
-  match: string
-  description: string
+  severity: ScanSeverity;
+  rule: string;
+  match: string;
+  description: string;
 }
 
 export interface ScanResult {
-  status: ScanStatus
-  findings: ScanFinding[]
+  status: ScanStatus;
+  findings: ScanFinding[];
 }
 
 interface InjectionRule {
-  id: string
-  severity: ScanSeverity
+  id: string;
+  severity: ScanSeverity;
   /** Stateless regex. Always use the 'g' flag. */
-  pattern: RegExp
-  description: string
+  pattern: RegExp;
+  description: string;
 }
 
 /**
@@ -34,13 +34,15 @@ const INJECTION_RULES: InjectionRule[] = [
   {
     id: 'META_IGNORE_INSTRUCTIONS',
     severity: 'critical',
-    pattern: /ignore\s+(all\s+)?(previous|prior|above|earlier)\s+(instructions?|rules?|guidelines?)/gi,
+    pattern:
+      /ignore\s+(all\s+)?(previous|prior|above|earlier)\s+(instructions?|rules?|guidelines?)/gi,
     description: 'Attempts to override prior system instructions',
   },
   {
     id: 'META_DISREGARD',
     severity: 'critical',
-    pattern: /(?:disregard|forget)\s+(?:all\s+)?(?:previous|prior|your)\s+(?:instructions?|training|guidelines?)/gi,
+    pattern:
+      /(?:disregard|forget)\s+(?:all\s+)?(?:previous|prior|your)\s+(?:instructions?|training|guidelines?)/gi,
     description: 'Attempts to nullify prior instructions or training',
   },
   {
@@ -58,7 +60,8 @@ const INJECTION_RULES: InjectionRule[] = [
   {
     id: 'EXFIL_SUSPICIOUS_URL',
     severity: 'critical',
-    pattern: /https?:\/\/\S*(?:webhook|ngrok|requestbin|burpcollab|hook\.sh|pipedream|canary\.tools)/gi,
+    pattern:
+      /https?:\/\/\S*(?:webhook|ngrok|requestbin|burpcollab|hook\.sh|pipedream|canary\.tools)/gi,
     description: 'Contains URL associated with data exfiltration or request logging services',
   },
   {
@@ -70,7 +73,8 @@ const INJECTION_RULES: InjectionRule[] = [
   {
     id: 'KNOWN_JAILBREAK_KEYWORDS',
     severity: 'medium',
-    pattern: /\b(?:DAN|jailbreak|no\s+restrictions?|unfiltered\s+mode|developer\s+mode\s+enabled)\b/gi,
+    pattern:
+      /\b(?:DAN|jailbreak|no\s+restrictions?|unfiltered\s+mode|developer\s+mode\s+enabled)\b/gi,
     description: 'Contains well-known jailbreak keywords',
   },
   {
@@ -79,7 +83,7 @@ const INJECTION_RULES: InjectionRule[] = [
     pattern: /^(?:-{4,}|={4,}|\[INST\]|\[\/INST\]|<\|endoftext\|>|<\|im_end\|>)/gm,
     description: 'Contains a prompt delimiter that may confuse provider context boundaries',
   },
-]
+];
 
 /**
  * scanPersona — runs all injection rules against a persona's text fields.
@@ -93,21 +97,18 @@ const INJECTION_RULES: InjectionRule[] = [
  * Returns SAFE otherwise.
  */
 export function scanPersona(persona: {
-  system_prompt: string
-  behavioral_guidelines?: string[]
+  system_prompt: string;
+  behavioral_guidelines?: string[];
 }): ScanResult {
-  const findings: ScanFinding[] = []
+  const findings: ScanFinding[] = [];
 
   // Concatenate all text fields for scanning
-  const textToScan = [
-    persona.system_prompt,
-    ...(persona.behavioral_guidelines ?? []),
-  ].join('\n')
+  const textToScan = [persona.system_prompt, ...(persona.behavioral_guidelines ?? [])].join('\n');
 
   for (const rule of INJECTION_RULES) {
     // Reset lastIndex because we reuse stateful regex objects
-    rule.pattern.lastIndex = 0
-    const matches = textToScan.match(rule.pattern)
+    rule.pattern.lastIndex = 0;
+    const matches = textToScan.match(rule.pattern);
 
     if (matches) {
       findings.push({
@@ -115,15 +116,17 @@ export function scanPersona(persona: {
         rule: rule.id,
         match: matches[0].slice(0, 80), // truncate for readability
         description: rule.description,
-      })
+      });
     }
   }
 
-  const status: ScanStatus =
-    findings.some(f => f.severity === 'critical') ? 'BLOCKED' :
-    findings.some(f => f.severity === 'high' || f.severity === 'medium') ? 'WARNING' :
-    findings.length > 0 ? 'WARNING' :
-    'SAFE'
+  const status: ScanStatus = findings.some((f) => f.severity === 'critical')
+    ? 'BLOCKED'
+    : findings.some((f) => f.severity === 'high' || f.severity === 'medium')
+      ? 'WARNING'
+      : findings.length > 0
+        ? 'WARNING'
+        : 'SAFE';
 
-  return { status, findings }
+  return { status, findings };
 }

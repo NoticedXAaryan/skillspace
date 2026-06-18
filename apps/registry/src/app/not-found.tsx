@@ -1,4 +1,4 @@
-import { NotFoundContent, Illustration } from "@/components/ui/not-found"
+import { NotFoundContent, Illustration } from '@/components/ui/not-found';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
@@ -18,5 +18,5 @@ export default function NotFound() {
       </main>
       <Footer />
     </div>
-  )
+  );
 }

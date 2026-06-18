@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     start(c) {
       controller = c;
       streamManager.addConnection(projectId, controller);
-      
+
       // Send initial connection success message
       const payload = `event: connected\ndata: {"status":"ok"}\n\n`;
       controller.enqueue(new TextEncoder().encode(payload));
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     headers: {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache, no-transform',
-      'Connection': 'keep-alive',
+      Connection: 'keep-alive',
     },
   });
 }

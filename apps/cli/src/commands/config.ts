@@ -5,8 +5,9 @@ import { errorOperational } from '../ui/states/error.js';
 import { c } from '../ui/tokens/colors.js';
 import { box } from '../ui/layout/box.js';
 
-export const configCommand = new Command('config')
-  .description('Manage global SkillSpace CLI configuration');
+export const configCommand = new Command('config').description(
+  'Manage global SkillSpace CLI configuration',
+);
 
 configCommand
   .command('set <key> <value>')
@@ -18,7 +19,9 @@ configCommand
       saveConfig(config);
       successStandard('Configuration updated', { [key]: value });
     } catch (err) {
-      errorOperational('Failed to set config', { message: err instanceof Error ? err.message : String(err) });
+      errorOperational('Failed to set config', {
+        message: err instanceof Error ? err.message : String(err),
+      });
     }
   });
 
@@ -30,7 +33,9 @@ configCommand
       const config = loadConfig() as any;
       console.log(config[key]);
     } catch (err) {
-      errorOperational('Failed to get config', { message: err instanceof Error ? err.message : String(err) });
+      errorOperational('Failed to get config', {
+        message: err instanceof Error ? err.message : String(err),
+      });
     }
   });
 
@@ -46,12 +51,19 @@ configCommand
           rows.push([c.brand(key), c.text(String(value))]);
         }
       }
-      
-      console.log(box(rows.map(r => r.join(' : ')), {
-        title: 'Global Configuration',
-        colorFn: c.successDim
-      }));
+
+      console.log(
+        box(
+          rows.map((r) => r.join(' : ')),
+          {
+            title: 'Global Configuration',
+            colorFn: c.successDim,
+          },
+        ),
+      );
     } catch (err) {
-      errorOperational('Failed to list config', { message: err instanceof Error ? err.message : String(err) });
+      errorOperational('Failed to list config', {
+        message: err instanceof Error ? err.message : String(err),
+      });
     }
   });

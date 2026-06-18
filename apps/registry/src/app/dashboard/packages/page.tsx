@@ -26,7 +26,9 @@ export default async function PackagesPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-white">My Packages</h1>
-          <p className="text-neutral-400 mt-1">{packages.length} package{packages.length !== 1 ? 's' : ''} published</p>
+          <p className="text-neutral-400 mt-1">
+            {packages.length} package{packages.length !== 1 ? 's' : ''} published
+          </p>
         </div>
         <Link
           href="/create"
@@ -51,13 +53,19 @@ export default async function PackagesPage() {
       ) : (
         <div className="rounded-xl border border-white/10 divide-y divide-white/10">
           {packages.map((pkg) => (
-            <div key={pkg.id} className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
+            <div
+              key={pkg.id}
+              className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors"
+            >
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
                   <Package className="w-5 h-5 text-cyan-400" />
                 </div>
                 <div>
-                  <Link href={`/packages/${pkg.name}`} className="text-sm font-medium text-white hover:text-cyan-400 font-mono">
+                  <Link
+                    href={`/packages/${pkg.name}`}
+                    className="text-sm font-medium text-white hover:text-cyan-400 font-mono"
+                  >
                     {pkg.name}
                   </Link>
                   <p className="text-xs text-neutral-500 mt-0.5">{pkg.description}</p>
@@ -65,7 +73,12 @@ export default async function PackagesPage() {
               </div>
               <div className="flex items-center gap-6 text-sm text-neutral-400">
                 {pkg.githubUrl && (
-                  <a href={pkg.githubUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-green-400 hover:text-green-300">
+                  <a
+                    href={pkg.githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-green-400 hover:text-green-300"
+                  >
                     <GitBranch className="w-3.5 h-3.5" />
                     Verified
                   </a>

@@ -8,7 +8,7 @@ import {
   getRegistries,
   getGlobalEnv,
   getPackageEnv,
-  setPackageEnv
+  setPackageEnv,
 } from '@skillspace/runtime';
 import { RegistryClient } from '../utils/api.js';
 import { extractSkillPackage } from '../utils/packager.js';
@@ -26,16 +26,23 @@ export function registerInstallCommand(program: Command): void {
     .description('Install a skill package from the registry')
     .option('-v, --version <version>', 'Specific version to install')
     .option('-y, --yes', 'Headless mode (suppresses UI output)')
+    .option('--json', 'Output result as JSON (for scripting)')
     .action(async (pkgName: string, opts) => {
       const cache = new SkillCache();
       const registries = getRegistries();
       const cwd = process.cwd();
       let lock = readLockFile(cwd) || createEmptyLockFile();
 
-      if (pkgName.endsWith('.yaml') || pkgName.startsWith('./') || pkgName.startsWith('.\\') || pkgName.startsWith('/') || pkgName.match(/^[a-zA-Z]:\\/)) {
+      if (
+        pkgName.endsWith('.yaml') ||
+        pkgName.startsWith('./') ||
+        pkgName.startsWith('.\\') ||
+        pkgName.startsWith('/') ||
+        pkgName.match(/^[a-zA-Z]:\\/)
+      ) {
         errorOperational('Local path provided', {
           message: `Cannot "install" a local file.`,
-          hint: `To run a local skill or agent, use: skillspace run ${pkgName}`
+          hint: `To run a local skill or agent, use: skillspace run ${pkgName}`,
         });
         process.exit(1);
       }
@@ -49,7 +56,7 @@ export function registerInstallCommand(program: Command): void {
 
       async function installRecursively(name: string, requestedVersion?: string): Promise<void> {
         if (loader) loader.update(`Resolving ${name}...`);
-        
+
         let pkgInfo: any = null;
         let activeClient: RegistryClient | null = null;
         let fetchError: Error | null = null;
@@ -78,7 +85,7 @@ export function registerInstallCommand(program: Command): void {
         }
 
         // --- VERIFIED PACKAGE CHECK ---
-        const isVerified = pkgInfo.data.verified === true;
+        const isVerified = pkgInfo.data.verified === true || pkgInfo.data.verifiedBy === 'github';
         if (!isVerified) {
           if (opts.yes) {
             console.warn(`\n[WARN] Installing unverified package: ${name}`);
@@ -87,9 +94,9 @@ export function registerInstallCommand(program: Command): void {
             warn(`The package "${name}" is not verified.`);
             const shouldInstall = await confirm({
               message: 'Are you sure you want to install this unverified package?',
-              initialValue: false
+              initialValue: false,
             });
-            
+
             if (isCancel(shouldInstall) || !shouldInstall) {
               errorInline('Installation aborted by user.');
               process.exit(1);
@@ -104,19 +111,21 @@ export function registerInstallCommand(program: Command): void {
         }
 
         if (loader) loader.update(`Downloading ${name}@${version}...`);
-        
+
         const { buffer, checksum } = await activeClient!.downloadPackage(name, version);
 
         if (checksum) {
           const crypto = await import('node:crypto');
           const computed = `sha256:${crypto.createHash('sha256').update(buffer).digest('hex')}`;
           if (computed !== checksum) {
-            throw new Error(`Checksum mismatch for ${name}@${version}. Expected: ${checksum}, Got: ${computed}`);
+            throw new Error(
+              `Checksum mismatch for ${name}@${version}. Expected: ${checksum}, Got: ${computed}`,
+            );
           }
         }
 
         if (loader) loader.update(`Extracting ${name}@${version}...`);
-        
+
         const pkgDir = await cache.preparePackageDir(name, version, buffer, checksum);
         await extractSkillPackage(buffer, pkgDir);
         installedCount++;
@@ -149,7 +158,9 @@ export function registerInstallCommand(program: Command): void {
                 if (!isGlobalSet && !isPkgSet) {
                   if (loader) loader.succeed(`Configuration required for ${name}`);
                   if (opts.yes) {
-                    console.warn(`[WARN] Missing required environment variable for ${name}: ${envKey}`);
+                    console.warn(
+                      `[WARN] Missing required environment variable for ${name}: ${envKey}`,
+                    );
                   } else {
                     const input = await text({
                       message: `Provide ${c.brand(envKey)} (${envDesc}):`,
@@ -171,7 +182,10 @@ export function registerInstallCommand(program: Command): void {
               // Support v1 agents that have a skills array
               if (agent.skills && agent.skills.length > 0) {
                 for (const skillDep of agent.skills) {
-                  await installRecursively(skillDep.name, skillDep.version.replace('^', '').replace('~', ''));
+                  await installRecursively(
+                    skillDep.name,
+                    skillDep.version.replace('^', '').replace('~', ''),
+                  );
                 }
               }
             }
@@ -185,12 +199,21 @@ export function registerInstallCommand(program: Command): void {
       try {
         await installRecursively(pkgName, opts.version);
         writeLockFile(cwd, lock);
-        
+
+        if (opts.json) {
+          console.log(JSON.stringify({
+            success: true,
+            package: pkgName,
+            installedCount
+          }));
+          return;
+        }
+
         if (loader) {
           loader.succeed(`Installation complete`);
           successCritical('Dependencies resolved.', `${pkgName} is installed and configured.`, [
             ['Run agent', `skillspace run ${pkgName}`],
-            ['View env config', `skillspace env list`]
+            ['View env config', `skillspace env list`],
           ]);
         } else {
           successStandard(`Successfully installed ${pkgName}`);
@@ -198,7 +221,7 @@ export function registerInstallCommand(program: Command): void {
       } catch (err) {
         if (loader) loader.fail('Installation failed');
         errorOperational('Install Error', {
-          message: err instanceof Error ? err.message : String(err)
+          message: err instanceof Error ? err.message : String(err),
         });
         process.exit(1);
       }

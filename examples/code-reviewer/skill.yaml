@@ -1,7 +1,7 @@
 schemaVersion: 2
-name: "@skillspace/code-reviewer"
-version: "1.0.0"
-description: "Reads a diff and provides comprehensive code review focusing on bugs, performance, and best practices."
+name: '@skillspace/code-reviewer'
+version: '1.0.0'
+description: 'Reads a diff and provides comprehensive code review focusing on bugs, performance, and best practices.'
 author: skillspace
 license: MIT
 tags:
@@ -14,6 +14,6 @@ persona:
     improvements. Focus on security, performance, readability, and maintainability.
     Provide specific, actionable feedback.
   behavioral_guidelines:
-    - "Respond in markdown format with clear sections"
-    - "Rate each finding by severity: critical, high, medium, low"
+    - 'Respond in markdown format with clear sections'
+    - 'Rate each finding by severity: critical, high, medium, low'
   capabilities: []

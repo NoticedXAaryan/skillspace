@@ -33,7 +33,7 @@ export default function LearningClient({ level, modules }: LearningClientProps) 
   const toggleComplete = (id: string) => {
     let next: string[];
     if (completed.includes(id)) {
-      next = completed.filter(c => c !== id);
+      next = completed.filter((c) => c !== id);
     } else {
       next = [...completed, id];
     }
@@ -44,7 +44,7 @@ export default function LearningClient({ level, modules }: LearningClientProps) 
   if (!mounted) return null;
 
   const progress = Math.round((completed.length / modules.length) * 100);
-  const activeContent = modules.find(m => m.id === activeModule)?.content;
+  const activeContent = modules.find((m) => m.id === activeModule)?.content;
 
   return (
     <div className="flex flex-col md:flex-row gap-8 bg-black">
@@ -56,9 +56,9 @@ export default function LearningClient({ level, modules }: LearningClientProps) 
             <span className="text-sm font-mono text-cyan-400">{progress}%</span>
           </div>
           <div className="h-2 bg-white/10 rounded-full overflow-hidden mb-4">
-            <div 
-              className="h-full bg-cyan-400 transition-all duration-500 ease-out shadow-[0_0_10px_rgba(34,211,238,0.5)]" 
-              style={{ width: `${progress}%` }} 
+            <div
+              className="h-full bg-cyan-400 transition-all duration-500 ease-out shadow-[0_0_10px_rgba(34,211,238,0.5)]"
+              style={{ width: `${progress}%` }}
             />
           </div>
           {progress === 100 && (
@@ -73,12 +73,12 @@ export default function LearningClient({ level, modules }: LearningClientProps) 
           {modules.map((m, i) => {
             const isCompleted = completed.includes(m.id);
             return (
-              <button 
+              <button
                 key={m.id}
                 onClick={() => setActiveModule(m.id)}
                 className={`flex items-center gap-4 w-full text-left p-4 rounded-xl transition-all duration-300 ${activeModule === m.id ? 'bg-cyan-500/10 border-l-4 border-cyan-400' : 'hover:bg-white/5 border-l-4 border-transparent'}`}
               >
-                <div 
+                <div
                   className="shrink-0 group cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -91,7 +91,9 @@ export default function LearningClient({ level, modules }: LearningClientProps) 
                     <Circle className="w-5 h-5 text-neutral-600 group-hover:text-cyan-400 transition-colors" />
                   )}
                 </div>
-                <span className={`text-sm font-medium ${activeModule === m.id ? 'text-white' : 'text-neutral-400'}`}>
+                <span
+                  className={`text-sm font-medium ${activeModule === m.id ? 'text-white' : 'text-neutral-400'}`}
+                >
                   {i + 1}. {m.title}
                 </span>
               </button>
@@ -105,10 +107,14 @@ export default function LearningClient({ level, modules }: LearningClientProps) 
         <div className="p-8 md:p-12 prose prose-invert prose-cyan max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-a:text-cyan-400 hover:prose-a:text-cyan-300 prose-pre:bg-neutral-900 prose-pre:border prose-pre:border-white/10">
           <div dangerouslySetInnerHTML={{ __html: activeContent || '' }} />
         </div>
-        
+
         <div className="mt-auto p-6 md:px-12 bg-neutral-950 border-t border-white/10 flex justify-end">
-          <Button 
-            className={completed.includes(activeModule) ? "bg-neutral-800 text-white hover:bg-neutral-700" : "bg-cyan-500 hover:bg-cyan-400 text-black font-bold"}
+          <Button
+            className={
+              completed.includes(activeModule)
+                ? 'bg-neutral-800 text-white hover:bg-neutral-700'
+                : 'bg-cyan-500 hover:bg-cyan-400 text-black font-bold'
+            }
             onClick={() => toggleComplete(activeModule)}
           >
             {completed.includes(activeModule) ? 'Mark Incomplete' : 'Mark Complete & Continue'}

@@ -1,4 +1,4 @@
-"use client"
+'use client';
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Button, ButtonProps } from '@/components/ui/button';
@@ -66,7 +66,12 @@ export const OrbitingAvatarsCTA = ({
     <>
       {/* Inject styles into the DOM */}
       <Styles />
-      <section className={cn('relative flex h-[80vh] min-h-[500px] w-full items-center justify-center overflow-hidden rounded-lg bg-black', className)}>
+      <section
+        className={cn(
+          'relative flex h-[80vh] min-h-[500px] w-full items-center justify-center overflow-hidden rounded-lg bg-black',
+          className,
+        )}
+      >
         {/* Background concentric circles */}
         <div className="pointer-events-none absolute inset-0 z-0">
           <div className="absolute left-1/2 top-1/2 h-[35rem] w-[35rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed border-border/40" />
@@ -75,14 +80,14 @@ export const OrbitingAvatarsCTA = ({
 
         {/* Central Content */}
         <div className="relative z-10 flex flex-col items-center gap-4 px-4 text-center">
-          <h2 className="text-3xl font-bold tracking-tight md:text-4xl text-white">
-            {title}
-          </h2>
-          <p className="max-w-md text-neutral-400">
-            {description}
-          </p>
+          <h2 className="text-3xl font-bold tracking-tight md:text-4xl text-white">{title}</h2>
+          <p className="max-w-md text-neutral-400">{description}</p>
           {buttonProps?.asChild ? (
-            <Button size="lg" className="bg-white text-black hover:bg-neutral-200" {...buttonProps} />
+            <Button
+              size="lg"
+              className="bg-white text-black hover:bg-neutral-200"
+              {...buttonProps}
+            />
           ) : (
             <Button size="lg" className="bg-white text-black hover:bg-neutral-200" {...buttonProps}>
               {buttonText}

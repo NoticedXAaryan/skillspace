@@ -4,7 +4,10 @@ import React, { useState } from 'react';
 import { Sparkles, Copy, CheckCircle2, Box, User, Globe } from 'lucide-react';
 import { AIChat } from '@/components/ui/ai-chat';
 
-interface SkillOption { name: string; description: string; }
+interface SkillOption {
+  name: string;
+  description: string;
+}
 
 export default function DashboardPlaygroundClient({
   initialSkills,
@@ -13,7 +16,9 @@ export default function DashboardPlaygroundClient({
   initialSkills: SkillOption[];
   userSkills: SkillOption[];
 }) {
-  const [selectedSkill, setSelectedSkill] = useState<string>(userSkills[0]?.name || initialSkills[0]?.name || '');
+  const [selectedSkill, setSelectedSkill] = useState<string>(
+    userSkills[0]?.name || initialSkills[0]?.name || '',
+  );
   const [copiedCli, setCopiedCli] = useState(false);
   const [tab, setTab] = useState<'my' | 'public'>(userSkills.length > 0 ? 'my' : 'public');
 
@@ -33,7 +38,9 @@ export default function DashboardPlaygroundClient({
         <h1 className="text-2xl font-bold text-white flex items-center gap-3">
           <Sparkles className="w-6 h-6 text-amber-500" /> Playground
         </h1>
-        <p className="text-neutral-400 mt-1">Test skills interactively before installing them locally.</p>
+        <p className="text-neutral-400 mt-1">
+          Test skills interactively before installing them locally.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
@@ -47,7 +54,10 @@ export default function DashboardPlaygroundClient({
             {/* Tabs */}
             <div className="flex gap-1 p-1 bg-neutral-900 rounded-lg mb-4">
               <button
-                onClick={() => { setTab('my'); setSelectedSkill(userSkills[0]?.name || ''); }}
+                onClick={() => {
+                  setTab('my');
+                  setSelectedSkill(userSkills[0]?.name || '');
+                }}
                 className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
                   tab === 'my' ? 'bg-white/10 text-white' : 'text-neutral-400 hover:text-white'
                 }`}
@@ -55,7 +65,10 @@ export default function DashboardPlaygroundClient({
                 <User className="w-3 h-3" /> My Skills
               </button>
               <button
-                onClick={() => { setTab('public'); setSelectedSkill(initialSkills[0]?.name || ''); }}
+                onClick={() => {
+                  setTab('public');
+                  setSelectedSkill(initialSkills[0]?.name || '');
+                }}
                 className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
                   tab === 'public' ? 'bg-white/10 text-white' : 'text-neutral-400 hover:text-white'
                 }`}
@@ -71,7 +84,7 @@ export default function DashboardPlaygroundClient({
                   {tab === 'my' ? 'No published skills yet.' : 'No public skills available.'}
                 </p>
               ) : (
-                skills.map(s => (
+                skills.map((s) => (
                   <button
                     key={s.name}
                     onClick={() => setSelectedSkill(s.name)}
@@ -83,7 +96,9 @@ export default function DashboardPlaygroundClient({
                   >
                     <p className="font-mono text-xs truncate">{s.name}</p>
                     {s.description && (
-                      <p className="text-[10px] text-neutral-500 truncate mt-0.5">{s.description}</p>
+                      <p className="text-[10px] text-neutral-500 truncate mt-0.5">
+                        {s.description}
+                      </p>
                     )}
                   </button>
                 ))
@@ -100,7 +115,11 @@ export default function DashboardPlaygroundClient({
                 disabled={!selectedSkill}
                 className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-white text-black rounded-lg hover:bg-neutral-200 transition-colors disabled:opacity-40 font-medium text-sm"
               >
-                {copiedCli ? <CheckCircle2 size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                {copiedCli ? (
+                  <CheckCircle2 size={14} className="text-emerald-500" />
+                ) : (
+                  <Copy size={14} />
+                )}
                 {copiedCli ? 'Copied!' : 'Copy CLI Command'}
               </button>
             </div>
@@ -117,7 +136,7 @@ export default function DashboardPlaygroundClient({
                   id: 'welcome',
                   role: 'assistant',
                   content: `Ready to test **${selectedSkill}**. Send a message to start the session.`,
-                }
+                },
               ]}
             />
           ) : (
@@ -126,7 +145,9 @@ export default function DashboardPlaygroundClient({
                 <Sparkles className="w-7 h-7 text-neutral-600" />
               </div>
               <h3 className="text-lg font-semibold text-white mb-1">Select a Skill</h3>
-              <p className="text-neutral-500 text-sm max-w-xs">Choose a skill from the panel to start testing.</p>
+              <p className="text-neutral-500 text-sm max-w-xs">
+                Choose a skill from the panel to start testing.
+              </p>
             </div>
           )}
         </div>

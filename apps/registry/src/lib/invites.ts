@@ -1,19 +1,23 @@
 import prisma from './prisma';
 import crypto from 'crypto';
 
-export async function createInvite(orgId: string, role: string = 'member', expiresInHours: number = 24) {
+export async function createInvite(
+  orgId: string,
+  role: string = 'member',
+  expiresInHours: number = 24,
+) {
   const token = crypto.randomBytes(32).toString('hex');
   const expiresAt = new Date(Date.now() + expiresInHours * 60 * 60 * 1000);
-  
+
   const invite = await prisma.invite.create({
     data: {
       token,
       orgId,
       role,
-      expiresAt
-    }
+      expiresAt,
+    },
   });
-  
+
   return invite;
 }
 

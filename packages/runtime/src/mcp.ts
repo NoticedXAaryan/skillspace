@@ -5,15 +5,19 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import type { Tool as McpTool } from '@modelcontextprotocol/sdk/types.js';
 
-function withTimeout<T>(promise: Promise<T>, ms: number, errorMessage = 'Operation timed out'): Promise<T> {
+function withTimeout<T>(
+  promise: Promise<T>,
+  ms: number,
+  errorMessage = 'Operation timed out',
+): Promise<T> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error(errorMessage)), ms);
     promise
-      .then(value => {
+      .then((value) => {
         clearTimeout(timer);
         resolve(value);
       })
-      .catch(err => {
+      .catch((err) => {
         clearTimeout(timer);
         reject(err);
       });
@@ -58,18 +62,20 @@ export class McpManager {
       if (from.startsWith('http://') || from.startsWith('https://')) {
         const res = await fetch(from);
         if (!res.ok) throw new Error(`Failed to fetch config from ${from}`);
-        config = await res.json() as McpServerConfig;
+        config = (await res.json()) as McpServerConfig;
       } else {
         const localPath = path.resolve(process.cwd(), from);
         if (!fs.existsSync(localPath)) throw new Error(`Config file not found at ${localPath}`);
         config = JSON.parse(fs.readFileSync(localPath, 'utf-8')) as McpServerConfig;
       }
     } else {
-      const registryUrl = process.env.SKILLSPACE_MCP_REGISTRY_URL || 'https://raw.githubusercontent.com/skillspace-ai/skillspace-registry/main/registry';
+      const registryUrl =
+        process.env.SKILLSPACE_MCP_REGISTRY_URL ||
+        'https://raw.githubusercontent.com/skillspace-ai/skillspace-registry/main/registry';
       const indexRes = await fetch(`${registryUrl}/index.json`);
       if (!indexRes.ok) throw new Error('Failed to fetch MCP index from registry');
 
-      const index = await indexRes.json() as { servers: Record<string, { config_url: string }> };
+      const index = (await indexRes.json()) as { servers: Record<string, { config_url: string }> };
       const serverMeta = index.servers[name];
 
       if (!serverMeta) throw new Error(`Server ${name} not found in registry`);
@@ -77,7 +83,7 @@ export class McpManager {
       const configRes = await fetch(`${registryUrl}/${serverMeta.config_url}`);
       if (!configRes.ok) throw new Error(`Failed to fetch config for ${name}`);
 
-      config = await configRes.json() as McpServerConfig;
+      config = (await configRes.json()) as McpServerConfig;
     }
 
     if (!config) {
@@ -104,10 +110,10 @@ export class McpManager {
   listServers(): McpServerConfig[] {
     const serversDir = path.join(this.mcpDir, 'servers');
     if (!fs.existsSync(serversDir)) return [];
-    
+
     const entries = fs.readdirSync(serversDir, { withFileTypes: true });
     const servers: McpServerConfig[] = [];
-    
+
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
       try {
@@ -116,7 +122,7 @@ export class McpManager {
         // Ignore invalid directories
       }
     }
-    
+
     return servers;
   }
 
@@ -129,7 +135,7 @@ export class McpManager {
     }
 
     const config = this.getServerConfig(name);
-    
+
     if (config.transport === 'http') {
       throw new Error('HTTP transport not yet implemented for MCP Client');
     }
@@ -142,21 +148,26 @@ export class McpManager {
     const transport = new StdioClientTransport({
       command: config.command,
       args: config.args || [],
-      env: { ...(process.env as Record<string, string>), ...(config.env || {}) }
+      env: { ...(process.env as Record<string, string>), ...(config.env || {}) },
     });
 
-    const client = new Client(
-      { name: 'skillspace', version: '1.0.0' },
-      { capabilities: {} }
-    );
+    const client = new Client({ name: 'skillspace', version: '1.0.0' }, { capabilities: {} });
 
     try {
       // Health Check #1: Connection Timeout (15 seconds)
-      await withTimeout(client.connect(transport), 15000, `MCP Server "${name}" timed out during connection.`);
+      await withTimeout(
+        client.connect(transport),
+        15000,
+        `MCP Server "${name}" timed out during connection.`,
+      );
       this.activeClients.set(name, client);
 
       // Health Check #2: List Tools Timeout (15 seconds)
-      const toolsResponse = await withTimeout(client.listTools(), 15000, `MCP Server "${name}" timed out while fetching tools.`);
+      const toolsResponse = await withTimeout(
+        client.listTools(),
+        15000,
+        `MCP Server "${name}" timed out while fetching tools.`,
+      );
       this.availableTools.set(name, toolsResponse.tools);
     } catch (err) {
       // Graceful degradation: clean up transport and client so it doesn't leak memory
@@ -202,7 +213,12 @@ export class McpManager {
   /**
    * Execute a tool on a specific server (with 1 auto-healing retry)
    */
-  async callTool(serverName: string, toolName: string, args: Record<string, unknown>, isRetry = false): Promise<string> {
+  async callTool(
+    serverName: string,
+    toolName: string,
+    args: Record<string, unknown>,
+    isRetry = false,
+  ): Promise<string> {
     const client = this.activeClients.get(serverName);
     if (!client) {
       throw new Error(`MCP Server "${serverName}" is not running`);
@@ -213,10 +229,10 @@ export class McpManager {
       const result = await withTimeout(
         client.callTool({
           name: toolName,
-          arguments: args
+          arguments: args,
         }),
         60000,
-        `Tool execution for "${toolName}" timed out after 60 seconds`
+        `Tool execution for "${toolName}" timed out after 60 seconds`,
       );
 
       if (result.isError) {
@@ -227,17 +243,21 @@ export class McpManager {
     } catch (err) {
       // If we haven't retried yet, attempt auto-healing
       if (!isRetry) {
-        console.warn(`[WARN] MCP Server "${serverName}" encountered an error during callTool. Attempting auto-healing restart...`);
+        console.warn(
+          `[WARN] MCP Server "${serverName}" encountered an error during callTool. Attempting auto-healing restart...`,
+        );
         try {
           await this.stopServer(serverName);
           await this.startServer(serverName);
           // Retry exactly once
           return await this.callTool(serverName, toolName, args, true);
         } catch (rebootErr) {
-          throw new Error(`Auto-healing failed for MCP Server "${serverName}": ${rebootErr instanceof Error ? rebootErr.message : String(rebootErr)}`);
+          throw new Error(
+            `Auto-healing failed for MCP Server "${serverName}": ${rebootErr instanceof Error ? rebootErr.message : String(rebootErr)}`,
+          );
         }
       }
-      
+
       // If it fails on the retry (or was a non-recoverable error we decided to pass up)
       throw err;
     }

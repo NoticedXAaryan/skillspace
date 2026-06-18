@@ -19,7 +19,7 @@ export {
   AssistantMessageSchema,
   ToolCallSchema,
   ToolResultMessageSchema,
-  ChatHistorySchema
+  ChatHistorySchema,
 } from './chat.schema.js';
 
 // Validators

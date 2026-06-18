@@ -15,12 +15,12 @@ async function main() {
             providerId: 'github',
             createdAt: new Date(),
             updatedAt: new Date(),
-          }
-        }
-      }
+          },
+        },
+      },
     });
     console.log('User and Account created:', user.id);
-    
+
     // cleanup
     await prisma.user.delete({ where: { id: user.id } });
     console.log('User cleaned up');

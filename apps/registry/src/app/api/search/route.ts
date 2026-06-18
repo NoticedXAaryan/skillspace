@@ -24,8 +24,10 @@ export async function GET(req: NextRequest) {
   };
   if (type) where.type = type;
 
-  const orderBy =
-    sort === 'name' ? { name: 'asc' as const } : { downloads: 'desc' as const };
+  let orderBy: any = { downloads: 'desc' as const };
+  if (sort === 'name') orderBy = { name: 'asc' as const };
+  else if (sort === 'recent') orderBy = { createdAt: 'desc' as const };
+  else if (sort === 'popular') orderBy = { downloads: 'desc' as const };
 
   const [packages, total] = await Promise.all([
     prisma.package.findMany({
@@ -42,8 +44,11 @@ export async function GET(req: NextRequest) {
   ]);
 
   const safeParse = (str: any, fallback: any) => {
-    try { return typeof str === 'string' ? JSON.parse(str) : str || fallback; }
-    catch { return fallback; }
+    try {
+      return typeof str === 'string' ? JSON.parse(str) : str || fallback;
+    } catch {
+      return fallback;
+    }
   };
 
   return success(

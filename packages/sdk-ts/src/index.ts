@@ -78,9 +78,10 @@ export class SkillSpaceClient {
     const body = (await res.json().catch(() => ({}))) as ApiEnvelope<T>;
 
     if (!res.ok || body.success === false) {
-      const message = typeof body.error === 'string'
-        ? body.error
-        : body.error?.message ?? `SkillSpace API request failed with ${res.status}`;
+      const message =
+        typeof body.error === 'string'
+          ? body.error
+          : (body.error?.message ?? `SkillSpace API request failed with ${res.status}`);
       throw new Error(message);
     }
 
@@ -90,6 +91,43 @@ export class SkillSpaceClient {
 
     return body.data as T;
   }
+}
+
+// Re-export runtime classes for execution
+export { Executor } from '@skillspace/runtime';
+export { SkillResolver } from '@skillspace/runtime';
+export { startPersonaREPL } from '@skillspace/runtime';
+
+/**
+ * Convenience method to resolve a package by name locally
+ */
+export function resolvePackage(name: string): Skill {
+  const { SkillResolver } = require('@skillspace/runtime');
+  return new SkillResolver().resolve(name) as Skill;
+}
+
+/**
+ * Install a package by wrapping the skillspace CLI headless mode.
+ */
+export function installPackage(name: string, version?: string): boolean {
+  const { execSync } = require('node:child_process');
+  try {
+    const cmd = `npx skillspace install ${name}${version ? ` -v ${version}` : ''} --yes --json`;
+    const result = execSync(cmd, { encoding: 'utf-8', stdio: 'pipe' });
+    const parsed = JSON.parse(result);
+    return parsed.success === true;
+  } catch (err) {
+    throw new Error(`Failed to install package ${name}: ${(err as Error).message}`);
+  }
+}
+
+/**
+ * Run an agent against a given input
+ */
+export async function runAgent(name: string, input: string) {
+  const { Executor } = require('@skillspace/runtime');
+  const executor = new Executor();
+  return executor.run({ skill: name, input });
 }
 
 export type { Persona, Skill };

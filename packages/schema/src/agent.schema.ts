@@ -1,5 +1,5 @@
-import { z } from 'zod'
-import { PersonaRefSchema, SCHEMA_VERSION } from './persona.schema.js'
+import { z } from 'zod';
+import { PersonaRefSchema, SCHEMA_VERSION } from './persona.schema.js';
 
 /**
  * SubAgentRefSchema — a node in the agent orchestration graph.
@@ -68,9 +68,9 @@ export const SubAgentRefSchema = z.object({
    * Meaning: This sub-agent's "target_url" input = parent context's "repo.url" output.
    */
   input_mapping: z.record(z.string()).optional(),
-})
+});
 
-export type SubAgentRef = z.infer<typeof SubAgentRefSchema>
+export type SubAgentRef = z.infer<typeof SubAgentRefSchema>;
 
 /**
  * MCPRefSchema — a reference to a Model Context Protocol server.
@@ -96,9 +96,9 @@ export const MCPRefSchema = z.object({
    * Values starting with "$" are resolved from environment variables.
    */
   config: z.record(z.unknown()).optional(),
-})
+});
 
-export type MCPRef = z.infer<typeof MCPRefSchema>
+export type MCPRef = z.infer<typeof MCPRefSchema>;
 
 /**
  * AgentSchema v2 — a Task Executor.
@@ -112,12 +112,8 @@ export type MCPRef = z.infer<typeof MCPRefSchema>
  */
 export const AgentSchema = z.object({
   schemaVersion: z.literal(SCHEMA_VERSION),
-  name: z
-    .string()
-    .regex(/^@[\w-]+\/[\w-]+$/, 'Must be a scoped package name: @scope/name'),
-  version: z
-    .string()
-    .regex(/^\d+\.\d+\.\d+/, 'Must be valid semver'),
+  name: z.string().regex(/^@[\w-]+\/[\w-]+$/, 'Must be a scoped package name: @scope/name'),
+  version: z.string().regex(/^\d+\.\d+\.\d+/, 'Must be valid semver'),
   description: z.string().optional(),
   author: z.string().optional(),
   license: z.string().default('MIT'),
@@ -172,6 +168,6 @@ export const AgentSchema = z.object({
    * The orchestrator in packages/runtime/src/agent-orchestrator.ts reads this.
    */
   sub_agents: z.array(SubAgentRefSchema).default([]),
-})
+});
 
-export type Agent = z.infer<typeof AgentSchema>
+export type Agent = z.infer<typeof AgentSchema>;

@@ -74,6 +74,8 @@ describe('SkillSpaceClient', () => {
     });
 
     await expect(client.packages.search('review', 5)).resolves.toHaveLength(1);
-    expect(fetchMock).toHaveBeenCalledWith('https://registry.example.test/api/v1/packages?q=review&limit=5');
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://registry.example.test/api/v1/packages?q=review&limit=5',
+    );
   });
 });

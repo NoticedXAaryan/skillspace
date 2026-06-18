@@ -16,12 +16,16 @@ export function registerInitCommand(program: Command): void {
     .command('init')
     .description('Initialize a new SkillSpace project (Skill, Agent, or MCP Server)')
     .option('-y, --yes', 'Skip prompts and use defaults (or provided flags) for headless execution')
+    .option('--json', 'Output result as JSON (for scripting)')
     .option('-t, --type <type>', 'Project type (skill, agent, mcp)')
     .option('-n, --name <name>', 'Project name')
     .option('-d, --description <description>', 'Project description')
     .option('-c, --category <category>', 'Project category')
     .option('-a, --author <author>', 'Project author')
-    .option('-l, --lang <lang>', 'Language for MCP server (typescript, javascript, python, go, rust, java)')
+    .option(
+      '-l, --lang <lang>',
+      'Language for MCP server (typescript, javascript, python, go, rust, java)',
+    )
     .action(async (opts) => {
       const startTime = Date.now();
       const cwd = process.cwd();
@@ -37,9 +41,9 @@ export function registerInitCommand(program: Command): void {
             { value: 'mcp', label: 'MCP Server', hint: 'Typescript boilerplate for tools' },
           ],
         });
-        if (isCancel(typePrompt)) { 
-          errorInline('Operation cancelled.'); 
-          process.exit(0); 
+        if (isCancel(typePrompt)) {
+          errorInline('Operation cancelled.');
+          process.exit(0);
         }
         projectType = typePrompt as string;
       }
@@ -59,30 +63,56 @@ export function registerInitCommand(program: Command): void {
             { value: 'java', label: 'Java' },
           ],
         });
-        if (isCancel(langPrompt)) { errorInline('Cancelled.'); process.exit(0); }
+        if (isCancel(langPrompt)) {
+          errorInline('Cancelled.');
+          process.exit(0);
+        }
         lang = langPrompt as string;
       }
       if (projectType === 'mcp' && !lang) lang = 'typescript';
 
       let projectName = opts.name || 'my-skillspace-project';
-      let description = opts.description || (projectType === 'mcp' ? 'An MCP Server' : `An SkillSpace ${projectType}`);
+      let description =
+        opts.description ||
+        (projectType === 'mcp' ? 'An MCP Server' : `An SkillSpace ${projectType}`);
       let author = opts.author || process.env.USER || process.env.USERNAME || 'unknown';
       let category = opts.category || 'other';
 
       if (!opts.yes) {
         if (opts.type) intro('init', `SkillSpace ${projectType.toUpperCase()} Setup`);
 
-        const namePrompt = await text({ message: 'Project name (or . for current dir):', initialValue: projectName, placeholder: projectName });
-        if (isCancel(namePrompt)) { errorInline('Cancelled.'); process.exit(0); }
+        const namePrompt = await text({
+          message: 'Project name (or . for current dir):',
+          initialValue: projectName,
+          placeholder: projectName,
+        });
+        if (isCancel(namePrompt)) {
+          errorInline('Cancelled.');
+          process.exit(0);
+        }
         projectName = namePrompt;
 
-        const descPrompt = await text({ message: 'Description:', initialValue: description, placeholder: description });
-        if (isCancel(descPrompt)) { errorInline('Cancelled.'); process.exit(0); }
+        const descPrompt = await text({
+          message: 'Description:',
+          initialValue: description,
+          placeholder: description,
+        });
+        if (isCancel(descPrompt)) {
+          errorInline('Cancelled.');
+          process.exit(0);
+        }
         description = descPrompt;
 
         if (projectType !== 'mcp') {
-          const authorPrompt = await text({ message: 'Author:', initialValue: author, placeholder: author });
-          if (isCancel(authorPrompt)) { errorInline('Cancelled.'); process.exit(0); }
+          const authorPrompt = await text({
+            message: 'Author:',
+            initialValue: author,
+            placeholder: author,
+          });
+          if (isCancel(authorPrompt)) {
+            errorInline('Cancelled.');
+            process.exit(0);
+          }
           author = authorPrompt;
 
           const categoryPrompt = await select({
@@ -97,7 +127,10 @@ export function registerInitCommand(program: Command): void {
             ],
             initialValue: category,
           });
-          if (isCancel(categoryPrompt)) { errorInline('Cancelled.'); process.exit(0); }
+          if (isCancel(categoryPrompt)) {
+            errorInline('Cancelled.');
+            process.exit(0);
+          }
           category = categoryPrompt as string;
         }
       }
@@ -114,9 +147,9 @@ export function registerInitCommand(program: Command): void {
         const manifestPath = path.join(targetDir, ext);
 
         if (fs.existsSync(manifestPath)) {
-          errorOperational('File conflict', { 
+          errorOperational('File conflict', {
             message: `${ext} already exists in ${targetDir}.`,
-            hint: 'Change directories or remove the file first.'
+            hint: 'Change directories or remove the file first.',
           });
           process.exit(1);
         }
@@ -136,15 +169,13 @@ export function registerInitCommand(program: Command): void {
             category,
             persona: {
               system_prompt: `You are an expert at ${finalProjectName}.`,
-              guidelines: [
-                "Always be helpful and concise"
-              ],
-              tone: "professional"
+              guidelines: ['Always be helpful and concise'],
+              tone: 'professional',
             },
             capabilities: {
               tools: [],
-              mcpServers: []
-            }
+              mcpServers: [],
+            },
           };
         } else {
           manifest = {
@@ -155,27 +186,53 @@ export function registerInitCommand(program: Command): void {
             license: 'MIT',
             type: 'agent',
             model: { id: 'ollama/llama3.2' },
-            skills: []
+            skills: [],
           };
         }
 
         fs.writeFileSync(manifestPath, YAML.stringify(manifest), 'utf-8');
         ensureSkillspaceDir();
 
+        if (opts.json) {
+          console.log(JSON.stringify({
+            success: true,
+            type: projectType,
+            path: targetDir,
+            manifest: manifestPath,
+          }));
+          return;
+        }
+
         if (loader) {
           loader.succeed(`Generated ${ext}`);
-          successCritical('Project initialized.', `${finalProjectName} has been scaffolded successfully.`, [
-            ['Publish', `skillspace publish`],
-            ['Run locally', `skillspace run ${projectName === '.' ? ext : path.join(projectName, ext)}`]
-          ]);
+          successCritical(
+            'Project initialized.',
+            `${finalProjectName} has been scaffolded successfully.`,
+            [
+              ['Publish', `skillspace publish`],
+              [
+                'Run locally',
+                `skillspace run ${projectName === '.' ? ext : path.join(projectName, ext)}`,
+              ],
+            ],
+          );
           outro(Date.now() - startTime);
         } else {
           successStandard(`Initialized SkillSpace ${projectType} "${finalProjectName}"`, {
-            'Created file': ext
+            'Created file': ext,
           });
         }
       } else if (projectType === 'mcp') {
-        await scaffoldMcpServer(targetDir, projectName, finalProjectName, description, author, lang as string, !!opts.yes, startTime);
+        await scaffoldMcpServer(
+          targetDir,
+          projectName,
+          finalProjectName,
+          description,
+          author,
+          lang as string,
+          !!opts.yes,
+          startTime,
+        );
       } else {
         errorInline(`Unknown type: ${projectType}`);
         process.exit(1);

@@ -3,7 +3,7 @@ import type { ExecutionResult, RunOptions } from '@skillspace/schema';
 // which no longer exist in the v2 schema. We use `any` for the resolved skill type here.
 // New v2 Skills use the REPL executor (repl-executor.ts) instead of this code path.
 import { SkillResolver } from './resolver.js';
-import { PermissionEnforcer } from './permissions.js';
+import { PermissionEnforcer, AllowlistEnforcer } from './permissions.js';
 import { adapterRegistry } from './adapters/registry.js';
 import { loadConfig, getApiKey, getBaseUrl } from './config.js';
 import type { RuntimeConfig } from './adapters/base.js';
@@ -59,6 +59,9 @@ export class Executor {
     // 1. Resolve skill from local cache (v1 legacy path — cast to any for v1 field access)
     const skill: any = this.resolver.resolve(options.skill);
 
+    // 1.5 Enforce Org Allowlist
+    AllowlistEnforcer.check(skill.name);
+
     // 2. Determine required permissions and enforce
     const declaredPermissions = skill.permissions ?? skill.persona?.capabilities ?? [];
     const enforcer = new PermissionEnforcer(skill.name, declaredPermissions);
@@ -107,11 +110,9 @@ export class Executor {
           modelId: 'firewall',
           durationMs: 0,
           status: 'error',
-          errorMessage: `Firewall blocked: ${verdict.reason}`
+          errorMessage: `Firewall blocked: ${verdict.reason}`,
         });
-        throw new FirewallBlockedError(
-          `Input blocked by injection firewall: ${verdict.reason}`
-        );
+        throw new FirewallBlockedError(`Input blocked by injection firewall: ${verdict.reason}`);
       }
     }
 
@@ -124,7 +125,10 @@ export class Executor {
 
       if (hasMcp) {
         if (!adapter.buildChatRequest) {
-          throw new ExecutionError(`Adapter ${adapter.providerName} does not support Chat required for MCP`, 'UNSUPPORTED_ADAPTER');
+          throw new ExecutionError(
+            `Adapter ${adapter.providerName} does not support Chat required for MCP`,
+            'UNSUPPORTED_ADAPTER',
+          );
         }
         for (const srv of skill.mcpServers!) {
           await mcpRegistry.connect(srv);
@@ -134,7 +138,7 @@ export class Executor {
               name: `mcp_${srv.name}_${t.name.replace(/[^a-zA-Z0-9_-]/g, '_')}`,
               description: t.description || `Tool from ${srv.name}`,
               parameters: (t.inputSchema?.properties || {}) as any,
-              required: t.inputSchema?.required || []
+              required: t.inputSchema?.required || [],
             });
           }
         }
@@ -143,7 +147,7 @@ export class Executor {
         const userTemplate = skill.instructions?.user_template ?? '{{input}}';
         const messages: ChatMessage[] = [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: userTemplate.replace('{{input}}', input) }
+          { role: 'user', content: userTemplate.replace('{{input}}', input) },
         ];
 
         let stepCount = 0;
@@ -170,7 +174,7 @@ export class Executor {
                   const parts = tc.function.name.split('_');
                   const serverName = parts[1];
                   const originalToolName = parts.slice(2).join('_');
-                  
+
                   // Enforce permissions explicitly required by this server
                   const srv = skill.mcpServers!.find((s: any) => s.name === serverName);
                   if (srv && srv.requiredScopes) {
@@ -179,13 +183,30 @@ export class Executor {
                     }
                   }
 
-                  const toolResult = await mcpRegistry.callTool(serverName!, originalToolName, args);
-                  messages.push({ role: 'tool', tool_call_id: tc.id, content: typeof toolResult === 'string' ? toolResult : JSON.stringify(toolResult) });
+                  const toolResult = await mcpRegistry.callTool(
+                    serverName!,
+                    originalToolName,
+                    args,
+                  );
+                  messages.push({
+                    role: 'tool',
+                    tool_call_id: tc.id,
+                    content:
+                      typeof toolResult === 'string' ? toolResult : JSON.stringify(toolResult),
+                  });
                 } else {
-                  messages.push({ role: 'tool', tool_call_id: tc.id, content: `Error: Unknown tool type` });
+                  messages.push({
+                    role: 'tool',
+                    tool_call_id: tc.id,
+                    content: `Error: Unknown tool type`,
+                  });
                 }
               } catch (err) {
-                messages.push({ role: 'tool', tool_call_id: tc.id, content: `Error executing tool: ${(err as Error).message}` });
+                messages.push({
+                  role: 'tool',
+                  tool_call_id: tc.id,
+                  content: `Error executing tool: ${(err as Error).message}`,
+                });
               }
             }
           } else {
@@ -228,7 +249,7 @@ export class Executor {
         version: skill.version,
         modelId,
         durationMs: result.duration_ms || 0,
-        status: 'success'
+        status: 'success',
       });
 
       return result;
@@ -238,7 +259,7 @@ export class Executor {
         version: skill.version,
         modelId,
         durationMs: Date.now() - startTime,
-        status: 'error'
+        status: 'error',
       });
       throw e;
     } finally {
@@ -252,6 +273,9 @@ export class Executor {
   async *runStream(options: RunOptions): AsyncGenerator<string> {
     // 1. Resolve skill (v1 legacy path — cast to any for v1 field access)
     const skill: any = this.resolver.resolve(options.skill);
+
+    // 1.5 Enforce Org Allowlist
+    AllowlistEnforcer.check(skill.name);
 
     // 2. Enforce permissions
     const enforcer = new PermissionEnforcer(skill.name, skill.permissions);
@@ -299,11 +323,9 @@ export class Executor {
           modelId: 'firewall',
           durationMs: 0,
           status: 'error',
-          errorMessage: `Firewall blocked: ${verdict.reason}`
+          errorMessage: `Firewall blocked: ${verdict.reason}`,
         });
-        throw new FirewallBlockedError(
-          `Input blocked by injection firewall: ${verdict.reason}`
-        );
+        throw new FirewallBlockedError(`Input blocked by injection firewall: ${verdict.reason}`);
       }
     }
 
@@ -316,40 +338,37 @@ export class Executor {
 
     // 5. Make streaming request
     const controller = new AbortController();
-      let timeout = setTimeout(
-        () => controller.abort(),
-        (runtimeConfig.timeoutSeconds ?? 30) * 1000,
-      );
+    let timeout = setTimeout(() => controller.abort(), (runtimeConfig.timeoutSeconds ?? 30) * 1000);
 
-      const startTime = Date.now();
+    const startTime = Date.now();
 
-      try {
-        const response = await fetch(request.url, {
-          method: 'POST',
-          headers: request.headers,
-          body: JSON.stringify(request.body),
-          signal: controller.signal,
-        });
+    try {
+      const response = await fetch(request.url, {
+        method: 'POST',
+        headers: request.headers,
+        body: JSON.stringify(request.body),
+        signal: controller.signal,
+      });
 
-        if (!response.ok) {
-          throw new ExecutionError(
-            `Model API returned ${response.status}: ${response.statusText}`,
-            'API_ERROR',
-          );
-        }
+      if (!response.ok) {
+        throw new ExecutionError(
+          `Model API returned ${response.status}: ${response.statusText}`,
+          'API_ERROR',
+        );
+      }
 
-        if (!response.body) {
-          throw new ExecutionError('No response body for streaming', 'STREAMING_ERROR');
-        }
+      if (!response.body) {
+        throw new ExecutionError('No response body for streaming', 'STREAMING_ERROR');
+      }
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
 
-        while (true) {
-          clearTimeout(timeout);
-          timeout = setTimeout(() => controller.abort(), (runtimeConfig.timeoutSeconds ?? 30) * 1000);
-          const { done, value } = await reader.read();
+      while (true) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => controller.abort(), (runtimeConfig.timeoutSeconds ?? 30) * 1000);
+        const { done, value } = await reader.read();
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });
@@ -368,13 +387,13 @@ export class Executor {
         const text = adapter.parseStreamChunk(buffer);
         if (text) yield text;
       }
-      
+
       TelemetryClient.sendEventSafe({
         packageId: skill.name,
         version: skill.version,
         modelId,
         durationMs: Date.now() - startTime,
-        status: 'success'
+        status: 'success',
       });
     } catch (e) {
       TelemetryClient.sendEventSafe({
@@ -382,7 +401,7 @@ export class Executor {
         version: skill.version,
         modelId,
         durationMs: Date.now() - startTime,
-        status: 'error'
+        status: 'error',
       });
       throw e;
     } finally {
@@ -397,7 +416,11 @@ export class Executor {
   /**
    * Check permissions for the input type.
    */
-  private enforceInputPermissions(enforcer: PermissionEnforcer, options: RunOptions, fsSandbox: FileSystemSandbox): void {
+  private enforceInputPermissions(
+    enforcer: PermissionEnforcer,
+    options: RunOptions,
+    fsSandbox: FileSystemSandbox,
+  ): void {
     // If input looks like a file path and file exists, require filesystem.read
     if (options.input && fsSandbox.existsSync(options.input)) {
       enforcer.check('filesystem.read');
@@ -410,7 +433,11 @@ export class Executor {
   /**
    * Resolve input — if it's a file path, read the file contents.
    */
-  private resolveInput(input: string, _enforcer: PermissionEnforcer, fsSandbox: FileSystemSandbox): string {
+  private resolveInput(
+    input: string,
+    _enforcer: PermissionEnforcer,
+    fsSandbox: FileSystemSandbox,
+  ): string {
     if (fsSandbox.existsSync(input)) {
       const stat = fsSandbox.statSync(input);
       if (stat.isFile()) {
@@ -458,10 +485,7 @@ export class Executor {
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
         const controller = new AbortController();
-        const timeout = setTimeout(
-          () => controller.abort(),
-          timeoutSeconds * 1000,
-        );
+        const timeout = setTimeout(() => controller.abort(), timeoutSeconds * 1000);
 
         const response = await fetch(request.url, {
           method: 'POST',
@@ -480,9 +504,7 @@ export class Executor {
         if (response.status === 429) {
           // Rate limited — retry with backoff
           const retryAfter = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s
-          console.warn(
-            `Rate limited by ${request.url}. Retrying in ${retryAfter / 1000}s...`,
-          );
+          console.warn(`Rate limited by ${request.url}. Retrying in ${retryAfter / 1000}s...`);
           await this.sleep(retryAfter);
           continue;
         }
@@ -509,10 +531,7 @@ export class Executor {
         lastError = error instanceof Error ? error : new Error(String(error));
 
         if (lastError.name === 'AbortError') {
-          throw new ExecutionError(
-            `Request timed out after ${timeoutSeconds} seconds`,
-            'TIMEOUT',
-          );
+          throw new ExecutionError(`Request timed out after ${timeoutSeconds} seconds`, 'TIMEOUT');
         }
 
         // Retry for network errors

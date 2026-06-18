@@ -31,14 +31,14 @@ export const registerListenCommand = (program: Command) => {
         try {
           const data = JSON.parse(e.data);
           console.log(chalk.yellow(`\n⚡ Remote command received: ${data.command}`));
-          
+
           if (data.command.startsWith('skillspace ')) {
             console.log(chalk.gray(`  Executing: ${data.command}`));
             const child = exec(data.command);
-            
+
             child.stdout?.on('data', (chunk) => process.stdout.write(chunk));
             child.stderr?.on('data', (chunk) => process.stderr.write(chalk.red(chunk)));
-            
+
             child.on('close', (code) => {
               if (code === 0) {
                 console.log(chalk.green(`\n✓ Command completed successfully.\n`));
@@ -48,7 +48,9 @@ export const registerListenCommand = (program: Command) => {
               console.log(chalk.green('✓ Waiting for next command...'));
             });
           } else {
-            console.log(chalk.red('✗ Blocked unauthorized command (only skillspace commands are allowed).'));
+            console.log(
+              chalk.red('✗ Blocked unauthorized command (only skillspace commands are allowed).'),
+            );
           }
         } catch (err: any) {
           console.error(chalk.red(`✗ Failed to process remote command: ${err.message}`));

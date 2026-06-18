@@ -38,7 +38,7 @@ describe('Executor', () => {
     const files = new Map<string, Buffer>();
     files.set('skill.yaml', Buffer.from(skillYaml));
     await mockInstallPackage(cache, '@test/test-skill', '1.0.0', files);
-    
+
     // Mock config load to provide dummy API keys
     vi.mock('../src/config.js', async (importOriginal) => {
       const actual = await importOriginal<typeof import('../src/config.js')>();
@@ -56,7 +56,7 @@ describe('Executor', () => {
         TelemetryClient: {
           sendEventSafe: vi.fn(),
           sendEvent: vi.fn(),
-        }
+        },
       };
     });
 
@@ -75,14 +75,14 @@ describe('Executor', () => {
     (global.fetch as Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
-        choices: [{ message: { content: 'Mocked response' } }]
-      })
+        choices: [{ message: { content: 'Mocked response' } }],
+      }),
     });
 
     const result = await executor.run({
       skill: '@test/test-skill',
       input: 'Hello world',
-      model: 'openai/gpt-4o'
+      model: 'openai/gpt-4o',
     });
 
     expect(result.output).toBe('Mocked response');
@@ -102,14 +102,14 @@ describe('Executor', () => {
     (global.fetch as Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
-        choices: [{ message: { content: 'Mocked file response' } }]
-      })
+        choices: [{ message: { content: 'Mocked file response' } }],
+      }),
     });
 
     const result = await executor.run({
       skill: '@test/test-skill',
       input: inputFile,
-      model: 'openai/gpt-4o'
+      model: 'openai/gpt-4o',
     });
 
     expect(result.output).toBe('Mocked file response');
@@ -124,14 +124,16 @@ describe('Executor', () => {
     (global.fetch as Mock).mockResolvedValueOnce({
       ok: false,
       status: 401,
-      text: async () => 'Unauthorized'
+      text: async () => 'Unauthorized',
     });
 
-    await expect(executor.run({
-      skill: '@test/test-skill',
-      input: 'Hello',
-      model: 'openai/gpt-4o'
-    })).rejects.toThrowError(/Invalid API key/);
+    await expect(
+      executor.run({
+        skill: '@test/test-skill',
+        input: 'Hello',
+        model: 'openai/gpt-4o',
+      }),
+    ).rejects.toThrowError(/Invalid API key/);
   });
 
   it('retries on 429 rate limit', async () => {
@@ -140,18 +142,18 @@ describe('Executor', () => {
       .mockResolvedValueOnce({
         ok: false,
         status: 429,
-        text: async () => 'Rate limit'
+        text: async () => 'Rate limit',
       })
       .mockResolvedValueOnce({
         ok: false,
         status: 429,
-        text: async () => 'Rate limit'
+        text: async () => 'Rate limit',
       })
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({
-          choices: [{ message: { content: 'Success after retry' } }]
-        })
+          choices: [{ message: { content: 'Success after retry' } }],
+        }),
       });
 
     // We should speed up the sleep for tests
@@ -160,7 +162,7 @@ describe('Executor', () => {
     const result = await executor.run({
       skill: '@test/test-skill',
       input: 'Hello',
-      model: 'openai/gpt-4o'
+      model: 'openai/gpt-4o',
     });
 
     expect(result.output).toBe('Success after retry');
@@ -169,19 +171,21 @@ describe('Executor', () => {
 
   it('throws ExecutionError on max retries', async () => {
     (global.fetch as Mock).mockResolvedValue({
-        ok: false,
-        status: 500,
-        text: async () => 'Server error'
-      });
+      ok: false,
+      status: 500,
+      text: async () => 'Server error',
+    });
 
     vi.spyOn(executor as any, 'sleep').mockResolvedValue(undefined);
 
-    await expect(executor.run({
-      skill: '@test/test-skill',
-      input: 'Hello',
-      model: 'openai/gpt-4o'
-    })).rejects.toThrowError(/Failed after/);
-    
+    await expect(
+      executor.run({
+        skill: '@test/test-skill',
+        input: 'Hello',
+        model: 'openai/gpt-4o',
+      }),
+    ).rejects.toThrowError(/Failed after/);
+
     expect(global.fetch).toHaveBeenCalledTimes(3);
   });
 });

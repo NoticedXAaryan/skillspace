@@ -14,18 +14,18 @@ export async function POST(req: NextRequest) {
     if (!packageId || !version || !suiteName || score === undefined) {
       return NextResponse.json(
         { error: { message: 'Missing required benchmark fields.' } },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const packageRecord = await prisma.package.findUnique({
-      where: { name: packageId }
+      where: { name: packageId },
     });
 
     if (!packageRecord) {
       return NextResponse.json(
         { error: { message: `Package ${packageId} not found in registry.` } },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -35,14 +35,14 @@ export async function POST(req: NextRequest) {
         packageId_version_suiteName: {
           packageId: packageRecord.id,
           version,
-          suiteName
-        }
+          suiteName,
+        },
       },
       update: {
         score,
         passedCount,
         totalCount,
-        createdAt: new Date()
+        createdAt: new Date(),
       },
       create: {
         packageId: packageRecord.id,
@@ -50,16 +50,13 @@ export async function POST(req: NextRequest) {
         suiteName,
         score,
         passedCount,
-        totalCount
-      }
+        totalCount,
+      },
     });
 
     return NextResponse.json({ success: true, id: benchmarkScore.id });
   } catch (error) {
     console.error('Failed to save benchmark score:', error);
-    return NextResponse.json(
-      { error: { message: 'Internal server error.' } },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: { message: 'Internal server error.' } }, { status: 500 });
   }
 }

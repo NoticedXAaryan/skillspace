@@ -28,21 +28,25 @@ describe('McpManager', () => {
   describe('installServer', () => {
     it('should fail clearly if the registry cannot be reached', async () => {
       (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Network error'));
-      
+
       await expect(manager.installServer('sqlite')).rejects.toThrow('Network error');
       expect(vi.mocked(fs.writeFileSync)).not.toHaveBeenCalled();
     });
 
     it('should install from a local file if --from is provided', async () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
-        name: 'custom-server',
-        version: '1.0.0',
-        transport: 'stdio'
-      }));
+      vi.mocked(fs.readFileSync).mockReturnValue(
+        JSON.stringify({
+          name: 'custom-server',
+          version: '1.0.0',
+          transport: 'stdio',
+        }),
+      );
 
-      await expect(manager.installServer('custom-server', './my-server.json')).resolves.not.toThrow();
-      
+      await expect(
+        manager.installServer('custom-server', './my-server.json'),
+      ).resolves.not.toThrow();
+
       const args = vi.mocked(fs.writeFileSync).mock.calls[0];
       expect(args[0]).toContain('mcp.json');
       expect(JSON.parse(args[1] as string).name).toBe('custom-server');
@@ -55,9 +59,9 @@ describe('McpManager', () => {
           ok: true,
           json: async () => ({
             servers: {
-              testserver: { config_url: 'testserver.json' }
-            }
-          })
+              testserver: { config_url: 'testserver.json' },
+            },
+          }),
         })
         // Mock testserver.json
         .mockResolvedValueOnce({
@@ -65,12 +69,12 @@ describe('McpManager', () => {
           json: async () => ({
             name: 'testserver',
             version: '2.0.0',
-            transport: 'stdio'
-          })
+            transport: 'stdio',
+          }),
         });
 
       await expect(manager.installServer('testserver')).resolves.not.toThrow();
-      
+
       const args = vi.mocked(fs.writeFileSync).mock.calls[0];
       expect(args[0]).toContain('mcp.json');
       expect(JSON.parse(args[1] as string).name).toBe('testserver');
@@ -80,7 +84,7 @@ describe('McpManager', () => {
   describe('listServers', () => {
     it('should list installed servers by reading the mcp servers directory', () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
-      
+
       // Mock readdirSync to return two directories
       vi.mocked(fs.readdirSync).mockReturnValue([
         { name: 'sqlite', isDirectory: () => true },

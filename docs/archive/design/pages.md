@@ -31,6 +31,7 @@ Reference for common SaaS/developer-tool page types. Load this file when buildin
 ```
 
 **Key rules**:
+
 - Card max-width: 400–440px
 - Social OAuth buttons: icon + provider name, full width, outlined
 - Divider: `─── Continue with email ───` not just `─── or ───`
@@ -42,6 +43,7 @@ Reference for common SaaS/developer-tool page types. Load this file when buildin
 ## Landing Page (SaaS / Dev Tool)
 
 **Section order**:
+
 1. **Nav** — Logo left, links center, CTA right. Sticky. Blur backdrop on scroll.
 2. **Hero** — Badge → H1 → Subhead → CTAs → Social proof / logos
 3. **Feature Grid** — 3-col cards or alternating text+visual pairs
@@ -52,15 +54,19 @@ Reference for common SaaS/developer-tool page types. Load this file when buildin
 8. **Footer** — Links grid + copyright
 
 **Hero rules**:
+
 - H1: 40–56px, max 8 words, no gradient text unless it's very subtle and brand-justified
 - Avoid "AI-powered" or "next-generation" as hero copy
 - Background: dark base + faint radial gradient from top center, OR dot/grid pattern at 5% opacity
 - No hero illustration that looks stock or AI-generated
 
 **Navbar rules**:
+
 ```css
 .navbar {
-  position: sticky; top: 0; z-index: 50;
+  position: sticky;
+  top: 0;
+  z-index: 50;
   backdrop-filter: blur(12px);
   background: rgba(9, 9, 11, 0.8);
   border-bottom: 1px solid var(--border-subtle);
@@ -89,6 +95,7 @@ Reference for common SaaS/developer-tool page types. Load this file when buildin
 ```
 
 **Stat card pattern**:
+
 ```html
 <div class="stat-card">
   <span class="stat-label">Total Runs</span>
@@ -98,6 +105,7 @@ Reference for common SaaS/developer-tool page types. Load this file when buildin
 ```
 
 **Table rules**:
+
 - Compact rows: 36–40px height
 - Alternating bg: even rows at `var(--bg-elevated)` or no alternating (hairline dividers preferred)
 - Sticky header
@@ -111,20 +119,22 @@ Reference for common SaaS/developer-tool page types. Load this file when buildin
 **Layout**: Two-column — subnav left (160px) + content right
 
 **Section structure**:
+
 ```
 Section Heading
 Brief description text in muted color
 ──────────────────────────────────
 Label            [Input / Toggle / Select]
-Description      
+Description
 ──────────────────────────────────
 Label            [Input / Toggle / Select]
-Description      
+Description
 ──────────────────────────────────
                  [Save changes]
 ```
 
 **Rules**:
+
 - One "Save changes" button per section, bottom-right
 - Destructive actions (delete account, revoke) in a separate "Danger Zone" card with red border
 - Toggles > checkboxes for binary settings
@@ -138,7 +148,7 @@ Every list, table, or data view needs an empty state. Pattern:
 
 ```
 [Icon — 40px, muted color]
- 
+
 Heading — "No skills published yet"
 Subtext  — "Publish your first skill to get started."
 
@@ -146,6 +156,7 @@ Subtext  — "Publish your first skill to get started."
 ```
 
 Rules:
+
 - Never just show a blank white/dark area
 - Icon must be relevant to the content type
 - CTA directly resolves the emptiness
@@ -171,10 +182,20 @@ For dev tools, a syntax-highlighted code block is often the hero visual:
   border-bottom: 1px solid var(--border-subtle);
   background: var(--bg-elevated);
 }
-.code-dot { width: 10px; height: 10px; border-radius: 50%; }
-.code-dot-red    { background: #ff5f57; }
-.code-dot-yellow { background: #febc2e; }
-.code-dot-green  { background: #28c840; }
+.code-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.code-dot-red {
+  background: #ff5f57;
+}
+.code-dot-yellow {
+  background: #febc2e;
+}
+.code-dot-green {
+  background: #28c840;
+}
 .code-body {
   padding: var(--space-4) var(--space-5);
   font-family: var(--font-mono);

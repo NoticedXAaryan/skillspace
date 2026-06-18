@@ -24,11 +24,7 @@ export interface ModelAdapter {
   /**
    * Build a model-specific API request from skill instructions and user input.
    */
-  buildRequest(
-    skill: any,
-    input: string,
-    config: RuntimeConfig,
-  ): ModelRequest;
+  buildRequest(skill: any, input: string, config: RuntimeConfig): ModelRequest;
 
   /**
    * Build a model-specific API request from chat history and available tools.

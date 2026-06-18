@@ -1,8 +1,8 @@
-"use client"
+'use client';
 
-import { AnimatePresence, motion } from "framer-motion";
-import { Search, X } from "lucide-react";
-import { useState } from "react";
+import { AnimatePresence, motion } from 'framer-motion';
+import { Search, X } from 'lucide-react';
+import { useState } from 'react';
 
 type ExpandingSearchDockProps = {
   onSearch?: (query: string) => void;
@@ -11,10 +11,10 @@ type ExpandingSearchDockProps = {
 
 export function ExpandingSearchDock({
   onSearch,
-  placeholder = "Search...",
+  placeholder = 'Search...',
 }: ExpandingSearchDockProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
 
   const handleExpand = () => {
     setIsExpanded(true);
@@ -22,9 +22,9 @@ export function ExpandingSearchDock({
 
   const handleCollapse = () => {
     setIsExpanded(false);
-    setQuery("");
+    setQuery('');
     if (onSearch) {
-      onSearch("");
+      onSearch('');
     }
   };
 
@@ -56,7 +56,7 @@ export function ExpandingSearchDock({
             animate={{ width: 320, opacity: 1 }}
             exit={{ width: 48, opacity: 0 }}
             transition={{
-              type: "spring",
+              type: 'spring',
               stiffness: 300,
               damping: 30,
             }}
@@ -64,8 +64,8 @@ export function ExpandingSearchDock({
             className="relative"
           >
             <motion.div
-              initial={{ backdropFilter: "blur(0px)" }}
-              animate={{ backdropFilter: "blur(12px)" }}
+              initial={{ backdropFilter: 'blur(0px)' }}
+              animate={{ backdropFilter: 'blur(12px)' }}
               className="relative flex items-center gap-2 overflow-hidden rounded-full border border-border bg-card/80 backdrop-blur-md"
             >
               <div className="ml-4">

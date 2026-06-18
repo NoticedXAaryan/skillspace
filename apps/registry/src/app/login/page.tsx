@@ -13,7 +13,7 @@ import { motion } from 'framer-motion';
 function GithubIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
     </svg>
   );
 }
@@ -61,23 +61,29 @@ export default function LoginPage() {
 
       {/* Form Side */}
       <div className="flex h-full w-full items-center justify-center p-8 sm:p-12 lg:p-16">
-        <motion.div 
+        <motion.div
           initial="hidden"
           animate="visible"
           variants={{
             hidden: { opacity: 0 },
-            visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.2 } }
+            visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.2 } },
           }}
           className="w-full max-w-sm space-y-8"
         >
-          <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } }} className="text-center">
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+            }}
+            className="text-center"
+          >
             <h1 className="text-3xl font-bold tracking-tight text-foreground">Welcome back</h1>
             <p className="mt-2 text-sm text-muted-foreground">Sign in to your SkillSpace account</p>
           </motion.div>
 
           {error && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }} 
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               className="rounded-lg bg-destructive/15 p-4 text-center text-sm font-medium text-destructive border border-destructive/20"
             >
@@ -85,15 +91,25 @@ export default function LoginPage() {
             </motion.div>
           )}
 
-          <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } }} className="space-y-6">
-            <Button 
-              variant="outline" 
-              type="button" 
-              className="w-full relative h-12 bg-card/50 hover:bg-card border-border/50" 
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+            }}
+            className="space-y-6"
+          >
+            <Button
+              variant="outline"
+              type="button"
+              className="w-full relative h-12 bg-card/50 hover:bg-card border-border/50"
               onClick={handleGithubSignIn}
               disabled={loading}
             >
-              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GithubIcon className="mr-2 h-5 w-5" />}
+              {loading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <GithubIcon className="mr-2 h-5 w-5" />
+              )}
               <span className="font-medium">Continue with GitHub</span>
             </Button>
 
@@ -102,7 +118,9 @@ export default function LoginPage() {
                 <span className="w-full border-t border-border/50" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-4 text-muted-foreground">Or continue with email</span>
+                <span className="bg-background px-4 text-muted-foreground">
+                  Or continue with email
+                </span>
               </div>
             </div>
 
@@ -120,8 +138,13 @@ export default function LoginPage() {
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium leading-none text-foreground">Password</label>
-                  <Link href="/forgot-password" className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors">
+                  <label className="text-sm font-medium leading-none text-foreground">
+                    Password
+                  </label>
+                  <Link
+                    href="/forgot-password"
+                    className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors"
+                  >
                     Forgot password?
                   </Link>
                 </div>
@@ -134,16 +157,29 @@ export default function LoginPage() {
                   required
                 />
               </div>
-              
-              <Button type="submit" className="w-full h-11 bg-cyan-500 hover:bg-cyan-600 text-white font-medium shadow-lg shadow-cyan-500/20 transition-all duration-200" disabled={loading}>
+
+              <Button
+                type="submit"
+                className="w-full h-11 bg-cyan-500 hover:bg-cyan-600 text-white font-medium shadow-lg shadow-cyan-500/20 transition-all duration-200"
+                disabled={loading}
+              >
                 {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Sign In'}
               </Button>
             </form>
           </motion.div>
 
-          <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } }} className="text-center text-sm text-muted-foreground">
+          <motion.p
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+            }}
+            className="text-center text-sm text-muted-foreground"
+          >
             Don&apos;t have an account?{' '}
-            <Link href="/register" className="font-medium text-cyan-400 hover:text-cyan-300 hover:underline transition-colors">
+            <Link
+              href="/register"
+              className="font-medium text-cyan-400 hover:text-cyan-300 hover:underline transition-colors"
+            >
               Create one
             </Link>
           </motion.p>

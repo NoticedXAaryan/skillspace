@@ -7,10 +7,7 @@ import semver from 'semver';
 import * as crypto from 'node:crypto';
 import { storePackage } from '@/lib/storage';
 
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ name: string }> }
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ name: string }> }) {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) {
@@ -51,14 +48,17 @@ export async function POST(
     }
 
     const latestVersionStr = pkg.versions[0]?.version || '0.0.0';
-    let newVersion: string | null = typeof parsedYaml.version === 'string' ? parsedYaml.version : null;
+    let newVersion: string | null =
+      typeof parsedYaml.version === 'string' ? parsedYaml.version : null;
 
     if (newVersion) {
       if (!semver.valid(newVersion)) {
         return new NextResponse(`Invalid semver version in YAML: ${newVersion}`, { status: 400 });
       }
       if (semver.lte(newVersion, latestVersionStr)) {
-        return new NextResponse(`Version must be strictly greater than ${latestVersionStr}`, { status: 400 });
+        return new NextResponse(`Version must be strictly greater than ${latestVersionStr}`, {
+          status: 400,
+        });
       }
     } else {
       newVersion = semver.inc(latestVersionStr, 'patch');
@@ -98,8 +98,8 @@ export async function POST(
       }),
       prisma.user.update({
         where: { id: session.user.id },
-        data: { storageUsed: { increment: buffer.byteLength } }
-      })
+        data: { storageUsed: { increment: buffer.byteLength } },
+      }),
     ]);
 
     return NextResponse.json({ success: true, version: newVersion });

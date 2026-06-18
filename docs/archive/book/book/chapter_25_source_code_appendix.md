@@ -8,8 +8,7 @@ This chapter provides the complete, unredacted source code for the most critical
 import { Command } from 'commander';
 import { AgentExecutor, ExecutionError } from '@skillspace/runtime';
 
-export const agentCommand = new Command('agent')
-  .description('Manage and execute agents');
+export const agentCommand = new Command('agent').description('Manage and execute agents');
 
 agentCommand
   .command('run <agent> [positionalInput...]')
@@ -74,7 +73,6 @@ agentCommand
       console.log(`    Path: ${pkg.path}`);
     }
   });
-
 ```
 
 ## File: `apps\cli\src\commands\benchmark.ts`
@@ -100,7 +98,7 @@ export function registerBenchmarkCommand(program: Command): void {
 
       console.log(`Loading benchmark suite from ${suitePath}...`);
       const raw = fs.readFileSync(fullPath, 'utf-8');
-      
+
       let parsed: unknown;
       try {
         parsed = YAML.parse(raw);
@@ -134,14 +132,18 @@ export function registerBenchmarkCommand(program: Command): void {
       for (let i = 0; i < suite.tests.length; i++) {
         const test = suite.tests[i]!;
         console.log(`Test [${i + 1}/${suite.tests.length}]: ${test.id}`);
-        
+
         let output = '';
         const startTime = Date.now();
         let error = null;
 
         try {
           try {
-            const res = await skillExecutor.run({ skill: suite.target_package, input: test.input, model: 'ollama/llama3.2' });
+            const res = await skillExecutor.run({
+              skill: suite.target_package,
+              input: test.input,
+              model: 'ollama/llama3.2',
+            });
             output = res.output;
           } catch (e) {
             // Fallback to agent if it's an agent package
@@ -183,7 +185,7 @@ export function registerBenchmarkCommand(program: Command): void {
       }
 
       totalScore = (passedCount / suite.tests.length) * 100;
-      
+
       console.log(`\n📊 Benchmark Results`);
       console.log(`----------------------------------------`);
       console.log(`Score: ${totalScore.toFixed(1)}%`);
@@ -191,13 +193,12 @@ export function registerBenchmarkCommand(program: Command): void {
 
       // Future: send this to the registry
       console.log(`\n(Publishing to registry not yet implemented)`);
-      
+
       if (totalScore < 100) {
         process.exit(1);
       }
     });
 }
-
 ```
 
 ## File: `apps\cli\src\commands\environment.ts`
@@ -220,7 +221,7 @@ envCommand
   .action((options) => {
     try {
       const lockData = readLockFile(getSkillspacePath());
-      
+
       const envYaml = {
         name: 'skillspace-environment',
         version: '1.0.0',
@@ -243,7 +244,9 @@ envCommand
       fs.writeFileSync(outPath, stringify(envYaml));
       console.log(`✅ Environment exported to ${outPath}`);
     } catch (err) {
-      console.error(`❌ Failed to export environment: ${err instanceof Error ? err.message : String(err)}`);
+      console.error(
+        `❌ Failed to export environment: ${err instanceof Error ? err.message : String(err)}`,
+      );
       process.exit(1);
     }
   });
@@ -268,22 +271,23 @@ envCommand
       }
 
       console.log(`📦 Importing environment from ${file}...`);
-      
+
       // We would normally spawn `skillspace install <pkg>` for each dependency here
       // For MVP we just log them
       for (const [name, version] of Object.entries(envYaml.dependencies)) {
         console.log(`  - Installing ${name}@${version}`);
         // In a full implementation:
-        // await installPackage(name, version); 
+        // await installPackage(name, version);
       }
 
       console.log(`✅ Environment imported successfully.`);
     } catch (err) {
-      console.error(`❌ Failed to import environment: ${err instanceof Error ? err.message : String(err)}`);
+      console.error(
+        `❌ Failed to import environment: ${err instanceof Error ? err.message : String(err)}`,
+      );
       process.exit(1);
     }
   });
-
 ```
 
 ## File: `apps\cli\src\commands\info.ts`
@@ -343,7 +347,6 @@ export function registerInfoCommand(program: Command): void {
       }
     });
 }
-
 ```
 
 ## File: `apps\cli\src\commands\init.ts`
@@ -401,7 +404,7 @@ export function registerInitCommand(program: Command): void {
             message: 'Category:',
             choices: ['code', 'writing', 'analysis', 'security', 'devops', 'other'],
             default: 'other',
-          }
+          },
         ]);
         projectName = answers.name;
         description = answers.description;
@@ -420,9 +423,9 @@ export function registerInitCommand(program: Command): void {
         instructions: {
           system: `You are an expert at ${projectName}.`,
           user_template: `{{input}}`,
-          output_format: 'text'
+          output_format: 'text',
         },
-        permissions: []
+        permissions: [],
       };
 
       fs.writeFileSync(manifestPath, YAML.stringify(manifest), 'utf-8');
@@ -436,7 +439,6 @@ export function registerInitCommand(program: Command): void {
       console.log('    skillspace run <skill>        # Run a skill');
     });
 }
-
 ```
 
 ## File: `apps\cli\src\commands\install.ts`
@@ -467,7 +469,7 @@ export function registerInstallCommand(program: Command): void {
 
       async function installRecursively(name: string, requestedVersion?: string): Promise<void> {
         console.log(`⟳ Resolving ${name}...`);
-        
+
         let pkgInfo: any = null;
         let activeClient: RegistryClient | null = null;
         let fetchError: Error | null = null;
@@ -508,7 +510,9 @@ export function registerInstallCommand(program: Command): void {
           const crypto = await import('node:crypto');
           const computed = `sha256:${crypto.createHash('sha256').update(buffer).digest('hex')}`;
           if (computed !== checksum) {
-            throw new Error(`Checksum mismatch for ${name}@${version}. Expected: ${checksum}, Got: ${computed}`);
+            throw new Error(
+              `Checksum mismatch for ${name}@${version}. Expected: ${checksum}, Got: ${computed}`,
+            );
           }
         }
 
@@ -539,7 +543,10 @@ export function registerInstallCommand(program: Command): void {
               if (agent.skills && agent.skills.length > 0) {
                 console.log(`⟳ Resolving dependencies for agent ${name}@${version}...`);
                 for (const skillDep of agent.skills) {
-                  await installRecursively(skillDep.name, skillDep.version.replace('^', '').replace('~', ''));
+                  await installRecursively(
+                    skillDep.name,
+                    skillDep.version.replace('^', '').replace('~', ''),
+                  );
                 }
               }
             }
@@ -560,7 +567,6 @@ export function registerInstallCommand(program: Command): void {
       }
     });
 }
-
 ```
 
 ## File: `apps\cli\src\commands\list.ts`
@@ -592,7 +598,6 @@ export function registerListCommand(program: Command): void {
       }
     });
 }
-
 ```
 
 ## File: `apps\cli\src\commands\login.ts`
@@ -626,7 +631,7 @@ export function registerLoginCommand(program: Command): void {
             name: 'password',
             message: 'Password:',
             when: !password,
-          }
+          },
         ]);
         email = email || answers.email;
         password = password || answers.password;
@@ -684,7 +689,7 @@ export function registerLoginCommand(program: Command): void {
             name: 'password',
             message: 'Password:',
             when: !password,
-          }
+          },
         ]);
         username = username || answers.username;
         email = email || answers.email;
@@ -701,7 +706,9 @@ export function registerLoginCommand(program: Command): void {
         const result = await client.register(username, email, password);
 
         if (result.error) {
-          console.error(`✗ Registration failed: ${result.error.message || JSON.stringify(result.error)}`);
+          console.error(
+            `✗ Registration failed: ${result.error.message || JSON.stringify(result.error)}`,
+          );
           process.exit(1);
         }
 
@@ -746,7 +753,6 @@ export function registerWhoamiCommand(program: Command): void {
       }
     });
 }
-
 ```
 
 ## File: `apps\cli\src\commands\mcp.ts`
@@ -755,8 +761,7 @@ export function registerWhoamiCommand(program: Command): void {
 import { Command } from 'commander';
 import { McpManager } from '@skillspace/runtime';
 
-export const mcpCommand = new Command('mcp')
-  .description('Manage MCP servers');
+export const mcpCommand = new Command('mcp').description('Manage MCP servers');
 
 mcpCommand
   .command('install <server>')
@@ -769,7 +774,9 @@ mcpCommand
       await manager.installServer(serverName, options.from);
       console.log(`✅ Successfully installed MCP server "${serverName}".`);
     } catch (err) {
-      console.error(`❌ Failed to install MCP server: ${err instanceof Error ? err.message : String(err)}`);
+      console.error(
+        `❌ Failed to install MCP server: ${err instanceof Error ? err.message : String(err)}`,
+      );
       process.exit(1);
     }
   });
@@ -798,11 +805,12 @@ mcpCommand
       await manager.installServer(serverName);
       console.log(`✅ Successfully updated MCP server "${serverName}".`);
     } catch (err) {
-      console.error(`❌ Failed to update MCP server: ${err instanceof Error ? err.message : String(err)}`);
+      console.error(
+        `❌ Failed to update MCP server: ${err instanceof Error ? err.message : String(err)}`,
+      );
       process.exit(1);
     }
   });
-
 ```
 
 ## File: `apps\cli\src\commands\model.ts`
@@ -819,9 +827,7 @@ import {
 } from '@skillspace/runtime';
 
 export function registerModelCommand(program: Command): void {
-  const model = program
-    .command('model')
-    .description('Manage model provider configurations');
+  const model = program.command('model').description('Manage model provider configurations');
 
   model
     .command('add <provider>')
@@ -845,7 +851,7 @@ export function registerModelCommand(program: Command): void {
             type: 'password',
             name: 'key',
             message: `API Key for ${provider}:`,
-          }
+          },
         ]);
         key = answers.key;
       }
@@ -937,13 +943,17 @@ export function registerModelCommand(program: Command): void {
           config: { temperature: 0.3, max_tokens: 100, timeout_seconds: 15 },
         };
 
-        const request = adapter.buildRequest(testSkill, 'Say "SkillSpace works!" and nothing else.', {
-          apiKey,
-          modelId: modelName,
-          temperature: 0.3,
-          maxTokens: 100,
-          timeoutSeconds: 15,
-        });
+        const request = adapter.buildRequest(
+          testSkill,
+          'Say "SkillSpace works!" and nothing else.',
+          {
+            apiKey,
+            modelId: modelName,
+            temperature: 0.3,
+            maxTokens: 100,
+            timeoutSeconds: 15,
+          },
+        );
 
         const res = await fetch(request.url, {
           method: 'POST',
@@ -960,14 +970,15 @@ export function registerModelCommand(program: Command): void {
         const data = await res.json();
         const result = adapter.parseResponse(data);
         console.log(`✓ Response: ${result.output}`);
-        console.log(`  Tokens: ${result.usage.promptTokens} prompt + ${result.usage.completionTokens} completion`);
+        console.log(
+          `  Tokens: ${result.usage.promptTokens} prompt + ${result.usage.completionTokens} completion`,
+        );
       } catch (err) {
         console.error(`✗ Test failed: ${err instanceof Error ? err.message : err}`);
         process.exit(1);
       }
     });
 }
-
 ```
 
 ## File: `apps\cli\src\commands\org.ts`
@@ -976,8 +987,7 @@ export function registerModelCommand(program: Command): void {
 import { Command } from 'commander';
 import { RegistryClient } from '../utils/api.js';
 
-export const orgCommand = new Command('org')
-  .description('Manage organizations and teams');
+export const orgCommand = new Command('org').description('Manage organizations and teams');
 
 orgCommand
   .command('create <name>')
@@ -988,12 +998,12 @@ orgCommand
       const client = new RegistryClient();
       const slug = options.slug || name.toLowerCase().replace(/[^a-z0-9-]/g, '-');
       const result = await client.createOrg(name, slug);
-      
+
       if (result.error) {
         console.error(`❌ Failed to create org: ${result.error}`);
         process.exit(1);
       }
-      
+
       console.log(`✅ Organization "${name}" (@${slug}) created successfully!`);
     } catch (err) {
       console.error(`❌ Error: ${err instanceof Error ? err.message : String(err)}`);
@@ -1009,12 +1019,12 @@ orgCommand
     try {
       const client = new RegistryClient();
       const result = await client.createOrgInvite(slug, options.role);
-      
+
       if (result.error) {
         console.error(`❌ Failed to generate invite: ${result.error}`);
         process.exit(1);
       }
-      
+
       console.log(`✅ Invite generated! Share this token with your team member:`);
       console.log(`\n    ${result.token}\n`);
       console.log(`They can join by running: skillspace org join ${result.token}`);
@@ -1032,19 +1042,18 @@ orgCommand
     try {
       const client = new RegistryClient();
       const result = await client.acceptOrgInvite(token);
-      
+
       if (result.error) {
         console.error(`❌ Failed to join org: ${result.error}`);
         process.exit(1);
       }
-      
+
       console.log(`✅ Successfully joined organization!`);
     } catch (err) {
       console.error(`❌ Error: ${err instanceof Error ? err.message : String(err)}`);
       process.exit(1);
     }
   });
-
 ```
 
 ## File: `apps\cli\src\commands\publish.ts`
@@ -1122,7 +1131,6 @@ export function registerPublishCommand(program: Command): void {
       console.log(`  Install: skillspace install ${skill.name}`);
     });
 }
-
 ```
 
 ## File: `apps\cli\src\commands\run.ts`
@@ -1149,7 +1157,9 @@ export function registerRunCommand(program: Command): void {
       const isInteractive = !input;
 
       if (isInteractive) {
-        console.log(`Starting interactive session with "${skillName}". Type "exit" or "quit" to stop.\n`);
+        console.log(
+          `Starting interactive session with "${skillName}". Type "exit" or "quit" to stop.\n`,
+        );
       }
 
       try {
@@ -1160,7 +1170,7 @@ export function registerRunCommand(program: Command): void {
                 type: 'input',
                 name: 'input',
                 message: '❯',
-              }
+              },
             ]);
             input = answers.input.trim();
             if (input.toLowerCase() === 'exit' || input.toLowerCase() === 'quit') {
@@ -1201,32 +1211,34 @@ export function registerRunCommand(program: Command): void {
             }
             process.stdout.write('\n\n');
           } else {
-          // Normal mode
+            // Normal mode
 
-          let result;
-          if (isAgent) {
-            const agentExecutor = new AgentExecutor();
-            result = await agentExecutor.run({
-              agent: skillName,
-              input: input,
-            });
-          } else {
-            result = await executor.run(runOptions);
+            let result;
+            if (isAgent) {
+              const agentExecutor = new AgentExecutor();
+              result = await agentExecutor.run({
+                agent: skillName,
+                input: input,
+              });
+            } else {
+              result = await executor.run(runOptions);
+            }
+
+            console.log('');
+            console.log(result.output);
+            console.log('');
+            console.log('─'.repeat(50));
+            console.log(`  Model: ${result.model}`);
+            console.log(`  Duration: ${result.duration_ms}ms`);
+            console.log(
+              `  Tokens: ${result.usage.promptTokens} in / ${result.usage.completionTokens} out`,
+            );
+            console.log(`  Status: ${result.status}`);
+
+            if (opts.output) {
+              console.log(`  Output saved to: ${opts.output}`);
+            }
           }
-
-          console.log('');
-          console.log(result.output);
-          console.log('');
-          console.log('─'.repeat(50));
-          console.log(`  Model: ${result.model}`);
-          console.log(`  Duration: ${result.duration_ms}ms`);
-          console.log(`  Tokens: ${result.usage.promptTokens} in / ${result.usage.completionTokens} out`);
-          console.log(`  Status: ${result.status}`);
-
-          if (opts.output) {
-            console.log(`  Output saved to: ${opts.output}`);
-          }
-        }
         } while (isInteractive);
       } catch (err) {
         console.error(`✗ Execution failed: ${err instanceof Error ? err.message : err}`);
@@ -1234,7 +1246,6 @@ export function registerRunCommand(program: Command): void {
       }
     });
 }
-
 ```
 
 ## File: `apps\cli\src\commands\search.ts`
@@ -1282,7 +1293,6 @@ export function registerSearchCommand(program: Command): void {
       }
     });
 }
-
 ```
 
 ## File: `apps\cli\src\commands\uninstall.ts`
@@ -1332,7 +1342,6 @@ export function registerUninstallCommand(program: Command): void {
       }
     });
 }
-
 ```
 
 ## File: `apps\cli\src\commands\workflow.ts`
@@ -1341,8 +1350,9 @@ export function registerUninstallCommand(program: Command): void {
 import { Command } from 'commander';
 import { WorkflowEngine, WorkflowResolver } from '@skillspace/runtime';
 
-export const workflowCommand = new Command('workflow')
-  .description('Manage and run multi-step workflows');
+export const workflowCommand = new Command('workflow').description(
+  'Manage and run multi-step workflows',
+);
 
 workflowCommand
   .command('run <name>')
@@ -1353,17 +1363,19 @@ workflowCommand
       const resolver = new WorkflowResolver();
       console.log(`Resolving workflow "${name}"...`);
       const workflow = await resolver.resolve(name);
-      
+
       const engine = new WorkflowEngine();
       const result = await engine.run({
         workflow,
         input: options.input || '',
       });
-      
+
       console.log('\n--- Workflow Result ---');
       console.log(JSON.stringify(result, null, 2));
     } catch (err) {
-      console.error(`\n❌ Workflow Execution Failed: ${err instanceof Error ? err.message : String(err)}`);
+      console.error(
+        `\n❌ Workflow Execution Failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
       process.exit(1);
     }
   });
@@ -1379,15 +1391,23 @@ workflowCommand
     const cwd = process.cwd();
     const dirs = [
       { name: 'Local Project (workflows/)', path: path.join(cwd, 'workflows') },
-      { name: 'Local Project (.skillspace/workflows/)', path: path.join(cwd, '.skillspace', 'workflows') },
-      { name: 'Global (~/.skillspace/workflows/)', path: path.join(getSkillspacePath(), 'workflows') },
+      {
+        name: 'Local Project (.skillspace/workflows/)',
+        path: path.join(cwd, '.skillspace', 'workflows'),
+      },
+      {
+        name: 'Global (~/.skillspace/workflows/)',
+        path: path.join(getSkillspacePath(), 'workflows'),
+      },
     ];
 
     let foundAny = false;
 
     for (const dir of dirs) {
       if (fs.existsSync(dir.path)) {
-        const files = fs.readdirSync(dir.path).filter(f => f.endsWith('.yaml') || f.endsWith('.yml'));
+        const files = fs
+          .readdirSync(dir.path)
+          .filter((f) => f.endsWith('.yaml') || f.endsWith('.yml'));
         if (files.length > 0) {
           console.log(`\n📂 ${dir.name}:`);
           for (const file of files) {
@@ -1403,7 +1423,6 @@ workflowCommand
       console.log('Create a workflow file in ./workflows/ or ~/.skillspace/workflows/.');
     }
   });
-
 ```
 
 ## File: `apps\cli\src\index.ts`
@@ -1455,7 +1474,6 @@ program.addCommand(orgCommand);
 program.addCommand(envCommand);
 
 program.parse();
-
 ```
 
 ## File: `apps\cli\src\utils\api.ts`
@@ -1489,7 +1507,9 @@ export class RegistryClient {
       return await fetch(url, init);
     } catch (err: any) {
       if (err.cause?.code === 'ECONNREFUSED' || err.message.includes('fetch failed')) {
-        throw new Error(`Could not connect to the registry at ${this.baseUrl}. Is your internet down or the server offline?`);
+        throw new Error(
+          `Could not connect to the registry at ${this.baseUrl}. Is your internet down or the server offline?`,
+        );
       }
       throw err;
     }
@@ -1578,11 +1598,14 @@ export class RegistryClient {
   }
 
   async createOrgInvite(slug: string, role: string = 'member'): Promise<any> {
-    const res = await this.safeFetch(`${this.baseUrl}/api/orgs/${encodeURIComponent(slug)}/invites`, {
-      method: 'POST',
-      headers: this.getHeaders(true),
-      body: JSON.stringify({ role }),
-    });
+    const res = await this.safeFetch(
+      `${this.baseUrl}/api/orgs/${encodeURIComponent(slug)}/invites`,
+      {
+        method: 'POST',
+        headers: this.getHeaders(true),
+        body: JSON.stringify({ role }),
+      },
+    );
     return res.json();
   }
 
@@ -1595,7 +1618,6 @@ export class RegistryClient {
     return res.json();
   }
 }
-
 ```
 
 ## File: `apps\cli\src\utils\output.ts`
@@ -1648,10 +1670,10 @@ export function infoMsg(msg: string): void {
 
 export function table(headers: string[], rows: string[][]): void {
   const t = new Table({
-    head: headers.map(h => brand.bold(h)),
+    head: headers.map((h) => brand.bold(h)),
     style: { head: [], border: ['dim'] },
   });
-  rows.forEach(row => t.push(row));
+  rows.forEach((row) => t.push(row));
   console.log(t.toString());
 }
 
@@ -1675,7 +1697,6 @@ export function section(title: string): void {
   console.log(brand.bold.underline(title));
   console.log();
 }
-
 ```
 
 ## File: `apps\cli\src\utils\packager.ts`
@@ -1703,7 +1724,11 @@ export interface PackageFile {
  * Reads a skill directory, bundles relevant files into a gzipped package,
  * and returns the buffer, file list, and overall checksum.
  */
-export function createSkillPackage(dir: string): { buffer: Buffer; files: PackageFile[]; checksum: string } {
+export function createSkillPackage(dir: string): {
+  buffer: Buffer;
+  files: PackageFile[];
+  checksum: string;
+} {
   const files: PackageFile[] = [];
   const requiredFiles = ['skill.yaml'];
   const optionalFiles = ['README.md', 'CHANGELOG.md', 'workflow.yaml', 'agent.js', 'index.js'];
@@ -1736,7 +1761,7 @@ export function createSkillPackage(dir: string): { buffer: Buffer; files: Packag
 
   // Compute per-file checksums and an overall hash
   const hash = crypto.createHash('sha256');
-  const manifestFiles = files.map(f => {
+  const manifestFiles = files.map((f) => {
     hash.update(f.path);
     hash.update(f.content);
     return {
@@ -1757,7 +1782,7 @@ export function createSkillPackage(dir: string): { buffer: Buffer; files: Packag
 
   // Serialize: JSON array of { path, content(base64) } → gzip
   const serialized = JSON.stringify(
-    files.map(f => ({ path: f.path, content: f.content.toString('base64') })),
+    files.map((f) => ({ path: f.path, content: f.content.toString('base64') })),
   );
   const buffer = zlib.gzipSync(Buffer.from(serialized));
 
@@ -1794,7 +1819,6 @@ function readDirRecursive(dirPath: string, prefix: string, files: PackageFile[])
     }
   }
 }
-
 ```
 
 ## File: `packages\runtime\src\adapters\base.ts`
@@ -1824,11 +1848,7 @@ export interface ModelAdapter {
   /**
    * Build a model-specific API request from skill instructions and user input.
    */
-  buildRequest(
-    skill: Skill,
-    input: string,
-    config: RuntimeConfig,
-  ): ModelRequest;
+  buildRequest(skill: Skill, input: string, config: RuntimeConfig): ModelRequest;
 
   /**
    * Build a model-specific API request from chat history and available tools.
@@ -1861,7 +1881,6 @@ export interface RuntimeConfig {
   timeoutSeconds?: number;
   baseUrl?: string;
 }
-
 ```
 
 ## File: `packages\runtime\src\adapters\claude.ts`
@@ -1946,7 +1965,6 @@ export class ClaudeAdapter implements ModelAdapter {
     }
   }
 }
-
 ```
 
 ## File: `packages\runtime\src\adapters\gemini.ts`
@@ -1968,8 +1986,7 @@ export class GeminiAdapter implements ModelAdapter {
   buildRequest(skill: Skill, input: string, config: RuntimeConfig): ModelRequest {
     const userMessage = skill.instructions.user_template.replace('{{input}}', input);
     const modelId = config.modelId;
-    const baseUrl =
-      config.baseUrl || 'https://generativelanguage.googleapis.com/v1beta';
+    const baseUrl = config.baseUrl || 'https://generativelanguage.googleapis.com/v1beta';
 
     return {
       url: `${baseUrl}/models/${modelId}:generateContent`,
@@ -2008,10 +2025,7 @@ export class GeminiAdapter implements ModelAdapter {
       modelVersion?: string;
     };
 
-    const text =
-      response.candidates?.[0]?.content?.parts
-        ?.map((p) => p.text)
-        .join('') ?? '';
+    const text = response.candidates?.[0]?.content?.parts?.map((p) => p.text).join('') ?? '';
 
     return {
       output: text,
@@ -2037,7 +2051,6 @@ export class GeminiAdapter implements ModelAdapter {
     }
   }
 }
-
 ```
 
 ## File: `packages\runtime\src\adapters\ollama.ts`
@@ -2138,7 +2151,6 @@ export class OllamaAdapter implements ModelAdapter {
     }
   }
 }
-
 ```
 
 ## File: `packages\runtime\src\adapters\openai.ts`
@@ -2195,18 +2207,21 @@ export class OpenAIAdapter implements ModelAdapter {
         max_tokens: config.maxTokens,
         temperature: config.temperature,
         messages: messages,
-        tools: tools.length > 0 ? tools.map(t => ({
-          type: 'function',
-          function: {
-            name: t.name,
-            description: t.description,
-            parameters: {
-              type: 'object',
-              properties: t.parameters || {},
-              required: t.required || []
-            }
-          }
-        })) : undefined
+        tools:
+          tools.length > 0
+            ? tools.map((t) => ({
+                type: 'function',
+                function: {
+                  name: t.name,
+                  description: t.description,
+                  parameters: {
+                    type: 'object',
+                    properties: t.parameters || {},
+                    required: t.required || [],
+                  },
+                },
+              }))
+            : undefined,
       },
       stream: false,
     };
@@ -2214,7 +2229,13 @@ export class OpenAIAdapter implements ModelAdapter {
 
   parseResponse(raw: unknown): ExecutionResult {
     const response = raw as {
-      choices: Array<{ message: { role: string; content: string | null; tool_calls?: import('@skillspace/schema').ToolCall[] } }>;
+      choices: Array<{
+        message: {
+          role: string;
+          content: string | null;
+          tool_calls?: import('@skillspace/schema').ToolCall[];
+        };
+      }>;
       usage: { prompt_tokens: number; completion_tokens: number };
       model: string;
     };
@@ -2223,11 +2244,14 @@ export class OpenAIAdapter implements ModelAdapter {
 
     return {
       output: msg?.content ?? '',
-      message: msg && msg.role === 'assistant' ? {
-        role: 'assistant',
-        content: msg.content,
-        tool_calls: msg.tool_calls
-      } : undefined,
+      message:
+        msg && msg.role === 'assistant'
+          ? {
+              role: 'assistant',
+              content: msg.content,
+              tool_calls: msg.tool_calls,
+            }
+          : undefined,
       usage: {
         promptTokens: response.usage?.prompt_tokens ?? 0,
         completionTokens: response.usage?.completion_tokens ?? 0,
@@ -2250,7 +2274,6 @@ export class OpenAIAdapter implements ModelAdapter {
     }
   }
 }
-
 ```
 
 ## File: `packages\runtime\src\adapters\registry.ts`
@@ -2309,9 +2332,7 @@ export class AdapterRegistry {
     const adapter = this.adapters.get(providerId);
     if (!adapter) {
       const available = Array.from(this.adapters.keys()).join(', ');
-      throw new Error(
-        `Unknown model provider "${providerId}". Available providers: ${available}`,
-      );
+      throw new Error(`Unknown model provider "${providerId}". Available providers: ${available}`);
     }
 
     return { adapter, modelName };
@@ -2344,7 +2365,6 @@ export class AdapterRegistry {
 
 // Singleton instance
 export const adapterRegistry = new AdapterRegistry();
-
 ```
 
 ## File: `packages\runtime\src\agent-executor.ts`
@@ -2402,7 +2422,10 @@ export class AgentExecutor {
     const { adapter, modelName } = adapterRegistry.getAdapter(modelId);
 
     if (!adapter.buildChatRequest) {
-      throw new ExecutionError(`Adapter ${adapter.providerName} does not support Chat/Agent functionality yet.`, 'UNSUPPORTED_ADAPTER');
+      throw new ExecutionError(
+        `Adapter ${adapter.providerName} does not support Chat/Agent functionality yet.`,
+        'UNSUPPORTED_ADAPTER',
+      );
     }
 
     const provider = modelId.split('/')[0]!;
@@ -2419,7 +2442,9 @@ export class AgentExecutor {
       timeoutSeconds: 60,
       baseUrl: getBaseUrl(provider),
     };
-    console.error(`[AgentExecutor] Provider: ${provider}, BaseURL: ${runtimeConfig.baseUrl}, from config: ${JSON.stringify(loadConfig())}`);
+    console.error(
+      `[AgentExecutor] Provider: ${provider}, BaseURL: ${runtimeConfig.baseUrl}, from config: ${JSON.stringify(loadConfig())}`,
+    );
 
     const input = this.resolveInput(options.input, enforcer);
 
@@ -2428,17 +2453,17 @@ export class AgentExecutor {
     if (options.session_id) {
       messages = this.sessionManager.loadSession(options.session_id);
     }
-    
+
     if (messages.length === 0) {
       messages.push({
         role: 'system',
-        content: `You are an agent named ${agent.name}.\n${agent.description}`
+        content: `You are an agent named ${agent.name}.\n${agent.description}`,
       });
     }
 
     messages.push({
       role: 'user',
-      content: input
+      content: input,
     });
 
     // 5. Start declared MCP servers
@@ -2446,21 +2471,23 @@ export class AgentExecutor {
       try {
         await this.mcpManager.startServer(srv.name);
       } catch (err) {
-        console.warn(`Warning: Failed to start MCP server ${srv.name}: ${err instanceof Error ? err.message : String(err)}`);
+        console.warn(
+          `Warning: Failed to start MCP server ${srv.name}: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
     }
 
     // 6. Generate tools from agent's skill dependencies + MCP servers + builtins
-    const tools: Tool[] = skills.map(s => ({
+    const tools: Tool[] = skills.map((s) => ({
       name: `skill_${s.name.replace(/[^a-zA-Z0-9_-]/g, '_')}`, // prefix to avoid collisions
       description: s.description,
       parameters: {
         input: {
           type: 'string',
-          description: s.instructions.user_template
-        }
+          description: s.instructions.user_template,
+        },
       },
-      required: ['input']
+      required: ['input'],
     }));
 
     const mcpTools = this.mcpManager.getAttachedTools();
@@ -2471,7 +2498,7 @@ export class AgentExecutor {
         name: `mcp_${serverName}_${safeToolName}`,
         description: tool.description || `Tool from ${serverName}`,
         parameters: (tool.inputSchema?.properties || {}) as any,
-        required: tool.inputSchema?.required || []
+        required: tool.inputSchema?.required || [],
       });
     }
 
@@ -2480,19 +2507,21 @@ export class AgentExecutor {
       tools.push({
         name: 'builtin_filesystem_read',
         description: 'Read the contents of a local file',
-        parameters: { path: { type: 'string', description: 'Absolute or relative path to the file' } },
-        required: ['path']
+        parameters: {
+          path: { type: 'string', description: 'Absolute or relative path to the file' },
+        },
+        required: ['path'],
       });
     }
     if (combinedPermissions.has('filesystem.write')) {
       tools.push({
         name: 'builtin_filesystem_write',
         description: 'Write content to a local file',
-        parameters: { 
+        parameters: {
           path: { type: 'string', description: 'Absolute or relative path to the file' },
-          content: { type: 'string', description: 'Content to write to the file' }
+          content: { type: 'string', description: 'Content to write to the file' },
         },
-        required: ['path', 'content']
+        required: ['path', 'content'],
       });
     }
     if (combinedPermissions.has('network.fetch')) {
@@ -2500,7 +2529,7 @@ export class AgentExecutor {
         name: 'builtin_network_fetch',
         description: 'Fetch content from a URL',
         parameters: { url: { type: 'string', description: 'The URL to fetch' } },
-        required: ['url']
+        required: ['url'],
       });
     }
 
@@ -2514,7 +2543,7 @@ export class AgentExecutor {
       const request = adapter.buildChatRequest(messages, tools, runtimeConfig);
       const rawResponse = await this.callWithRetry(request, runtimeConfig.timeoutSeconds ?? 60);
       const result = adapter.parseResponse(rawResponse);
-      
+
       const assistantMsg = result.message;
       if (!assistantMsg) {
         throw new ExecutionError('Adapter returned no assistant message', 'API_ERROR');
@@ -2527,7 +2556,7 @@ export class AgentExecutor {
         for (const tc of assistantMsg.tool_calls) {
           try {
             const args = JSON.parse(tc.function.arguments);
-            
+
             if (tc.function.name.startsWith('builtin_')) {
               // Built-in tools
               if (tc.function.name === 'builtin_filesystem_read') {
@@ -2537,67 +2566,95 @@ export class AgentExecutor {
               } else if (tc.function.name === 'builtin_filesystem_write') {
                 enforcer.check('filesystem.write');
                 fs.writeFileSync(args.path, args.content, 'utf-8');
-                messages.push({ role: 'tool', tool_call_id: tc.id, content: `Successfully wrote to ${args.path}` });
+                messages.push({
+                  role: 'tool',
+                  tool_call_id: tc.id,
+                  content: `Successfully wrote to ${args.path}`,
+                });
               } else if (tc.function.name === 'builtin_network_fetch') {
                 enforcer.check('network.fetch');
                 const res = await fetch(args.url);
                 const text = await res.text();
                 messages.push({ role: 'tool', tool_call_id: tc.id, content: text });
               } else {
-                messages.push({ role: 'tool', tool_call_id: tc.id, content: `Error: Unknown builtin tool ${tc.function.name}` });
+                messages.push({
+                  role: 'tool',
+                  tool_call_id: tc.id,
+                  content: `Error: Unknown builtin tool ${tc.function.name}`,
+                });
               }
             } else if (tc.function.name.startsWith('skill_')) {
               // It's a Skill
               const skillName = tc.function.name.substring(6);
-              const toolSkill = skills.find(s => s.name.replace(/[^a-zA-Z0-9_-]/g, '_') === skillName);
-              
+              const toolSkill = skills.find(
+                (s) => s.name.replace(/[^a-zA-Z0-9_-]/g, '_') === skillName,
+              );
+
               if (!toolSkill) {
-                messages.push({ role: 'tool', tool_call_id: tc.id, content: `Error: Unknown skill tool ${tc.function.name}` });
+                messages.push({
+                  role: 'tool',
+                  tool_call_id: tc.id,
+                  content: `Error: Unknown skill tool ${tc.function.name}`,
+                });
                 continue;
               }
 
               const toolResult = await this.skillExecutor.run({
                 skill: toolSkill.name,
                 input: typeof args.input === 'string' ? args.input : JSON.stringify(args),
-                model: modelId
+                model: modelId,
               });
 
               messages.push({
                 role: 'tool',
                 tool_call_id: tc.id,
-                content: toolResult.output
+                content: toolResult.output,
               });
-
             } else if (tc.function.name.startsWith('mcp_')) {
               // It's an MCP tool
               // Format is mcp_serverName_toolName
               const parts = tc.function.name.split('_');
               const serverName = parts[1];
               // Reconstruct original tool name by matching against our known MCP tools
-              const originalTool = mcpTools.find(m => m.serverName === serverName && m.tool.name.replace(/[^a-zA-Z0-9_-]/g, '_') === parts.slice(2).join('_'));
-              
+              const originalTool = mcpTools.find(
+                (m) =>
+                  m.serverName === serverName &&
+                  m.tool.name.replace(/[^a-zA-Z0-9_-]/g, '_') === parts.slice(2).join('_'),
+              );
+
               if (!originalTool) {
-                messages.push({ role: 'tool', tool_call_id: tc.id, content: `Error: Unknown MCP tool ${tc.function.name}` });
+                messages.push({
+                  role: 'tool',
+                  tool_call_id: tc.id,
+                  content: `Error: Unknown MCP tool ${tc.function.name}`,
+                });
                 continue;
               }
 
               // Execute via MCP Manager
-              const toolResult = await this.mcpManager.callTool(serverName!, originalTool.tool.name, args);
-              
+              const toolResult = await this.mcpManager.callTool(
+                serverName!,
+                originalTool.tool.name,
+                args,
+              );
+
               messages.push({
                 role: 'tool',
                 tool_call_id: tc.id,
-                content: toolResult
+                content: toolResult,
               });
             } else {
-              messages.push({ role: 'tool', tool_call_id: tc.id, content: `Error: Unknown tool type ${tc.function.name}` });
+              messages.push({
+                role: 'tool',
+                tool_call_id: tc.id,
+                content: `Error: Unknown tool type ${tc.function.name}`,
+              });
             }
-            
           } catch (err) {
             messages.push({
               role: 'tool',
               tool_call_id: tc.id,
-              content: `Error executing tool: ${err instanceof Error ? err.message : String(err)}`
+              content: `Error executing tool: ${err instanceof Error ? err.message : String(err)}`,
             });
           }
         }
@@ -2610,7 +2667,10 @@ export class AgentExecutor {
     }
 
     if (!finalResult) {
-      throw new ExecutionError('Agent execution exceeded max steps (infinite tool loop detected)', 'MAX_STEPS_EXCEEDED');
+      throw new ExecutionError(
+        'Agent execution exceeded max steps (infinite tool loop detected)',
+        'MAX_STEPS_EXCEEDED',
+      );
     }
 
     // Save session
@@ -2619,13 +2679,13 @@ export class AgentExecutor {
     }
 
     finalResult.duration_ms = Date.now() - startTime;
-    
+
     TelemetryClient.sendEventSafe({
       packageId: agent.name,
       version: agent.version,
       modelId,
       durationMs: finalResult.duration_ms,
-      status: 'success'
+      status: 'success',
     });
 
     return finalResult;
@@ -2676,16 +2736,18 @@ export class AgentExecutor {
           throw new ExecutionError(`Request timed out after ${timeoutSeconds} seconds`, 'TIMEOUT');
         }
         if (attempt < 2) {
-          await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+          await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 1000));
         }
       } finally {
         clearTimeout(timeout);
       }
     }
-    throw new ExecutionError(`Failed after 3 attempts: ${lastError?.message ?? 'Unknown error'}`, 'MAX_RETRIES');
+    throw new ExecutionError(
+      `Failed after 3 attempts: ${lastError?.message ?? 'Unknown error'}`,
+      'MAX_RETRIES',
+    );
   }
 }
-
 ```
 
 ## File: `packages\runtime\src\agent-resolver.ts`
@@ -2744,9 +2806,7 @@ export class AgentResolver {
       return this.cache.loadAgent(name, range);
     }
 
-    const matching = versions
-      .filter((v) => semver.satisfies(v, range))
-      .sort(semver.rcompare);
+    const matching = versions.filter((v) => semver.satisfies(v, range)).sort(semver.rcompare);
 
     if (matching.length === 0) {
       throw new Error(`No version of agent "${name}" matching "${range}" is installed.`);
@@ -2771,7 +2831,6 @@ export class AgentResolver {
     return { agent, skills: resolvedSkills };
   }
 }
-
 ```
 
 ## File: `packages\runtime\src\cache.ts`
@@ -2863,7 +2922,9 @@ export class SkillCache {
    */
   isInstalled(name: string, version: string): boolean {
     const dir = this.getPackageDir(name, version);
-    return fs.existsSync(path.join(dir, 'skill.yaml')) || fs.existsSync(path.join(dir, 'agent.yaml'));
+    return (
+      fs.existsSync(path.join(dir, 'skill.yaml')) || fs.existsSync(path.join(dir, 'agent.yaml'))
+    );
   }
 
   /**
@@ -2882,9 +2943,7 @@ export class SkillCache {
     const result = validateSkill(parsed);
 
     if (!result.success) {
-      throw new Error(
-        `Invalid skill.yaml for ${name}@${version}: ${result.errors.message}`,
-      );
+      throw new Error(`Invalid skill.yaml for ${name}@${version}: ${result.errors.message}`);
     }
 
     return result.data;
@@ -2954,7 +3013,7 @@ export class SkillCache {
   loadAgent(name: string, version: string): Agent {
     const pkgDir = this.getPackageDir(name, version);
     let agentYamlPath = path.join(pkgDir, 'agent.yaml');
-    
+
     if (!fs.existsSync(agentYamlPath)) {
       agentYamlPath = path.join(pkgDir, 'skill.yaml');
     }
@@ -2965,14 +3024,12 @@ export class SkillCache {
 
     const raw = fs.readFileSync(agentYamlPath, 'utf-8');
     const parsed = YAML.parse(raw);
-    
+
     // We parse it using validateAgent to ensure it conforms to Agent schema
     const result = validateAgent(parsed);
 
     if (!result.success) {
-      throw new Error(
-        `Invalid agent manifest for ${name}@${version}: ${result.errors.message}`,
-      );
+      throw new Error(`Invalid agent manifest for ${name}@${version}: ${result.errors.message}`);
     }
 
     return result.data;
@@ -3023,7 +3080,6 @@ export class SkillCache {
       .map((pkg) => pkg.version);
   }
 }
-
 ```
 
 ## File: `packages\runtime\src\config.ts`
@@ -3184,7 +3240,11 @@ export function getRegistries(): string[] {
 /**
  * List all configured model providers.
  */
-export function listConfiguredModels(): Array<{ provider: string; hasKey: boolean; baseUrl?: string }> {
+export function listConfiguredModels(): Array<{
+  provider: string;
+  hasKey: boolean;
+  baseUrl?: string;
+}> {
   const config = loadConfig();
   return Object.entries(config.models).map(([provider, conf]) => ({
     provider,
@@ -3242,7 +3302,6 @@ export function getRegistryPath(): string {
 export function getConfigPath(): string {
   return CONFIG_FILE;
 }
-
 ```
 
 ## File: `packages\runtime\src\executor.ts`
@@ -3352,11 +3411,9 @@ export class Executor {
           modelId: 'firewall',
           durationMs: 0,
           status: 'error',
-          errorMessage: `Firewall blocked: ${verdict.reason}`
+          errorMessage: `Firewall blocked: ${verdict.reason}`,
         });
-        throw new FirewallBlockedError(
-          `Input blocked by injection firewall: ${verdict.reason}`
-        );
+        throw new FirewallBlockedError(`Input blocked by injection firewall: ${verdict.reason}`);
       }
     }
 
@@ -3369,7 +3426,10 @@ export class Executor {
 
       if (hasMcp) {
         if (!adapter.buildChatRequest) {
-          throw new ExecutionError(`Adapter ${adapter.providerName} does not support Chat required for MCP`, 'UNSUPPORTED_ADAPTER');
+          throw new ExecutionError(
+            `Adapter ${adapter.providerName} does not support Chat required for MCP`,
+            'UNSUPPORTED_ADAPTER',
+          );
         }
         for (const srv of skill.mcpServers!) {
           await mcpRegistry.connect(srv);
@@ -3379,14 +3439,14 @@ export class Executor {
               name: `mcp_${srv.name}_${t.name.replace(/[^a-zA-Z0-9_-]/g, '_')}`,
               description: t.description || `Tool from ${srv.name}`,
               parameters: (t.inputSchema?.properties || {}) as any,
-              required: t.inputSchema?.required || []
+              required: t.inputSchema?.required || [],
             });
           }
         }
 
         const messages: ChatMessage[] = [
           { role: 'system', content: skill.instructions.system },
-          { role: 'user', content: skill.instructions.user_template.replace('{{input}}', input) }
+          { role: 'user', content: skill.instructions.user_template.replace('{{input}}', input) },
         ];
 
         let stepCount = 0;
@@ -3413,22 +3473,39 @@ export class Executor {
                   const parts = tc.function.name.split('_');
                   const serverName = parts[1];
                   const originalToolName = parts.slice(2).join('_');
-                  
+
                   // Enforce permissions explicitly required by this server
-                  const srv = skill.mcpServers!.find(s => s.name === serverName);
+                  const srv = skill.mcpServers!.find((s) => s.name === serverName);
                   if (srv && srv.requiredScopes) {
                     for (const scope of srv.requiredScopes) {
                       enforcer.check(scope);
                     }
                   }
 
-                  const toolResult = await mcpRegistry.callTool(serverName!, originalToolName, args);
-                  messages.push({ role: 'tool', tool_call_id: tc.id, content: typeof toolResult === 'string' ? toolResult : JSON.stringify(toolResult) });
+                  const toolResult = await mcpRegistry.callTool(
+                    serverName!,
+                    originalToolName,
+                    args,
+                  );
+                  messages.push({
+                    role: 'tool',
+                    tool_call_id: tc.id,
+                    content:
+                      typeof toolResult === 'string' ? toolResult : JSON.stringify(toolResult),
+                  });
                 } else {
-                  messages.push({ role: 'tool', tool_call_id: tc.id, content: `Error: Unknown tool type` });
+                  messages.push({
+                    role: 'tool',
+                    tool_call_id: tc.id,
+                    content: `Error: Unknown tool type`,
+                  });
                 }
               } catch (err) {
-                messages.push({ role: 'tool', tool_call_id: tc.id, content: `Error executing tool: ${(err as Error).message}` });
+                messages.push({
+                  role: 'tool',
+                  tool_call_id: tc.id,
+                  content: `Error executing tool: ${(err as Error).message}`,
+                });
               }
             }
           } else {
@@ -3471,7 +3548,7 @@ export class Executor {
         version: skill.version,
         modelId,
         durationMs: result.duration_ms || 0,
-        status: 'success'
+        status: 'success',
       });
 
       return result;
@@ -3481,7 +3558,7 @@ export class Executor {
         version: skill.version,
         modelId,
         durationMs: Date.now() - startTime,
-        status: 'error'
+        status: 'error',
       });
       throw e;
     } finally {
@@ -3541,11 +3618,9 @@ export class Executor {
           modelId: 'firewall',
           durationMs: 0,
           status: 'error',
-          errorMessage: `Firewall blocked: ${verdict.reason}`
+          errorMessage: `Firewall blocked: ${verdict.reason}`,
         });
-        throw new FirewallBlockedError(
-          `Input blocked by injection firewall: ${verdict.reason}`
-        );
+        throw new FirewallBlockedError(`Input blocked by injection firewall: ${verdict.reason}`);
       }
     }
 
@@ -3558,40 +3633,37 @@ export class Executor {
 
     // 5. Make streaming request
     const controller = new AbortController();
-      let timeout = setTimeout(
-        () => controller.abort(),
-        (runtimeConfig.timeoutSeconds ?? 30) * 1000,
-      );
+    let timeout = setTimeout(() => controller.abort(), (runtimeConfig.timeoutSeconds ?? 30) * 1000);
 
-      const startTime = Date.now();
+    const startTime = Date.now();
 
-      try {
-        const response = await fetch(request.url, {
-          method: 'POST',
-          headers: request.headers,
-          body: JSON.stringify(request.body),
-          signal: controller.signal,
-        });
+    try {
+      const response = await fetch(request.url, {
+        method: 'POST',
+        headers: request.headers,
+        body: JSON.stringify(request.body),
+        signal: controller.signal,
+      });
 
-        if (!response.ok) {
-          throw new ExecutionError(
-            `Model API returned ${response.status}: ${response.statusText}`,
-            'API_ERROR',
-          );
-        }
+      if (!response.ok) {
+        throw new ExecutionError(
+          `Model API returned ${response.status}: ${response.statusText}`,
+          'API_ERROR',
+        );
+      }
 
-        if (!response.body) {
-          throw new ExecutionError('No response body for streaming', 'STREAMING_ERROR');
-        }
+      if (!response.body) {
+        throw new ExecutionError('No response body for streaming', 'STREAMING_ERROR');
+      }
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
 
-        while (true) {
-          clearTimeout(timeout);
-          timeout = setTimeout(() => controller.abort(), (runtimeConfig.timeoutSeconds ?? 30) * 1000);
-          const { done, value } = await reader.read();
+      while (true) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => controller.abort(), (runtimeConfig.timeoutSeconds ?? 30) * 1000);
+        const { done, value } = await reader.read();
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });
@@ -3610,13 +3682,13 @@ export class Executor {
         const text = adapter.parseStreamChunk(buffer);
         if (text) yield text;
       }
-      
+
       TelemetryClient.sendEventSafe({
         packageId: skill.name,
         version: skill.version,
         modelId,
         durationMs: Date.now() - startTime,
-        status: 'success'
+        status: 'success',
       });
     } catch (e) {
       TelemetryClient.sendEventSafe({
@@ -3624,7 +3696,7 @@ export class Executor {
         version: skill.version,
         modelId,
         durationMs: Date.now() - startTime,
-        status: 'error'
+        status: 'error',
       });
       throw e;
     } finally {
@@ -3700,10 +3772,7 @@ export class Executor {
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
         const controller = new AbortController();
-        const timeout = setTimeout(
-          () => controller.abort(),
-          timeoutSeconds * 1000,
-        );
+        const timeout = setTimeout(() => controller.abort(), timeoutSeconds * 1000);
 
         const response = await fetch(request.url, {
           method: 'POST',
@@ -3722,9 +3791,7 @@ export class Executor {
         if (response.status === 429) {
           // Rate limited — retry with backoff
           const retryAfter = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s
-          console.warn(
-            `Rate limited by ${request.url}. Retrying in ${retryAfter / 1000}s...`,
-          );
+          console.warn(`Rate limited by ${request.url}. Retrying in ${retryAfter / 1000}s...`);
           await this.sleep(retryAfter);
           continue;
         }
@@ -3751,10 +3818,7 @@ export class Executor {
         lastError = error instanceof Error ? error : new Error(String(error));
 
         if (lastError.name === 'AbortError') {
-          throw new ExecutionError(
-            `Request timed out after ${timeoutSeconds} seconds`,
-            'TIMEOUT',
-          );
+          throw new ExecutionError(`Request timed out after ${timeoutSeconds} seconds`, 'TIMEOUT');
         }
 
         // Retry for network errors
@@ -3775,7 +3839,6 @@ export class Executor {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
-
 ```
 
 ## File: `packages\runtime\src\firewall\injectionFirewall.ts`
@@ -3783,8 +3846,8 @@ export class Executor {
 ```typescript
 export type FirewallVerdict = {
   safe: boolean;
-  confidence: number;       // 0.0 – 1.0
-  reason?: string;          // populated when safe=false
+  confidence: number; // 0.0 – 1.0
+  reason?: string; // populated when safe=false
   flaggedPatterns?: string[]; // specific suspicious fragments
 };
 
@@ -3796,7 +3859,6 @@ export type FirewallContext = {
   skillName: string;
   requestedScopes: string[];
 };
-
 ```
 
 ## File: `packages\runtime\src\firewall\LocalModelScreener.ts`
@@ -3846,10 +3908,10 @@ ${JSON.stringify(input)}
           stream: false,
           format: 'json',
           options: {
-            temperature: 0.0
-          }
+            temperature: 0.0,
+          },
         }),
-        signal: controller.signal
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -3861,7 +3923,7 @@ ${JSON.stringify(input)}
       try {
         output = typeof data.response === 'string' ? JSON.parse(data.response) : data.response;
       } catch (e) {
-        output = { safe: true, confidence: 1.0, reason: "Parse error fallback" };
+        output = { safe: true, confidence: 1.0, reason: 'Parse error fallback' };
       }
 
       if (!output.safe) {
@@ -3872,20 +3934,21 @@ ${JSON.stringify(input)}
           modelId: modelName,
           durationMs: 0,
           status: 'error',
-          errorMessage: `Firewall blocked: ${output.reason}`
+          errorMessage: `Firewall blocked: ${output.reason}`,
         });
       }
 
       return {
         safe: Boolean(output.safe),
         confidence: Number(output.confidence) || 1.0,
-        reason: output.reason
+        reason: output.reason,
       };
-
     } catch (e) {
       const isTimeout = e instanceof Error && e.name === 'AbortError';
-      console.warn(`[Firewall] Screener failed (${isTimeout ? 'Timeout' : (e as Error).message}). Failing open.`);
-      
+      console.warn(
+        `[Firewall] Screener failed (${isTimeout ? 'Timeout' : (e as Error).message}). Failing open.`,
+      );
+
       // Fail open
       return { safe: true, confidence: 1.0 };
     } finally {
@@ -3893,7 +3956,6 @@ ${JSON.stringify(input)}
     }
   }
 }
-
 ```
 
 ## File: `packages\runtime\src\index.ts`
@@ -3962,7 +4024,6 @@ export {
   type FirewallContext,
   type InjectionFirewall,
 } from './firewall/injectionFirewall.js';
-
 ```
 
 ## File: `packages\runtime\src\lockfile.ts`
@@ -4079,7 +4140,6 @@ function sortRecord<T>(record: Record<string, T>): Record<string, T> {
   }
   return sorted;
 }
-
 ```
 
 ## File: `packages\runtime\src\mcp\McpRegistry.ts`
@@ -4123,8 +4183,11 @@ export class McpRegistry {
 
     if (serverRef.transport === 'http') {
       const allowlistStr = process.env.MCP_HTTP_ALLOWLIST || '';
-      const allowlist = allowlistStr.split(',').map(s => s.trim()).filter(Boolean);
-      
+      const allowlist = allowlistStr
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+
       if (!serverRef.url || !allowlist.includes(serverRef.url)) {
         throw new McpAllowlistError(`HTTP URL not in allowlist: ${serverRef.url}`);
       }
@@ -4155,11 +4218,11 @@ export class McpRegistry {
 
     const client = new Client(
       { name: 'skillspace-mcp-registry', version: '1.0.0' },
-      { capabilities: {} }
+      { capabilities: {} },
     );
 
     await client.connect(transport);
-    
+
     const connection: McpConnection = { client, serverName: serverRef.name };
     this.connections.set(serverRef.name, connection);
     return connection;
@@ -4185,14 +4248,16 @@ export class McpRegistry {
       modelId: serverName,
       durationMs: 0,
       status: 'success',
-      errorMessage: `Calling MCP Tool: ${toolName}`
+      errorMessage: `Calling MCP Tool: ${toolName}`,
     });
 
     try {
       // 10 second timeout
       const result = await Promise.race([
         connection.client.callTool({ name: toolName, arguments: args as any }),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('MCP Tool call timed out')), 10000))
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('MCP Tool call timed out')), 10000),
+        ),
       ]);
 
       TelemetryClient.sendEventSafe({
@@ -4201,7 +4266,7 @@ export class McpRegistry {
         modelId: serverName,
         durationMs: Date.now() - startTime,
         status: 'success',
-        errorMessage: `Completed MCP Tool: ${toolName}`
+        errorMessage: `Completed MCP Tool: ${toolName}`,
       });
 
       return result;
@@ -4212,7 +4277,7 @@ export class McpRegistry {
         modelId: serverName,
         durationMs: Date.now() - startTime,
         status: 'error',
-        errorMessage: `Failed MCP Tool: ${toolName} - ${(e as Error).message}`
+        errorMessage: `Failed MCP Tool: ${toolName} - ${(e as Error).message}`,
       });
       throw e;
     }
@@ -4234,7 +4299,6 @@ export class McpRegistry {
     await Promise.all(promises);
   }
 }
-
 ```
 
 ## File: `packages\runtime\src\mcp.ts`
@@ -4264,22 +4328,22 @@ const FALLBACK_CATALOG: Record<string, McpServerConfig> = {
     version: '1.0.0',
     transport: 'stdio',
     command: 'npx',
-    args: ['-y', '@modelcontextprotocol/server-sqlite', '--', 'test.db']
+    args: ['-y', '@modelcontextprotocol/server-sqlite', '--', 'test.db'],
   },
   filesystem: {
     name: 'filesystem',
     version: '1.0.0',
     transport: 'stdio',
     command: 'npx',
-    args: ['-y', '@modelcontextprotocol/server-filesystem', '--', process.cwd()]
+    args: ['-y', '@modelcontextprotocol/server-filesystem', '--', process.cwd()],
   },
   github: {
     name: 'github',
     version: '1.0.0',
     transport: 'stdio',
     command: 'npx',
-    args: ['-y', '@modelcontextprotocol/server-github']
-  }
+    args: ['-y', '@modelcontextprotocol/server-github'],
+  },
 };
 
 export class McpManager {
@@ -4311,7 +4375,7 @@ export class McpManager {
       if (from.startsWith('http://') || from.startsWith('https://')) {
         const res = await fetch(from);
         if (!res.ok) throw new Error(`Failed to fetch config from ${from}`);
-        config = await res.json() as McpServerConfig;
+        config = (await res.json()) as McpServerConfig;
       } else {
         const localPath = path.resolve(process.cwd(), from);
         if (!fs.existsSync(localPath)) throw new Error(`Config file not found at ${localPath}`);
@@ -4320,21 +4384,27 @@ export class McpManager {
     } else {
       // Option 3: Registry fetch
       try {
-        const registryUrl = process.env.SKILLSPACE_MCP_REGISTRY_URL || 'https://raw.githubusercontent.com/skillspace-ai/skillspace-registry/main/registry';
+        const registryUrl =
+          process.env.SKILLSPACE_MCP_REGISTRY_URL ||
+          'https://raw.githubusercontent.com/skillspace-ai/skillspace-registry/main/registry';
         const indexRes = await fetch(`${registryUrl}/index.json`);
         if (!indexRes.ok) throw new Error(`Failed to fetch MCP index from registry`);
-        
-        const index = await indexRes.json() as { servers: Record<string, { config_url: string }> };
+
+        const index = (await indexRes.json()) as {
+          servers: Record<string, { config_url: string }>;
+        };
         const serverMeta = index.servers[name];
-        
+
         if (!serverMeta) throw new Error(`Server ${name} not found in registry`);
-        
+
         const configRes = await fetch(`${registryUrl}/${serverMeta.config_url}`);
         if (!configRes.ok) throw new Error(`Failed to fetch config for ${name}`);
-        
-        config = await configRes.json() as McpServerConfig;
+
+        config = (await configRes.json()) as McpServerConfig;
       } catch (err) {
-        console.warn(`Registry fetch failed: ${err instanceof Error ? err.message : String(err)}. Falling back to hardcoded catalog.`);
+        console.warn(
+          `Registry fetch failed: ${err instanceof Error ? err.message : String(err)}. Falling back to hardcoded catalog.`,
+        );
         config = FALLBACK_CATALOG[name];
       }
     }
@@ -4363,10 +4433,10 @@ export class McpManager {
   listServers(): McpServerConfig[] {
     const serversDir = path.join(this.mcpDir, 'servers');
     if (!fs.existsSync(serversDir)) return [];
-    
+
     const entries = fs.readdirSync(serversDir, { withFileTypes: true });
     const servers: McpServerConfig[] = [];
-    
+
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
       try {
@@ -4375,7 +4445,7 @@ export class McpManager {
         // Ignore invalid directories
       }
     }
-    
+
     return servers;
   }
 
@@ -4388,7 +4458,7 @@ export class McpManager {
     }
 
     const config = this.getServerConfig(name);
-    
+
     if (config.transport === 'http') {
       throw new Error('HTTP transport not yet implemented for MCP Client');
     }
@@ -4401,13 +4471,10 @@ export class McpManager {
     const transport = new StdioClientTransport({
       command: config.command,
       args: config.args || [],
-      env: { ...(process.env as Record<string, string>), ...(config.env || {}) }
+      env: { ...(process.env as Record<string, string>), ...(config.env || {}) },
     });
 
-    const client = new Client(
-      { name: 'skillspace', version: '1.0.0' },
-      { capabilities: {} }
-    );
+    const client = new Client({ name: 'skillspace', version: '1.0.0' }, { capabilities: {} });
 
     await client.connect(transport);
     this.activeClients.set(name, client);
@@ -4452,7 +4519,11 @@ export class McpManager {
   /**
    * Execute a tool on a specific server
    */
-  async callTool(serverName: string, toolName: string, args: Record<string, unknown>): Promise<string> {
+  async callTool(
+    serverName: string,
+    toolName: string,
+    args: Record<string, unknown>,
+  ): Promise<string> {
     const client = this.activeClients.get(serverName);
     if (!client) {
       throw new Error(`MCP Server "${serverName}" is not running`);
@@ -4460,7 +4531,7 @@ export class McpManager {
 
     const result = await client.callTool({
       name: toolName,
-      arguments: args
+      arguments: args,
     });
 
     if (result.isError) {
@@ -4470,7 +4541,6 @@ export class McpManager {
     return JSON.stringify(result.content);
   }
 }
-
 ```
 
 ## File: `packages\runtime\src\permissions.ts`
@@ -4574,7 +4644,6 @@ export class PermissionEnforcer {
     return { valid: invalid.length === 0, invalid };
   }
 }
-
 ```
 
 ## File: `packages\runtime\src\resolver.ts`
@@ -4590,9 +4659,7 @@ import { SkillCache } from './cache.js';
 
 export class SkillNotFoundError extends Error {
   constructor(public readonly skillName: string) {
-    super(
-      `Skill "${skillName}" is not installed. Run \`skillspace install ${skillName}\` first.`,
-    );
+    super(`Skill "${skillName}" is not installed. Run \`skillspace install ${skillName}\` first.`);
     this.name = 'SkillNotFoundError';
   }
 }
@@ -4607,9 +4674,7 @@ export class VersionNotFoundError extends Error {
       availableVersions.length > 0
         ? `Available versions: ${availableVersions.join(', ')}`
         : 'No versions installed.';
-    super(
-      `No version of "${skillName}" matching "${versionRange}" is installed. ${available}`,
-    );
+    super(`No version of "${skillName}" matching "${versionRange}" is installed. ${available}`);
     this.name = 'VersionNotFoundError';
   }
 }
@@ -4659,9 +4724,7 @@ export class SkillResolver {
     }
 
     // Try semver range matching
-    const matching = versions
-      .filter((v) => semver.satisfies(v, range))
-      .sort(semver.rcompare);
+    const matching = versions.filter((v) => semver.satisfies(v, range)).sort(semver.rcompare);
 
     if (matching.length === 0) {
       throw new VersionNotFoundError(name, range, versions);
@@ -4675,10 +4738,7 @@ export class SkillResolver {
   /**
    * Resolve a skill and return both the skill and its resolved version.
    */
-  resolveWithVersion(
-    name: string,
-    versionRange?: string,
-  ): { skill: Skill; version: string } {
+  resolveWithVersion(name: string, versionRange?: string): { skill: Skill; version: string } {
     const skill = this.resolve(name, versionRange);
     return { skill, version: skill.version };
   }
@@ -4695,7 +4755,6 @@ export class SkillResolver {
     }
   }
 }
-
 ```
 
 ## File: `packages\runtime\src\session.ts`
@@ -4748,7 +4807,6 @@ export class SessionManager {
     }
   }
 }
-
 ```
 
 ## File: `packages\runtime\src\telemetry.ts`
@@ -4777,9 +4835,9 @@ export class TelemetryClient {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {})
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
-          body: JSON.stringify(event)
+          body: JSON.stringify(event),
         });
 
         if (res.ok) {
@@ -4796,7 +4854,6 @@ export class TelemetryClient {
     this.sendEvent(event).catch(() => {});
   }
 }
-
 ```
 
 ## File: `packages\runtime\src\workflow-resolver.ts`
@@ -4815,7 +4872,7 @@ export class WorkflowResolver {
   constructor() {
     this.globalDir = path.join(getSkillspacePath(), 'workflows');
     this.cacheDir = path.join(getSkillspacePath(), 'cache', 'workflows');
-    
+
     if (!fs.existsSync(this.globalDir)) {
       fs.mkdirSync(this.globalDir, { recursive: true });
     }
@@ -4833,19 +4890,23 @@ export class WorkflowResolver {
    */
   async resolve(name: string): Promise<Workflow> {
     const rawYaml = await this.fetchRawYaml(name);
-    
+
     // Parse YAML
     let data;
     try {
       data = parseYaml(rawYaml);
     } catch (err) {
-      throw new Error(`Failed to parse workflow YAML for "${name}": ${err instanceof Error ? err.message : String(err)}`);
+      throw new Error(
+        `Failed to parse workflow YAML for "${name}": ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
 
     // Validate against Schema
     const result = WorkflowSchema.safeParse(data);
     if (!result.success) {
-      const errorMsg = result.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+      const errorMsg = result.error.errors
+        .map((e) => `${e.path.join('.')}: ${e.message}`)
+        .join(', ');
       throw new Error(`Invalid workflow definition for "${name}": ${errorMsg}`);
     }
 
@@ -4862,7 +4923,13 @@ export class WorkflowResolver {
     if (name.startsWith('github:')) {
       return this.fetchGithub(name);
     }
-    if (name.startsWith('./') || name.startsWith('../') || name.startsWith('/') || name.endsWith('.yaml') || name.endsWith('.yml')) {
+    if (
+      name.startsWith('./') ||
+      name.startsWith('../') ||
+      name.startsWith('/') ||
+      name.endsWith('.yaml') ||
+      name.endsWith('.yml')
+    ) {
       const target = path.resolve(cwd, name);
       if (fs.existsSync(target)) {
         return fs.readFileSync(target, 'utf-8');
@@ -4904,13 +4971,16 @@ export class WorkflowResolver {
     // github:org/repo/workflow@v1
     const match = shorthand.match(/^github:([^\/]+)\/([^\/]+)\/(.+)@(.+)$/);
     if (!match) {
-      throw new Error(`Invalid GitHub shorthand format. Expected github:org/repo/path/to/workflow@version`);
+      throw new Error(
+        `Invalid GitHub shorthand format. Expected github:org/repo/path/to/workflow@version`,
+      );
     }
     const [_, org, repo, filePath, version] = match;
     // append .yaml if missing
-    const finalPath = filePath.endsWith('.yaml') || filePath.endsWith('.yml') ? filePath : `${filePath}.yaml`;
+    const finalPath =
+      filePath.endsWith('.yaml') || filePath.endsWith('.yml') ? filePath : `${filePath}.yaml`;
     const url = `https://raw.githubusercontent.com/${org}/${repo}/${version}/${finalPath}`;
-    
+
     return this.fetchRemote(url, shorthand);
   }
 
@@ -4918,11 +4988,12 @@ export class WorkflowResolver {
     // Basic TTL cache lookup
     const safeKey = cacheKey.replace(/[^a-zA-Z0-9_-]/g, '_');
     const cachedPath = path.join(this.cacheDir, `${safeKey}.yaml`);
-    
+
     if (fs.existsSync(cachedPath)) {
       const stats = fs.statSync(cachedPath);
       const ageMs = Date.now() - stats.mtimeMs;
-      if (ageMs < 1000 * 60 * 60) { // 1 hour TTL
+      if (ageMs < 1000 * 60 * 60) {
+        // 1 hour TTL
         return fs.readFileSync(cachedPath, 'utf-8');
       }
     }
@@ -4938,7 +5009,6 @@ export class WorkflowResolver {
     return text;
   }
 }
-
 ```
 
 ## File: `packages\runtime\src\workflow.ts`
@@ -4973,12 +5043,12 @@ export class WorkflowEngine {
    */
   public preflightValidation(workflow: Workflow): void {
     const definedStepIds = new Set<string>();
-    
+
     for (let i = 0; i < workflow.steps.length; i++) {
       const step = workflow.steps[i];
       if (step.id) definedStepIds.add(step.id);
       else definedStepIds.add(i.toString());
-      
+
       if ('parallel' in step) {
         step.parallel.forEach((p, idx) => {
           if (p.id) definedStepIds.add(p.id);
@@ -4990,14 +5060,16 @@ export class WorkflowEngine {
     const validateExpression = (expr: string) => {
       // Just check if it compiles without throwing
       jexl.compile(expr);
-      
+
       // Simple string-based extraction for MVP pre-flight missing steps
       const matches = expr.match(/steps\.([^.]+)\./g);
       if (matches) {
         for (const match of matches) {
           const stepId = match.split('.')[1];
           if (!definedStepIds.has(stepId)) {
-            throw new Error(`Compile Error: Reference to undefined step "${stepId}" in expression: "${expr}"`);
+            throw new Error(
+              `Compile Error: Reference to undefined step "${stepId}" in expression: "${expr}"`,
+            );
           }
         }
       }
@@ -5075,7 +5147,10 @@ export class WorkflowEngine {
         if (step.on_failure === 'continue') {
           console.warn(`[Workflow] Step "${stepId}" failed but continuing: ${err}`);
         } else {
-          throw new ExecutionError(`Workflow failed at step "${stepId}": ${err instanceof Error ? err.message : String(err)}`, 'WORKFLOW_ERROR');
+          throw new ExecutionError(
+            `Workflow failed at step "${stepId}": ${err instanceof Error ? err.message : String(err)}`,
+            'WORKFLOW_ERROR',
+          );
         }
       }
     }
@@ -5096,7 +5171,9 @@ export class WorkflowEngine {
         }
       }
     } else {
-      const lastStepId = options.workflow.steps[options.workflow.steps.length - 1]?.id || (options.workflow.steps.length - 1).toString();
+      const lastStepId =
+        options.workflow.steps[options.workflow.steps.length - 1]?.id ||
+        (options.workflow.steps.length - 1).toString();
       if (context.steps[lastStepId]) {
         outputs['result'] = context.steps[lastStepId]!.output;
       }
@@ -5115,7 +5192,9 @@ export class WorkflowEngine {
           return;
         }
       } catch (err) {
-        throw new Error(`Failed to evaluate condition "${step.condition}": ${err instanceof Error ? err.message : String(err)}`);
+        throw new Error(
+          `Failed to evaluate condition "${step.condition}": ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
     }
 
@@ -5150,7 +5229,6 @@ export class WorkflowEngine {
     });
   }
 }
-
 ```
 
 ## File: `packages\schema\src\agent.schema.ts`
@@ -5223,14 +5301,8 @@ const kebabCaseRegex = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
 // Main Agent Schema
 // ---------------------------------------------------------------------------
 export const AgentSchema = z.object({
-  name: z
-    .string()
-    .min(1)
-    .max(214)
-    .regex(kebabCaseRegex, 'Name must be kebab-case'),
-  version: z
-    .string()
-    .regex(/^\d+\.\d+\.\d+$/, 'Version must be valid semver'),
+  name: z.string().min(1).max(214).regex(kebabCaseRegex, 'Name must be kebab-case'),
+  version: z.string().regex(/^\d+\.\d+\.\d+$/, 'Version must be valid semver'),
   description: z.string().min(1).max(200),
   author: z.string().min(1),
   license: z.string().min(1),
@@ -5262,7 +5334,6 @@ export function validateAgent(data: unknown): AgentValidationResult {
   }
   return { success: false, errors: result.error };
 }
-
 ```
 
 ## File: `packages\schema\src\benchmark.schema.ts`
@@ -5299,7 +5370,6 @@ export function validateBenchmark(data: unknown): BenchmarkValidationResult {
   }
   return { success: false, errors: result.error };
 }
-
 ```
 
 ## File: `packages\schema\src\chat.schema.ts`
@@ -5367,7 +5437,6 @@ export const ChatMessageSchema = z.union([
 ]);
 
 export const ChatHistorySchema = z.array(ChatMessageSchema);
-
 ```
 
 ## File: `packages\schema\src\index.ts`
@@ -5376,7 +5445,13 @@ export const ChatHistorySchema = z.array(ChatMessageSchema);
 // @skillspace/schema — Shared types and validators
 
 // Schemas
-export { SkillSchema, PermissionSchema, OutputFormatSchema, CategorySchema, VALID_PERMISSIONS } from './skill.schema.js';
+export {
+  SkillSchema,
+  PermissionSchema,
+  OutputFormatSchema,
+  CategorySchema,
+  VALID_PERMISSIONS,
+} from './skill.schema.js';
 export { AgentSchema } from './agent.schema.js';
 export { LockFileSchema } from './lockfile.schema.js';
 export { ManifestSchema } from './manifest.schema.js';
@@ -5391,7 +5466,7 @@ export {
   AssistantMessageSchema,
   ToolCallSchema,
   ToolResultMessageSchema,
-  ChatHistorySchema
+  ChatHistorySchema,
 } from './chat.schema.js';
 
 // Validators
@@ -5432,7 +5507,6 @@ export type {
   AssistantMessage,
   ToolResultMessage,
 } from './types.js';
-
 ```
 
 ## File: `packages\schema\src\lockfile.schema.ts`
@@ -5494,7 +5568,6 @@ export function validateLockFile(data: unknown): LockFileValidationResult {
   }
   return { success: false, errors: result.error };
 }
-
 ```
 
 ## File: `packages\schema\src\manifest.schema.ts`
@@ -5538,7 +5611,6 @@ export function validateManifest(data: unknown): ManifestValidationResult {
   }
   return { success: false, errors: result.error };
 }
-
 ```
 
 ## File: `packages\schema\src\skill.schema.ts`
@@ -5640,12 +5712,7 @@ export const SkillSchema = z.object({
     .min(1)
     .max(214)
     .regex(kebabCaseRegex, 'Name must be kebab-case (e.g., my-skill-name)'),
-  version: z
-    .string()
-    .regex(
-      /^\d+\.\d+\.\d+$/,
-      'Version must be valid semver (MAJOR.MINOR.PATCH)',
-    ),
+  version: z.string().regex(/^\d+\.\d+\.\d+$/, 'Version must be valid semver (MAJOR.MINOR.PATCH)'),
   description: z.string().min(1).max(200),
   author: z.string().min(1),
   license: z.string().min(1),
@@ -5702,7 +5769,6 @@ export function validateSkill(data: unknown): SkillValidationResult {
   }
   return { success: false, errors: result.error };
 }
-
 ```
 
 ## File: `packages\schema\src\types.ts`
@@ -5812,7 +5878,6 @@ export interface ApiError {
     details?: unknown;
   };
 }
-
 ```
 
 ## File: `packages\schema\src\validators.ts`
@@ -5902,7 +5967,6 @@ export function validateWorkflowYaml(raw: string): WorkflowValidationResult {
     return { success: false, errors: makeYamlParseError(err) };
   }
 }
-
 ```
 
 ## File: `packages\schema\src\workflow.schema.ts`
@@ -5937,20 +6001,14 @@ export const WorkflowStepSchema = z.union([ActionStepSchema, ParallelStepSchema]
 // Main Workflow Schema
 // ---------------------------------------------------------------------------
 export const WorkflowSchema = z.object({
-  name: z
-    .string()
-    .min(1)
-    .max(214)
-    .regex(kebabCaseRegex, 'Name must be kebab-case'),
-  version: z
-    .string()
-    .regex(/^\d+\.\d+\.\d+$/, 'Version must be valid semver'),
+  name: z.string().min(1).max(214).regex(kebabCaseRegex, 'Name must be kebab-case'),
+  version: z.string().regex(/^\d+\.\d+\.\d+$/, 'Version must be valid semver'),
   description: z.string().min(1).max(200),
   author: z.string().min(1),
   license: z.string().min(1),
 
   steps: z.array(WorkflowStepSchema).min(1),
-  
+
   outputs: z.record(z.string()).optional(), // Maps output keys to expressions e.g., {{steps.1.output}}
 });
 
@@ -5968,6 +6026,4 @@ export function validateWorkflow(data: unknown): WorkflowValidationResult {
   }
   return { success: false, errors: result.error };
 }
-
 ```
-

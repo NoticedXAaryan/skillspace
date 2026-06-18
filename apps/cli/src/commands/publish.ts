@@ -18,6 +18,8 @@ export function registerPublishCommand(program: Command): void {
     .option('-d, --dir <dir>', 'Directory to publish', '.')
     .option('--private', 'Publish as a private package (requires org scope)', false)
     .option('-y, --yes', 'Headless mode (suppresses UI output)')
+    .option('--json', 'Output result as JSON (for scripting)')
+    .option('--github <url>', 'Publish by linking to a public GitHub repo (owner/repo or full URL)')
     .action(async (opts) => {
       const startTime = Date.now();
       const dir = path.resolve(opts.dir);
@@ -33,9 +35,51 @@ export function registerPublishCommand(program: Command): void {
       if (!token) {
         errorOperational('Authentication required', {
           message: 'You must be logged in to publish packages.',
-          hint: 'Run `skillspace login` to authenticate.'
+          hint: 'Run `skillspace login` to authenticate.',
         });
         process.exit(1);
+      }
+
+      if (opts.github) {
+        const token = loadCredentials();
+        if (!token) {
+          errorOperational('Authentication required', {
+            message: 'You must be logged in to publish packages.',
+            hint: 'Run `skillspace login` to authenticate.',
+          });
+          process.exit(1);
+        }
+
+        const client = new RegistryClient();
+        const loader = !opts.yes ? createLoader(`Publishing from GitHub: ${opts.github}`) : null;
+
+        const result = await client.publishFromGitHub({ githubUrl: opts.github });
+
+        if (result.error) {
+          loader?.fail('Publish failed');
+          errorOperational('GitHub publish failed', {
+            message: result.error.message || 'Unknown error',
+            cause: result.error.details ? JSON.stringify(result.error.details) : undefined,
+          });
+          process.exit(1);
+        }
+
+        if (opts.json) {
+          console.log(JSON.stringify({
+            success: true,
+            package: result.data?.package || opts.github,
+            source: 'github'
+          }));
+          return;
+        }
+
+        loader?.succeed('Published from GitHub');
+        successCritical('Package published', result.data?.package || opts.github, [
+          ['Install', `skillspace install ${result.data?.package}`],
+          ['View', `${client.baseUrl}/packages/${result.data?.package}`],
+        ]);
+        if (!opts.yes) outro(Date.now() - startTime);
+        return;
       }
 
       // 2. Detect manifest
@@ -50,7 +94,7 @@ export function registerPublishCommand(program: Command): void {
       } else {
         errorOperational('Manifest not found', {
           message: 'No skill.yaml or agent.yaml found in the current directory.',
-          hint: 'Run `skillspace init` to scaffold a new project.'
+          hint: 'Run `skillspace init` to scaffold a new project.',
         });
         process.exit(1);
       }
@@ -58,15 +102,15 @@ export function registerPublishCommand(program: Command): void {
       // 3. Validate manifest
       const raw = fs.readFileSync(manifestPath, 'utf-8');
       const validation = isAgent ? validateAgentYaml(raw) : validateSkillYaml(raw);
-      
+
       if (!validation.success) {
         // @ts-ignore - type mismatch handle generically
         const issues = validation.errors?.issues || [];
         const cause = issues.map((i: any) => `${i.path.join('.')}: ${i.message}`).join('\n');
-        
+
         errorOperational(`Invalid ${isAgent ? 'agent.yaml' : 'skill.yaml'}`, {
           message: 'The manifest failed schema validation.',
-          cause: cause
+          cause: cause,
         });
         process.exit(1);
       }
@@ -78,15 +122,15 @@ export function registerPublishCommand(program: Command): void {
       const os = await import('node:os');
       const tmpPath = path.join(os.tmpdir(), `skillspace-pkg-${Date.now()}.tar.gz`);
       const checksum = await createSkillPackage(dir, tmpPath);
-      
+
       const buffer = fs.readFileSync(tmpPath);
       if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath);
-      
+
       if (loader) {
         loader.succeed(`Packaged successfully`);
         successStandard('Package created', {
           'Package Size': `${(buffer.length / 1024).toFixed(1)} KB`,
-          'Checksum': checksum
+          Checksum: checksum,
         });
         loader.update('Publishing to registry');
       }
@@ -107,17 +151,30 @@ export function registerPublishCommand(program: Command): void {
         errorOperational('Publish failed', {
           code: 'REGISTRY_ERROR',
           message: result.error.message,
-          hint: 'Check your network connection or package name.'
+          hint: 'Check your network connection or package name.',
         });
         process.exit(1);
       }
 
+      if (opts.json) {
+        console.log(JSON.stringify({
+          success: true,
+          package: skill.name,
+          version: skill.version
+        }));
+        return;
+      }
+
       if (loader) {
         loader.succeed(`Published ${skill.name}@${skill.version}`);
-        successCritical('Agent is live.', `${skill.name} has been published to the SkillSpace registry.`, [
-          ['Install remotely', `skillspace install ${skill.name}`],
-          ['View registry', `skillspace.dev/agents/${skill.name}`]
-        ]);
+        successCritical(
+          'Agent is live.',
+          `${skill.name} has been published to the SkillSpace registry.`,
+          [
+            ['Install remotely', `skillspace install ${skill.name}`],
+            ['View registry', `skillspace.dev/agents/${skill.name}`],
+          ],
+        );
         outro(Date.now() - startTime);
       } else {
         successStandard(`Published ${skill.name}@${skill.version}`);

@@ -1,7 +1,7 @@
 schemaVersion: 2
-name: "@skillspace/sql-optimizer"
-version: "1.0.0"
-description: "Analyzes SQL queries and suggests performance optimizations with explanations."
+name: '@skillspace/sql-optimizer'
+version: '1.0.0'
+description: 'Analyzes SQL queries and suggests performance optimizations with explanations.'
 author: skillspace
 license: MIT
 tags:
@@ -14,6 +14,6 @@ persona:
     and suggest optimizations. Consider index usage, query structure,
     N+1 problems, and execution plan efficiency.
   behavioral_guidelines:
-    - "Provide the optimized query alongside the original"
-    - "Explain why each change improves performance"
+    - 'Provide the optimized query alongside the original'
+    - 'Explain why each change improves performance'
   capabilities: []

@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 
 async function getTrendingPackages() {
   const now = new Date();
-  
+
   const today = new Date(now);
   today.setHours(0, 0, 0, 0);
 
@@ -20,45 +20,34 @@ async function getTrendingPackages() {
   const lastMonth = new Date(now);
   lastMonth.setMonth(now.getMonth() - 1);
 
-  const [todayPkgs, weekPkgs, monthPkgs, allTimePkgs] = await Promise.all([
-    prisma.package.findMany({
-      where: { createdAt: { gte: today } },
-      orderBy: { downloads: 'desc' },
-      take: 10,
-      include: { owner: { select: { username: true } }, _count: { select: { stars: true } } }
-    }),
-    prisma.package.findMany({
-      where: { createdAt: { gte: lastWeek } },
-      orderBy: { downloads: 'desc' },
-      take: 10,
-      include: { owner: { select: { username: true } }, _count: { select: { stars: true } } }
-    }),
-    prisma.package.findMany({
-      where: { createdAt: { gte: lastMonth } },
-      orderBy: { downloads: 'desc' },
-      take: 10,
-      include: { owner: { select: { username: true } }, _count: { select: { stars: true } } }
-    }),
-    prisma.package.findMany({
-      orderBy: { downloads: 'desc' },
-      take: 10,
-      include: { owner: { select: { username: true } }, _count: { select: { stars: true } } }
-    })
-  ]);
-
-  const mapPkg = (p: any) => ({
-    id: p.id,
-    name: p.name,
-    author: p.owner.username,
-    downloads: p.downloads,
-    stars: p._count.stars
+  const packagesRaw = await prisma.package.findMany({
+    include: { owner: { select: { username: true } }, _count: { select: { stars: true } } },
   });
 
+  const scoredPackages = packagesRaw.map((p) => {
+    const score = p.downloads * 10 + p._count.stars * 50;
+    return {
+      id: p.id,
+      name: p.name,
+      author: p.owner?.username || 'skillspace',
+      downloads: p.downloads,
+      stars: p._count.stars,
+      score,
+      createdAt: p.createdAt,
+    };
+  });
+
+  const filterAndSort = (fromDate: Date) =>
+    scoredPackages
+      .filter((p) => p.createdAt >= fromDate)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 10);
+
   return {
-    today: todayPkgs.map(mapPkg),
-    week: weekPkgs.map(mapPkg),
-    month: monthPkgs.map(mapPkg),
-    allTime: allTimePkgs.map(mapPkg)
+    today: filterAndSort(today),
+    week: filterAndSort(lastWeek),
+    month: filterAndSort(lastMonth),
+    allTime: [...scoredPackages].sort((a, b) => b.score - a.score).slice(0, 10),
   };
 }
 

@@ -9,8 +9,12 @@ describe('WorkflowEngine', () => {
   beforeEach(() => {
     engine = new WorkflowEngine();
     // Mock the executors so we don't actually invoke agents or skills
-    (engine as any).skillExecutor.run = vi.fn().mockResolvedValue({ output: 'mocked skill output' });
-    (engine as any).agentExecutor.run = vi.fn().mockResolvedValue({ output: 'mocked agent output' });
+    (engine as any).skillExecutor.run = vi
+      .fn()
+      .mockResolvedValue({ output: 'mocked skill output' });
+    (engine as any).agentExecutor.run = vi
+      .fn()
+      .mockResolvedValue({ output: 'mocked agent output' });
   });
 
   it('should run a sequential workflow and resolve outputs', async () => {
@@ -26,16 +30,19 @@ describe('WorkflowEngine', () => {
       ],
       outputs: {
         final: '{{steps.step2.output}}',
-      }
+      },
     };
 
     const result = await engine.run({ workflow, input: '' });
-    
+
     expect((engine as any).skillExecutor.run).toHaveBeenCalledTimes(2);
-    expect((engine as any).skillExecutor.run).toHaveBeenNthCalledWith(2, expect.objectContaining({
-      input: 'Greeting: mocked skill output'
-    }));
-    
+    expect((engine as any).skillExecutor.run).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        input: 'Greeting: mocked skill output',
+      }),
+    );
+
     expect(result).toEqual({ final: 'mocked skill output' });
   });
 
@@ -53,7 +60,7 @@ describe('WorkflowEngine', () => {
     };
 
     await engine.run({ workflow, input: '' });
-    
+
     expect((engine as any).skillExecutor.run).toHaveBeenCalledTimes(1); // Second step should be skipped
   });
 
@@ -64,9 +71,7 @@ describe('WorkflowEngine', () => {
       description: 'Test',
       author: 'dev',
       license: 'MIT',
-      steps: [
-        { id: 's1', run: 's', input: '{{steps.missing.output}}' },
-      ],
+      steps: [{ id: 's1', run: 's', input: '{{steps.missing.output}}' }],
     };
 
     await expect(engine.run({ workflow, input: '' })).rejects.toThrow(/Compile Error/);

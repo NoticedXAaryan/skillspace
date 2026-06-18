@@ -14,7 +14,7 @@ export async function scaffoldMcpServer(
   author: string,
   lang: string,
   isHeadless: boolean,
-  startTime: number
+  startTime: number,
 ) {
   let primaryConflictFile = '';
   switch (lang) {
@@ -35,15 +35,17 @@ export async function scaffoldMcpServer(
       primaryConflictFile = 'pom.xml';
       break;
     default:
-      errorOperational('Invalid language', { message: `Language ${lang} is not supported for MCP servers.` });
+      errorOperational('Invalid language', {
+        message: `Language ${lang} is not supported for MCP servers.`,
+      });
       process.exit(1);
   }
 
   const conflictPath = path.join(targetDir, primaryConflictFile);
   if (fs.existsSync(conflictPath)) {
-    errorOperational('File conflict', { 
+    errorOperational('File conflict', {
       message: `${primaryConflictFile} already exists in this directory.`,
-      hint: 'Change directories or remove the file first.'
+      hint: 'Change directories or remove the file first.',
     });
     process.exit(1);
   }
@@ -56,21 +58,27 @@ export async function scaffoldMcpServer(
   if (lang === 'typescript') {
     const pkgJson = {
       name: finalProjectName,
-      version: "1.0.0",
+      version: '1.0.0',
       description: description,
-      type: "module",
-      bin: { [finalProjectName]: "./build/index.js" },
-      scripts: { "build": "tsc", "start": "node build/index.js" },
-      dependencies: { "@modelcontextprotocol/sdk": "latest" },
-      devDependencies: { "@types/node": "^20.0.0", "typescript": "^5.0.0" }
+      type: 'module',
+      bin: { [finalProjectName]: './build/index.js' },
+      scripts: { build: 'tsc', start: 'node build/index.js' },
+      dependencies: { '@modelcontextprotocol/sdk': 'latest' },
+      devDependencies: { '@types/node': '^20.0.0', typescript: '^5.0.0' },
     };
     const tsconfig = {
       compilerOptions: {
-        target: "ES2022", module: "Node16", moduleResolution: "Node16",
-        outDir: "./build", rootDir: "./src", strict: true, esModuleInterop: true,
-        skipLibCheck: true, forceConsistentCasingInFileNames: true
+        target: 'ES2022',
+        module: 'Node16',
+        moduleResolution: 'Node16',
+        outDir: './build',
+        rootDir: './src',
+        strict: true,
+        esModuleInterop: true,
+        skipLibCheck: true,
+        forceConsistentCasingInFileNames: true,
       },
-      include: ["src/**/*"]
+      include: ['src/**/*'],
     };
     const indexTs = `import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
@@ -98,8 +106,16 @@ async function main() {
 
 main().catch((error) => { console.error('Server error:', error); process.exit(1); });
 `;
-    fs.writeFileSync(path.join(targetDir, 'package.json'), JSON.stringify(pkgJson, null, 2), 'utf-8');
-    fs.writeFileSync(path.join(targetDir, 'tsconfig.json'), JSON.stringify(tsconfig, null, 2), 'utf-8');
+    fs.writeFileSync(
+      path.join(targetDir, 'package.json'),
+      JSON.stringify(pkgJson, null, 2),
+      'utf-8',
+    );
+    fs.writeFileSync(
+      path.join(targetDir, 'tsconfig.json'),
+      JSON.stringify(tsconfig, null, 2),
+      'utf-8',
+    );
     fs.mkdirSync(path.join(targetDir, 'src'), { recursive: true });
     fs.writeFileSync(path.join(targetDir, 'src', 'index.ts'), indexTs, 'utf-8');
     createdFiles = ['package.json', 'tsconfig.json', 'src/index.ts', 'skill.yaml'];
@@ -107,12 +123,12 @@ main().catch((error) => { console.error('Server error:', error); process.exit(1)
   } else if (lang === 'javascript') {
     const pkgJson = {
       name: finalProjectName,
-      version: "1.0.0",
+      version: '1.0.0',
       description: description,
-      type: "module",
-      bin: { [finalProjectName]: "./src/index.js" },
-      scripts: { "start": "node src/index.js" },
-      dependencies: { "@modelcontextprotocol/sdk": "latest" }
+      type: 'module',
+      bin: { [finalProjectName]: './src/index.js' },
+      scripts: { start: 'node src/index.js' },
+      dependencies: { '@modelcontextprotocol/sdk': 'latest' },
     };
     const indexJs = `import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
@@ -140,7 +156,11 @@ async function main() {
 
 main().catch((error) => { console.error('Server error:', error); process.exit(1); });
 `;
-    fs.writeFileSync(path.join(targetDir, 'package.json'), JSON.stringify(pkgJson, null, 2), 'utf-8');
+    fs.writeFileSync(
+      path.join(targetDir, 'package.json'),
+      JSON.stringify(pkgJson, null, 2),
+      'utf-8',
+    );
     fs.mkdirSync(path.join(targetDir, 'src'), { recursive: true });
     fs.writeFileSync(path.join(targetDir, 'src', 'index.js'), indexJs, 'utf-8');
     createdFiles = ['package.json', 'src/index.js', 'skill.yaml'];
@@ -289,17 +309,17 @@ public class Main {
     instructions: {
       system: `You are an expert at ${finalProjectName}. You have access to the tools provided by this MCP server.`,
       user_template: `{{input}}`,
-      output_format: 'text'
+      output_format: 'text',
     },
     mcpServers: [
       {
         name: finalProjectName,
         transport: 'stdio',
         command: command,
-        requiredScopes: []
-      }
+        requiredScopes: [],
+      },
     ],
-    permissions: []
+    permissions: [],
   };
 
   fs.writeFileSync(path.join(targetDir, 'skill.yaml'), YAML.stringify(skillYaml), 'utf-8');
@@ -317,13 +337,13 @@ public class Main {
       nextSteps.push(['Tidy', 'go mod tidy']);
     }
     nextSteps.push(['Test skill', `skillspace run .\\skill.yaml`]);
-    
+
     successCritical('MCP Server initialized.', `Your boilerplate is ready.`, nextSteps as any);
     outro(Date.now() - startTime);
   } else {
     successStandard(`Initialized MCP Server "${finalProjectName}"`, {
-      'Language': lang,
-      'Created files': createdFiles.join(', ')
+      Language: lang,
+      'Created files': createdFiles.join(', '),
     });
   }
 }

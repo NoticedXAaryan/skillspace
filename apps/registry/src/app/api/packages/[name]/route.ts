@@ -20,40 +20,55 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ nam
     if (pkg.isPrivate) {
       const user = await getUserFromRequest(_req);
       if (!user) {
-        return new Response(JSON.stringify({ error: { message: 'Unauthorized. This package is private.' } }), {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        });
+        return new Response(
+          JSON.stringify({ error: { message: 'Unauthorized. This package is private.' } }),
+          {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+          },
+        );
       }
       if (pkg.orgId) {
         const isMember = await prisma.orgMember.findUnique({
-          where: { organizationId_userId: { userId: user.userId, organizationId: pkg.orgId } }
+          where: { organizationId_userId: { userId: user.userId, organizationId: pkg.orgId } },
         });
         if (!isMember && pkg.ownerId !== user.userId) {
-          return new Response(JSON.stringify({ error: { message: 'Forbidden' } }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+          return new Response(JSON.stringify({ error: { message: 'Forbidden' } }), {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' },
+          });
         }
       } else if (pkg.ownerId !== user.userId) {
-        return new Response(JSON.stringify({ error: { message: 'Forbidden' } }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+        return new Response(JSON.stringify({ error: { message: 'Forbidden' } }), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        });
       }
     }
 
     await prisma.package.update({ where: { id: pkg.id }, data: { downloads: { increment: 1 } } });
 
     const safeParse = (str: any, fallback: any) => {
-      try { return typeof str === 'string' ? JSON.parse(str) : str || fallback; }
-      catch { return fallback; }
+      try {
+        return typeof str === 'string' ? JSON.parse(str) : str || fallback;
+      } catch {
+        return fallback;
+      }
     };
 
     return success({
       ...pkg,
       tags: safeParse(pkg.tags, []),
+      source: pkg.githubUrl ? 'github' : 'registry',
+      verified: pkg.verified || !!pkg.verifiedBy,
       latestVersion: pkg.versions[0]
         ? { ...pkg.versions[0], manifest: safeParse(pkg.versions[0].manifest, {}) }
         : null,
-      allVersions: pkg.versions.map(v => ({
+      allVersions: pkg.versions.map((v) => ({
         version: v.version,
-        publishedAt: v.publishedAt
-      }))
+        publishedAt: v.publishedAt,
+        githubCommit: v.githubCommit,
+      })),
     });
   } catch (error) {
     console.error(`[API Error] GET /packages/[name]`, error);

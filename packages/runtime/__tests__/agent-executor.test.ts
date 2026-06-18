@@ -37,21 +37,23 @@ describe('AgentExecutor', () => {
           mcp_servers: [],
           permissions: [],
           memory: { type: 'session' },
-          workflows: []
+          workflows: [],
         } as Agent,
-        skills: [{
-          name: 'test-skill',
-          version: '1.0.0',
-          description: 'Test skill',
-          author: 'tester',
-          license: 'MIT',
-          instructions: { system: 'sys', user_template: '{{input}}', output_format: 'text' },
-          tags: [],
-          category: 'other',
-          permissions: [],
-          compatibility: { models: [] },
-          config: { temperature: 0, max_tokens: 100, timeout_seconds: 10 }
-        } as Skill]
+        skills: [
+          {
+            name: 'test-skill',
+            version: '1.0.0',
+            description: 'Test skill',
+            author: 'tester',
+            license: 'MIT',
+            instructions: { system: 'sys', user_template: '{{input}}', output_format: 'text' },
+            tags: [],
+            category: 'other',
+            permissions: [],
+            compatibility: { models: [] },
+            config: { temperature: 0, max_tokens: 100, timeout_seconds: 10 },
+          } as Skill,
+        ],
       }),
       resolve: vi.fn(),
     } as unknown as AgentResolver;
@@ -74,7 +76,7 @@ describe('AgentExecutor', () => {
         usage: { promptTokens: 0, completionTokens: 0 },
         model: 'mock/model',
         duration_ms: 0,
-        status: 'success'
+        status: 'success',
       } as ExecutionResult),
     };
 
@@ -84,7 +86,7 @@ describe('AgentExecutor', () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: vi.fn().mockResolvedValue({}),
-      text: vi.fn()
+      text: vi.fn(),
     });
 
     executor = new AgentExecutor(mockResolver, mockSessionManager);
@@ -94,7 +96,7 @@ describe('AgentExecutor', () => {
     const res = await executor.run({
       agent: 'test-agent',
       input: 'hello',
-      session_id: 'session-123'
+      session_id: 'session-123',
     });
 
     expect(mockSessionManager.loadSession).toHaveBeenCalledWith('session-123');
@@ -112,10 +114,10 @@ describe('AgentExecutor', () => {
       [
         { role: 'system', content: expect.stringContaining('test-agent') },
         { role: 'user', content: 'hello' },
-        { role: 'assistant', content: 'Mock Response' }
+        { role: 'assistant', content: 'Mock Response' },
       ],
       expect.any(Array),
-      expect.any(Object)
+      expect.any(Object),
     );
   });
 
@@ -131,10 +133,10 @@ describe('AgentExecutor', () => {
         expect.objectContaining({
           name: 'skill_test-skill',
           description: 'Test skill',
-          required: ['input']
-        })
+          required: ['input'],
+        }),
       ],
-      expect.any(Object)
+      expect.any(Object),
     );
   });
 });

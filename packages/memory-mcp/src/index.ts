@@ -6,7 +6,7 @@ import { saveMemory, searchMemories } from './db.js';
 
 const server = new Server(
   { name: '@skillspace/memory-mcp', version: '0.1.0' },
-  { capabilities: { tools: {} } }
+  { capabilities: { tools: {} } },
 );
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
@@ -72,18 +72,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         content: [{ type: 'text', text: `Successfully saved memory with ID ${id}` }],
       };
     }
-    
+
     if (request.params.name === 'search_memory') {
       const args = searchSchema.parse(request.params.arguments);
       const results = searchMemories(args.query, args.limit);
-      
+
       if (results.length === 0) {
         return { content: [{ type: 'text', text: 'No matching memories found.' }] };
       }
 
-      const formatted = results.map(r => 
-        `[${r.timestamp}] (ID: ${r.id}) ${r.tags ? `[${r.tags}] ` : ''}${r.content}`
-      ).join('\n');
+      const formatted = results
+        .map((r) => `[${r.timestamp}] (ID: ${r.id}) ${r.tags ? `[${r.tags}] ` : ''}${r.content}`)
+        .join('\n');
 
       return {
         content: [{ type: 'text', text: `Found ${results.length} memories:\n\n${formatted}` }],
@@ -100,7 +100,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
     return {
       isError: true,
-      content: [{ type: 'text', text: `Internal Error: ${error instanceof Error ? error.message : String(error)}` }],
+      content: [
+        {
+          type: 'text',
+          text: `Internal Error: ${error instanceof Error ? error.message : String(error)}`,
+        },
+      ],
     };
   }
 });

@@ -35,6 +35,7 @@ OWASP Top 10 categories:
 ## Output Format
 
 Returns JSON with:
+
 - `vulnerabilities[]` — Array of found issues with severity, category, and fixes
 - `summary` — Human-readable summary
 - `score` — Security score (0-100, higher is better)

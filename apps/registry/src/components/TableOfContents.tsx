@@ -23,7 +23,7 @@ export default function TableOfContents() {
         return {
           id: el.id,
           text: el.textContent || '',
-          level: Number(el.tagName.replace('H', ''))
+          level: Number(el.tagName.replace('H', '')),
         };
       });
       setHeadings(parsedHeadings);
@@ -37,7 +37,7 @@ export default function TableOfContents() {
           }
         });
       },
-      { rootMargin: '0px 0px -80% 0px' }
+      { rootMargin: '0px 0px -80% 0px' },
     );
 
     const checkScroll = () => {
@@ -60,12 +60,12 @@ export default function TableOfContents() {
       <div className="text-sm font-semibold">On this page</div>
       <ul className="flex flex-col gap-2.5 text-sm">
         {headings.map((h) => (
-          <li 
-            key={h.id} 
+          <li
+            key={h.id}
             className={cn(
-              "transition-colors hover:text-foreground",
-              h.level === 3 ? "pl-4" : "",
-              activeId === h.id ? "font-medium text-foreground" : "text-muted-foreground"
+              'transition-colors hover:text-foreground',
+              h.level === 3 ? 'pl-4' : '',
+              activeId === h.id ? 'font-medium text-foreground' : 'text-muted-foreground',
             )}
           >
             <a href={`#${h.id}`}>{h.text}</a>

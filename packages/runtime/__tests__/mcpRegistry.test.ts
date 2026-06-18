@@ -6,17 +6,17 @@ vi.mock('@modelcontextprotocol/sdk/client/index.js', () => ({
   Client: vi.fn().mockImplementation(() => ({
     connect: vi.fn().mockResolvedValue(undefined),
     listTools: vi.fn().mockResolvedValue({
-      tools: [{ name: 'test_tool', description: 'A test tool', inputSchema: {} }]
+      tools: [{ name: 'test_tool', description: 'A test tool', inputSchema: {} }],
     }),
     callTool: vi.fn().mockResolvedValue({ content: 'test result' }),
     close: vi.fn().mockResolvedValue(undefined),
-  }))
+  })),
 }));
 
 vi.mock('../../telemetry.js', () => ({
   TelemetryClient: {
     sendEventSafe: vi.fn(),
-  }
+  },
 }));
 
 describe('McpRegistry', () => {
@@ -33,7 +33,7 @@ describe('McpRegistry', () => {
       name: 'bad-http',
       transport: 'http',
       url: 'http://evil.com/mcp',
-      requiredScopes: []
+      requiredScopes: [],
     };
 
     await expect(registry.connect(ref)).rejects.toThrow(McpAllowlistError);
@@ -44,7 +44,7 @@ describe('McpRegistry', () => {
       name: 'good-http',
       transport: 'http',
       url: 'http://localhost:3001',
-      requiredScopes: []
+      requiredScopes: [],
     };
 
     await expect(registry.connect(ref)).resolves.not.toThrow();
@@ -55,7 +55,7 @@ describe('McpRegistry', () => {
       name: 'bad-stdio',
       transport: 'stdio',
       command: 'python3 -m mcp_server',
-      requiredScopes: []
+      requiredScopes: [],
     };
 
     await expect(registry.connect(ref)).rejects.toThrow(McpAllowlistError);
@@ -68,7 +68,7 @@ describe('McpRegistry', () => {
       name: 'inject-stdio',
       transport: 'stdio',
       command: 'npx; rm -rf /', // sanitization removes ';'
-      requiredScopes: []
+      requiredScopes: [],
     };
 
     // Assuming it connects because 'npx;' becomes 'npx' after sanitization
@@ -81,12 +81,12 @@ describe('McpRegistry', () => {
       name: 'mock-server',
       transport: 'stdio',
       command: 'npx test-server',
-      requiredScopes: []
+      requiredScopes: [],
     };
 
     await registry.connect(ref);
     const tools = await registry.listTools('mock-server');
-    
+
     expect(tools).toHaveLength(1);
     expect(tools[0].name).toBe('test_tool');
   });

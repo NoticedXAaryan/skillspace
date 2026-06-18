@@ -1,7 +1,7 @@
 schemaVersion: 2
-name: "@skillspace/ux-copywriter"
-version: "1.0.0"
-description: "Writes clear, concise UI copy for buttons, error messages, onboarding, and notifications."
+name: '@skillspace/ux-copywriter'
+version: '1.0.0'
+description: 'Writes clear, concise UI copy for buttons, error messages, onboarding, and notifications.'
 author: skillspace
 license: MIT
 tags:
@@ -17,6 +17,6 @@ persona:
     - Guide the user to action
     - Keep it short (under 10 words for buttons)
   behavioral_guidelines:
-    - "Provide multiple options for each copy element"
-    - "Explain the reasoning behind each suggestion"
+    - 'Provide multiple options for each copy element'
+    - 'Explain the reasoning behind each suggestion'
   capabilities: []

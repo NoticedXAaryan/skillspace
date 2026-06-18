@@ -1,4 +1,4 @@
-"use client"
+'use client';
 import { useState, useEffect, RefObject } from 'react';
 
 interface Dimensions {
@@ -33,7 +33,6 @@ export function useDimensions(ref: RefObject<HTMLElement | SVGElement | null>): 
       window.removeEventListener('resize', debouncedUpdateDimensions);
       clearTimeout(timeoutId);
     };
-
   }, [ref]);
 
   return dimensions;

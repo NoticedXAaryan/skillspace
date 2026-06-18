@@ -1,10 +1,10 @@
-"use client";
-import React, { useId } from "react";
-import Particles, { initParticlesEngine } from "@tsparticles/react";
-import type { Container, Engine } from "@tsparticles/engine";
-import { loadSlim } from "@tsparticles/slim";
-import { cn } from "@/lib/utils";
-import { motion, useAnimation } from "framer-motion";
+'use client';
+import React, { useId } from 'react';
+import Particles, { initParticlesEngine } from '@tsparticles/react';
+import type { Container, Engine } from '@tsparticles/engine';
+import { loadSlim } from '@tsparticles/slim';
+import { cn } from '@/lib/utils';
+import { motion, useAnimation } from 'framer-motion';
 
 type ParticlesProps = {
   id?: string;
@@ -18,16 +18,8 @@ type ParticlesProps = {
   particleDensity?: number;
 };
 export const SparklesCore = (props: ParticlesProps) => {
-  const {
-    id,
-    className,
-    background,
-    minSize,
-    maxSize,
-    speed,
-    particleColor,
-    particleDensity,
-  } = props;
+  const { id, className, background, minSize, maxSize, speed, particleColor, particleDensity } =
+    props;
   const [init, setInit] = React.useState(false);
   React.useEffect(() => {
     initParticlesEngine(async (engine) => {
@@ -50,16 +42,16 @@ export const SparklesCore = (props: ParticlesProps) => {
   };
 
   return (
-    <motion.div animate={controls} className={cn("opacity-0", className)}>
+    <motion.div animate={controls} className={cn('opacity-0', className)}>
       {init && (
         <Particles
           id={id || useId()}
-          className={cn("h-full w-full")}
+          className={cn('h-full w-full')}
           particlesLoaded={particlesLoaded}
           options={{
             background: {
               color: {
-                value: background || "transparent",
+                value: background || 'transparent',
               },
             },
             fullScreen: {
@@ -71,15 +63,15 @@ export const SparklesCore = (props: ParticlesProps) => {
               events: {
                 onClick: {
                   enable: true,
-                  mode: "push",
+                  mode: 'push',
                 },
                 onHover: {
                   enable: false,
-                  mode: "repulse",
+                  mode: 'repulse',
                 },
                 resize: {
-                    enable: true
-                }
+                  enable: true,
+                },
               },
               modes: {
                 push: {
@@ -93,13 +85,13 @@ export const SparklesCore = (props: ParticlesProps) => {
             },
             particles: {
               color: {
-                value: particleColor || "#ffffff",
+                value: particleColor || '#ffffff',
               },
               move: {
-                direction: "none",
+                direction: 'none',
                 enable: true,
                 outModes: {
-                  default: "out",
+                  default: 'out',
                 },
                 random: false,
                 speed: speed || 4,

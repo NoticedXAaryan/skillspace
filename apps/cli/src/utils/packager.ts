@@ -14,8 +14,17 @@ import ignore from 'ignore';
  */
 export async function createSkillPackage(dir: string, outputPath: string): Promise<string> {
   // Setup the ignorer with critical defaults
-  const ig = ignore().add(['node_modules', '.git', '.DS_Store', 'dist', 'build', '.env', '.env.*', '.turbo']);
-  
+  const ig = ignore().add([
+    'node_modules',
+    '.git',
+    '.DS_Store',
+    'dist',
+    'build',
+    '.env',
+    '.env.*',
+    '.turbo',
+  ]);
+
   // Add user ignores
   const gitignorePath = path.join(dir, '.gitignore');
   if (fs.existsSync(gitignorePath)) {
@@ -42,13 +51,13 @@ export async function createSkillPackage(dir: string, outputPath: string): Promi
       file: outputPath,
       // Pass the relative paths we filtered above
     },
-    files
+    files,
   );
 
   // Compute checksum of the final tarball
   const hash = crypto.createHash('sha256');
   const stream = fs.createReadStream(outputPath);
-  
+
   return new Promise((resolve, reject) => {
     stream.on('data', (chunk) => hash.update(chunk));
     stream.on('end', () => resolve(`sha256:${hash.digest('hex')}`));
@@ -92,7 +101,7 @@ function readDirRecursive(dirPath: string, prefix: string, files: string[], ig: 
     const fullPath = path.join(dirPath, entry.name);
     // Standardize path for ignore matching (use forward slashes)
     const relativePath = prefix ? `${prefix}/${entry.name}` : entry.name;
-    
+
     // Check if ignored. The ignore package expects directory paths to end with a slash for dir-specific rules
     if (ig.ignores(relativePath) || (entry.isDirectory() && ig.ignores(relativePath + '/'))) {
       continue;

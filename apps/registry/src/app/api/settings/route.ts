@@ -52,10 +52,12 @@ export async function PUT(req: NextRequest) {
 
   const updates: Record<string, string | null> = {};
   if (parsed.data.openaiKey !== undefined) updates.openaiKey = parsed.data.openaiKey || null;
-  if (parsed.data.anthropicKey !== undefined) updates.anthropicKey = parsed.data.anthropicKey || null;
+  if (parsed.data.anthropicKey !== undefined)
+    updates.anthropicKey = parsed.data.anthropicKey || null;
   if (parsed.data.googleKey !== undefined) updates.googleKey = parsed.data.googleKey || null;
   if (parsed.data.ollamaUrl !== undefined) updates.ollamaUrl = parsed.data.ollamaUrl || null;
-  if (parsed.data.defaultModel !== undefined) updates.defaultModel = parsed.data.defaultModel || null;
+  if (parsed.data.defaultModel !== undefined)
+    updates.defaultModel = parsed.data.defaultModel || null;
 
   const settings = await prisma.userSettings.upsert({
     where: { userId: user.userId },

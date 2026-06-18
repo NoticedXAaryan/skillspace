@@ -3,11 +3,11 @@ import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { getUserFromRequest } from '@/lib/auth';
 import { success, error, unauthorized } from '@/lib/api-response';
-import { verifyGitHubRepo, fetchGitHubFile, parseGitHubUrl } from '@/lib/github';
+import { parseGitHubUrl, fetchPackageFromGitHub } from '@/lib/github';
 
 const LinkGitHubSchema = z.object({
   packageName: z.string().min(1),
-  githubUrl: z.string().url(),
+  githubUrl: z.string().min(1),
   branch: z.string().default('main'),
   path: z.string().default('skill.yaml'),
 });
@@ -29,28 +29,30 @@ export async function POST(req: NextRequest) {
   if (!pkg) return error('NOT_FOUND', `Package "${packageName}" not found`, 404);
   if (pkg.ownerId !== user.userId) return error('FORBIDDEN', 'You do not own this package', 403);
 
-  // Verify the GitHub repo
-  const verification = await verifyGitHubRepo(githubUrl);
-  if (!verification.valid) {
-    return error('VALIDATION_ERROR', verification.error || 'GitHub verification failed', 400);
+  // Parse and validate the GitHub URL
+  const info = parseGitHubUrl(githubUrl);
+  if (!info) {
+    return error(
+      'VALIDATION_ERROR',
+      'Invalid GitHub URL format. Expected: owner/repo, owner/repo/path, or full GitHub URL',
+      400,
+    );
   }
 
-  // Fetch the skill.yaml content
-  const info = parseGitHubUrl(githubUrl);
-  if (!info) return error('VALIDATION_ERROR', 'Invalid GitHub URL', 400);
-
-  const skillFile = await fetchGitHubFile(info.owner, info.repo, branch, path);
-  if (!skillFile) {
-    return error('VALIDATION_ERROR', `Could not fetch ${path} from the repository`, 400);
+  // Fetch the manifest to verify it exists and is valid
+  const manifest = await fetchPackageFromGitHub(githubUrl);
+  if (!manifest) {
+    return error('VALIDATION_ERROR', `Could not fetch or parse ${path} from the repository`, 400);
   }
 
   // Update the package with GitHub info
   const updated = await prisma.package.update({
     where: { id: pkg.id },
     data: {
-      githubUrl,
-      githubBranch: branch,
-      githubPath: path,
+      githubUrl: `https://github.com/${info.owner}/${info.repo}`,
+      githubBranch: info.branch,
+      githubPath: info.path,
+      verified: true,
       verifiedBy: 'github',
       verifiedAt: new Date(),
     },
@@ -62,19 +64,18 @@ export async function POST(req: NextRequest) {
   });
 
   if (existingVersions.length === 0) {
-    // Parse the YAML to extract version
-    const versionMatch = skillFile.content.match(/version:\s*["']?([^"'\s]+)["']?/);
-    const version = versionMatch ? versionMatch[1] : '1.0.0';
+    // Extract version from parsed manifest
+    const version = (manifest.parsed.version as string) || '1.0.0';
 
     await prisma.packageVersion.create({
       data: {
         packageId: pkg.id,
         version,
-        manifest: skillFile.content,
-        storagePath: `github:${githubUrl}`,
-        checksum: skillFile.sha || 'github-linked',
-        size: skillFile.size,
-        githubCommit: skillFile.sha || null,
+        manifest: manifest.raw,
+        storagePath: `github:${info.owner}/${info.repo}/${info.path}`,
+        checksum: manifest.sha ? `sha256:${manifest.sha}` : 'github-linked',
+        size: manifest.size,
+        githubCommit: manifest.sha || null,
       },
     });
   }
@@ -83,6 +84,7 @@ export async function POST(req: NextRequest) {
     package: updated.name,
     githubUrl: updated.githubUrl,
     branch: updated.githubBranch,
+    path: updated.githubPath,
     verified: true,
   });
 }

@@ -16,25 +16,25 @@ Produces modern, production-grade UI that looks like it ships from a funded star
 
 Before writing a single line, answer these:
 
-| Question | Why it matters |
-|---|---|
-| What is this screen/component for? | Informs density, hierarchy, tone |
+| Question                                                  | Why it matters                                            |
+| --------------------------------------------------------- | --------------------------------------------------------- |
+| What is this screen/component for?                        | Informs density, hierarchy, tone                          |
 | Who uses it? (dev tool, consumer app, internal dashboard) | Dev tools = dense + monospace; consumer = spacious + warm |
-| What's the one action the user must take? | Primary CTA placement, visual weight |
-| Dark or light first? | Dark = technical/premium; light = approachable/editorial |
-| What provider/framework? (React, HTML, Next.js) | Determines component patterns |
+| What's the one action the user must take?                 | Primary CTA placement, visual weight                      |
+| Dark or light first?                                      | Dark = technical/premium; light = approachable/editorial  |
+| What provider/framework? (React, HTML, Next.js)           | Determines component patterns                             |
 
 ### 1.2 — Choose an Aesthetic Direction
 
 Pick ONE and commit fully. Do not blend.
 
-| Aesthetic | Signature Elements | Good For |
-|---|---|---|
-| **Sharp Dark** | Zinc/slate palette, tight borders, monospace accents, hairline dividers | Dev tools, SaaS, auth pages |
-| **Soft Light** | Off-white base, subtle shadows, generous whitespace, warm neutrals | Marketing, consumer, onboarding |
-| **Editorial** | High contrast text-heavy layout, oversized type, asymmetry | Landing pages, blogs, portfolios |
-| **Glass / Depth** | Frosted panels, layered translucency, ambient glow | AI products, futuristic dashboards |
-| **Dense Data** | Compact rows, monospace everywhere, tag-heavy, sidebar-heavy | Analytics, admin panels, CLI-adjacent UIs |
+| Aesthetic         | Signature Elements                                                      | Good For                                  |
+| ----------------- | ----------------------------------------------------------------------- | ----------------------------------------- |
+| **Sharp Dark**    | Zinc/slate palette, tight borders, monospace accents, hairline dividers | Dev tools, SaaS, auth pages               |
+| **Soft Light**    | Off-white base, subtle shadows, generous whitespace, warm neutrals      | Marketing, consumer, onboarding           |
+| **Editorial**     | High contrast text-heavy layout, oversized type, asymmetry              | Landing pages, blogs, portfolios          |
+| **Glass / Depth** | Frosted panels, layered translucency, ambient glow                      | AI products, futuristic dashboards        |
+| **Dense Data**    | Compact rows, monospace everywhere, tag-heavy, sidebar-heavy            | Analytics, admin panels, CLI-adjacent UIs |
 
 > **Rule**: Halfway aesthetics look broken. If you pick Sharp Dark, every element must reinforce it — no rounded-xl cards with drop shadows, no colorful gradients, no system fonts.
 
@@ -50,31 +50,31 @@ Always define tokens first. Never hardcode colors, radii, or spacing inline.
 /* Sharp Dark — canonical token set */
 :root {
   /* Backgrounds */
-  --bg-base:       #09090b;   /* Page / root */
-  --bg-surface:    #111113;   /* Cards, panels */
-  --bg-elevated:   #18181b;   /* Dropdowns, popovers */
-  --bg-overlay:    #1e1e21;   /* Modal backdrops, hover states */
+  --bg-base: #09090b; /* Page / root */
+  --bg-surface: #111113; /* Cards, panels */
+  --bg-elevated: #18181b; /* Dropdowns, popovers */
+  --bg-overlay: #1e1e21; /* Modal backdrops, hover states */
 
   /* Borders */
-  --border-subtle: rgba(255,255,255,0.06);
-  --border-base:   rgba(255,255,255,0.10);
-  --border-strong: rgba(255,255,255,0.18);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-base: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.18);
 
   /* Text */
-  --text-primary:  #fafafa;
-  --text-secondary:#a1a1aa;
-  --text-muted:    #71717a;
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
   --text-disabled: #3f3f46;
 
   /* Accents — pick ONE brand color */
-  --accent:        #e4e4e7;      /* Default: near-white accent */
-  --accent-glow:   rgba(228,228,231,0.08);
+  --accent: #e4e4e7; /* Default: near-white accent */
+  --accent-glow: rgba(228, 228, 231, 0.08);
 
   /* Semantic */
-  --success:       #22c55e;
-  --warning:       #f59e0b;
-  --error:         #ef4444;
-  --info:          #3b82f6;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
 }
 ```
 
@@ -86,22 +86,22 @@ Always define tokens first. Never hardcode colors, radii, or spacing inline.
 
 ```css
 /* Dev tool / SaaS — use these, not Inter or Roboto */
---font-sans:  'Geist', 'DM Sans', 'Plus Jakarta Sans', system-ui;
---font-mono:  'Geist Mono', 'JetBrains Mono', 'Fira Code', monospace;
+--font-sans: 'Geist', 'DM Sans', 'Plus Jakarta Sans', system-ui;
+--font-mono: 'Geist Mono', 'JetBrains Mono', 'Fira Code', monospace;
 
 /* Scale (rem, 16px base) */
---text-xs:   0.6875rem;  /* 11px — labels, badges */
---text-sm:   0.8125rem;  /* 13px — body, table cells */
---text-base: 0.9375rem;  /* 15px — default body */
---text-lg:   1.0625rem;  /* 17px — subheadings */
---text-xl:   1.25rem;    /* 20px — headings */
---text-2xl:  1.5rem;     /* 24px */
---text-3xl:  2rem;       /* 32px — hero */
---text-4xl:  3rem;       /* 48px — hero XL */
+--text-xs: 0.6875rem; /* 11px — labels, badges */
+--text-sm: 0.8125rem; /* 13px — body, table cells */
+--text-base: 0.9375rem; /* 15px — default body */
+--text-lg: 1.0625rem; /* 17px — subheadings */
+--text-xl: 1.25rem; /* 20px — headings */
+--text-2xl: 1.5rem; /* 24px */
+--text-3xl: 2rem; /* 32px — hero */
+--text-4xl: 3rem; /* 48px — hero XL */
 
 /* Weights */
---weight-normal:   400;
---weight-medium:   500;
+--weight-normal: 400;
+--weight-medium: 500;
 --weight-semibold: 600;
 ```
 
@@ -111,22 +111,22 @@ Always define tokens first. Never hardcode colors, radii, or spacing inline.
 
 ```css
 /* Spacing — 4px base grid */
---space-1:  4px;
---space-2:  8px;
---space-3:  12px;
---space-4:  16px;
---space-5:  20px;
---space-6:  24px;
---space-8:  32px;
+--space-1: 4px;
+--space-2: 8px;
+--space-3: 12px;
+--space-4: 16px;
+--space-5: 20px;
+--space-6: 24px;
+--space-8: 32px;
 --space-10: 40px;
 --space-12: 48px;
 --space-16: 64px;
 
 /* Radius */
---radius-sm:   4px;   /* Inputs, small chips */
---radius-base: 6px;   /* Buttons, cards */
---radius-md:   8px;   /* Panels */
---radius-lg:   12px;  /* Modals, sheets */
+--radius-sm: 4px; /* Inputs, small chips */
+--radius-base: 6px; /* Buttons, cards */
+--radius-md: 8px; /* Panels */
+--radius-lg: 12px; /* Modals, sheets */
 --radius-full: 9999px; /* Pills, avatars */
 ```
 
@@ -163,7 +163,9 @@ Three variants; pick per context:
   cursor: pointer;
   transition: opacity 150ms ease;
 }
-.btn-primary:hover { opacity: 0.88; }
+.btn-primary:hover {
+  opacity: 0.88;
+}
 
 .btn-secondary {
   background: transparent;
@@ -172,7 +174,9 @@ Three variants; pick per context:
   padding: var(--space-2) var(--space-4);
   font-size: var(--text-sm);
   border-radius: var(--radius-base);
-  transition: border-color 150ms ease, background 150ms ease;
+  transition:
+    border-color 150ms ease,
+    background 150ms ease;
 }
 .btn-secondary:hover {
   border-color: var(--border-strong);
@@ -192,7 +196,9 @@ Three variants; pick per context:
 
 /* Hoverable card */
 .card-hover {
-  transition: border-color 150ms ease, background 150ms ease;
+  transition:
+    border-color 150ms ease,
+    background 150ms ease;
 }
 .card-hover:hover {
   border-color: var(--border-base);
@@ -230,9 +236,21 @@ Three variants; pick per context:
   color: var(--text-secondary);
 }
 
-.badge-success { color: var(--success); background: rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.2); }
-.badge-error   { color: var(--error);   background: rgba(239,68,68,0.08);  border-color: rgba(239,68,68,0.2);  }
-.badge-warning { color: var(--warning); background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.2); }
+.badge-success {
+  color: var(--success);
+  background: rgba(34, 197, 94, 0.08);
+  border-color: rgba(34, 197, 94, 0.2);
+}
+.badge-error {
+  color: var(--error);
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+.badge-warning {
+  color: var(--warning);
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.2);
+}
 ```
 
 ### 3.4 — Inputs & Forms
@@ -247,9 +265,13 @@ Three variants; pick per context:
   font-size: var(--text-sm);
   color: var(--text-primary);
   outline: none;
-  transition: border-color 150ms ease, box-shadow 150ms ease;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
 }
-.input::placeholder { color: var(--text-muted); }
+.input::placeholder {
+  color: var(--text-muted);
+}
 .input:focus {
   border-color: var(--border-strong);
   box-shadow: 0 0 0 3px var(--accent-glow);
@@ -260,7 +282,10 @@ Three variants; pick per context:
 
 ```css
 /* Hairline horizontal rule */
-.divider { height: 1px; background: var(--border-subtle); }
+.divider {
+  height: 1px;
+  background: var(--border-subtle);
+}
 
 /* Labeled divider */
 .divider-label {
@@ -311,13 +336,29 @@ Three variants; pick per context:
 
 ```css
 /* Narrow — forms, auth, modals */
-.container-sm  { max-width: 480px;  margin: 0 auto; padding: 0 var(--space-4); }
+.container-sm {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+}
 /* Standard — content pages */
-.container     { max-width: 768px;  margin: 0 auto; padding: 0 var(--space-6); }
+.container {
+  max-width: 768px;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
 /* Wide — dashboards, docs */
-.container-lg  { max-width: 1100px; margin: 0 auto; padding: 0 var(--space-8); }
+.container-lg {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 var(--space-8);
+}
 /* Full — landing pages with edge-to-edge sections */
-.container-xl  { max-width: 1280px; margin: 0 auto; padding: 0 var(--space-8); }
+.container-xl {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--space-8);
+}
 ```
 
 ### 4.3 — Hero Section Structure
@@ -350,18 +391,32 @@ Three variants; pick per context:
 ```css
 /* Standard entrance */
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0);    }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .animate-in {
   animation: fade-up 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Stagger group */
-.stagger-1 { animation-delay: 0ms;   }
-.stagger-2 { animation-delay: 60ms;  }
-.stagger-3 { animation-delay: 120ms; }
-.stagger-4 { animation-delay: 180ms; }
+.stagger-1 {
+  animation-delay: 0ms;
+}
+.stagger-2 {
+  animation-delay: 60ms;
+}
+.stagger-3 {
+  animation-delay: 120ms;
+}
+.stagger-4 {
+  animation-delay: 180ms;
+}
 ```
 
 ### 5.2 — Loading States
@@ -369,8 +424,12 @@ Three variants; pick per context:
 ```css
 /* Skeleton shimmer */
 @keyframes shimmer {
-  from { background-position: -200% 0; }
-  to   { background-position:  200% 0; }
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
 }
 .skeleton {
   background: linear-gradient(
@@ -439,11 +498,11 @@ When `shadcn/ui` components are available (Claude artifacts):
 
 ```tsx
 // Available: Button, Card, Badge, Input, Label, Separator, Dialog, Tabs, etc.
-import { Button }   from '@/components/ui/button';
-import { Card }     from '@/components/ui/card';
-import { Badge }    from '@/components/ui/badge';
-import { Input }    from '@/components/ui/input';
-import { Separator} from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
 ```
 
 Override shadcn defaults with CSS variable tokens to match the target aesthetic — never use shadcn defaults unstyled.

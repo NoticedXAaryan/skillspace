@@ -24,9 +24,9 @@ export async function POST(request: NextRequest, props: { params: Promise<{ slug
       where: {
         organizationId_userId: {
           organizationId: org.id,
-          userId: user.userId
-        }
-      }
+          userId: user.userId,
+        },
+      },
     });
 
     if (!membership || membership.role !== 'admin') {

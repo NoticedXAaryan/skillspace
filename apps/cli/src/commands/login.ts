@@ -32,7 +32,10 @@ export function registerLoginCommand(program: Command): void {
             message: 'Email:',
             placeholder: 'you@example.com',
           });
-          if (isCancel(emailInput)) { cancel('Operation cancelled.'); process.exit(0); }
+          if (isCancel(emailInput)) {
+            cancel('Operation cancelled.');
+            process.exit(0);
+          }
           email = emailInput;
         }
 
@@ -40,7 +43,10 @@ export function registerLoginCommand(program: Command): void {
           const passInput = await passwordPrompt({
             message: 'Password:',
           });
-          if (isCancel(passInput)) { cancel('Operation cancelled.'); process.exit(0); }
+          if (isCancel(passInput)) {
+            cancel('Operation cancelled.');
+            process.exit(0);
+          }
           password = passInput;
         }
       }
@@ -77,7 +83,9 @@ export function registerLoginCommand(program: Command): void {
         }
       } catch (err) {
         if (loader) loader.fail('Network error.');
-        errorOperational('Network Error', { message: err instanceof Error ? err.message : String(err) });
+        errorOperational('Network Error', {
+          message: err instanceof Error ? err.message : String(err),
+        });
         process.exit(1);
       }
     });
@@ -105,7 +113,10 @@ export function registerLoginCommand(program: Command): void {
             message: 'Username:',
             placeholder: 'my-username',
           });
-          if (isCancel(usernameInput)) { cancel('Operation cancelled.'); process.exit(0); }
+          if (isCancel(usernameInput)) {
+            cancel('Operation cancelled.');
+            process.exit(0);
+          }
           username = usernameInput;
         }
 
@@ -114,7 +125,10 @@ export function registerLoginCommand(program: Command): void {
             message: 'Email:',
             placeholder: 'you@example.com',
           });
-          if (isCancel(emailInput)) { cancel('Operation cancelled.'); process.exit(0); }
+          if (isCancel(emailInput)) {
+            cancel('Operation cancelled.');
+            process.exit(0);
+          }
           email = emailInput;
         }
 
@@ -122,14 +136,19 @@ export function registerLoginCommand(program: Command): void {
           const passInput = await passwordPrompt({
             message: 'Password (min 8 chars):',
           });
-          if (isCancel(passInput)) { cancel('Operation cancelled.'); process.exit(0); }
+          if (isCancel(passInput)) {
+            cancel('Operation cancelled.');
+            process.exit(0);
+          }
           password = passInput;
         }
       }
 
       if (!username || !email || !password) {
         if (!opts.yes) {
-          errorOperational('Missing fields', { message: 'Username, email, and password are required.' });
+          errorOperational('Missing fields', {
+            message: 'Username, email, and password are required.',
+          });
           process.exit(1);
         } else {
           console.error('✗ Username, email, and password are required.');
@@ -145,7 +164,9 @@ export function registerLoginCommand(program: Command): void {
 
         if (result.error) {
           if (loader) loader.fail('Registration failed.');
-          errorOperational('Registration Error', { message: result.error.message || JSON.stringify(result.error) });
+          errorOperational('Registration Error', {
+            message: result.error.message || JSON.stringify(result.error),
+          });
           process.exit(1);
         }
 
@@ -159,7 +180,9 @@ export function registerLoginCommand(program: Command): void {
         }
       } catch (err) {
         if (loader) loader.fail('Network error.');
-        errorOperational('Network Error', { message: err instanceof Error ? err.message : String(err) });
+        errorOperational('Network Error', {
+          message: err instanceof Error ? err.message : String(err),
+        });
         process.exit(1);
       }
     });
@@ -182,7 +205,9 @@ export function registerWhoamiCommand(program: Command): void {
       const token = loadCredentials();
       if (!token) {
         loader.fail('Not authenticated');
-        console.log(box(['Not logged in.', 'Run `skillspace login` to authenticate.'], { colorFn: c.border }));
+        console.log(
+          box(['Not logged in.', 'Run `skillspace login` to authenticate.'], { colorFn: c.border }),
+        );
         return;
       }
       try {
@@ -190,19 +215,28 @@ export function registerWhoamiCommand(program: Command): void {
         const result = await client.me();
         if (result.error) {
           loader.fail('Session expired');
-          console.log(box(['Session expired.', 'Run `skillspace login` to re-authenticate.'], { colorFn: c.warning }));
+          console.log(
+            box(['Session expired.', 'Run `skillspace login` to re-authenticate.'], {
+              colorFn: c.warning,
+            }),
+          );
           return;
         }
         loader.succeed('Session active');
-        
-        console.log(box([
-          `${c.textFaint('Username:')} ${c.brand(result.data.username)}`,
-          `${c.textFaint('Email:')}    ${c.text(result.data.email)}`,
-          `${c.textFaint('Plan:')}     ${c.text(result.data.plan)}`
-        ], {
-          title: 'Current User',
-          colorFn: c.successDim
-        }));
+
+        console.log(
+          box(
+            [
+              `${c.textFaint('Username:')} ${c.brand(result.data.username)}`,
+              `${c.textFaint('Email:')}    ${c.text(result.data.email)}`,
+              `${c.textFaint('Plan:')}     ${c.text(result.data.plan)}`,
+            ],
+            {
+              title: 'Current User',
+              colorFn: c.successDim,
+            },
+          ),
+        );
       } catch {
         loader.fail('Network error');
         errorOperational('Connection Error', { message: 'Could not reach registry.' });

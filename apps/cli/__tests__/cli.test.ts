@@ -50,5 +50,4 @@ describe('CLI E2E', () => {
     const { stdout } = await runCli('list');
     expect(stdout).toMatch(/Installed|No packages/);
   });
-
 });

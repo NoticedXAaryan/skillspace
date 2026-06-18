@@ -1,7 +1,9 @@
 /**
  * GitHub API integration for SkillSpace.
- * Fetches skill.yaml content from public GitHub repos.
+ * Fetches skill.yaml / agent.yaml content from public GitHub repos.
  */
+
+import * as yaml from 'js-yaml';
 
 const GITHUB_API = 'https://api.github.com';
 
@@ -18,16 +20,37 @@ export interface GitHubFileContent {
   size: number;
 }
 
+export interface GitHubPackageManifest {
+  raw: string;
+  parsed: Record<string, unknown>;
+  sha: string;
+  size: number;
+}
+
 /**
  * Parse a GitHub URL into owner/repo/branch/path components.
  * Supports formats:
  *   - https://github.com/owner/repo
  *   - https://github.com/owner/repo/tree/main/path/to/skill.yaml
  *   - https://github.com/owner/repo/blob/main/path/to/skill.yaml
+ *   - owner/repo  (shorthand used in CLI and dashboard)
  */
-export function parseGitHubUrl(url: string): GitHubRepoInfo | null {
+export function parseGitHubUrl(input: string): GitHubRepoInfo | null {
+  // Handle shorthand: "owner/repo" or "owner/repo/path/to/skill.yaml"
+  if (!input.startsWith('http') && input.includes('/') && !input.includes(' ')) {
+    const parts = input.split('/');
+    if (parts.length >= 2) {
+      return {
+        owner: parts[0],
+        repo: parts[1],
+        branch: 'main',
+        path: parts.length > 2 ? parts.slice(2).join('/') : 'skill.yaml',
+      };
+    }
+  }
+
   try {
-    const parsed = new URL(url);
+    const parsed = new URL(input);
     if (parsed.hostname !== 'github.com') return null;
 
     const parts = parsed.pathname.split('/').filter(Boolean);
@@ -36,13 +59,15 @@ export function parseGitHubUrl(url: string): GitHubRepoInfo | null {
     const owner = parts[0];
     const repo = parts[1];
 
-    // Check for branch and path in tree/blob URLs
     let branch = 'main';
-    let path = '';
+    let path = 'skill.yaml';
 
     if (parts.length >= 4 && (parts[2] === 'tree' || parts[2] === 'blob')) {
       branch = parts[3] || 'main';
-      path = parts.slice(4).join('/');
+      const rest = parts.slice(4);
+      if (rest.length > 0) {
+        path = rest.join('/');
+      }
     }
 
     return { owner, repo, branch, path };
@@ -52,8 +77,16 @@ export function parseGitHubUrl(url: string): GitHubRepoInfo | null {
 }
 
 /**
- * Fetch a file from a GitHub repository.
- * Uses the GitHub API for private repos, or raw.githubusercontent.com for public repos.
+ * Build the raw.githubusercontent.com URL for a file.
+ */
+export function rawGitHubUrl(info: GitHubRepoInfo, commit?: string): string {
+  const ref = commit || info.branch;
+  return `https://raw.githubusercontent.com/${info.owner}/${info.repo}/${ref}/${info.path}`;
+}
+
+/**
+ * Fetch a file from GitHub. Uses the Contents API for accurate SHA tracking,
+ * falls back to raw.githubusercontent.com for public repos.
  */
 export async function fetchGitHubFile(
   owner: string,
@@ -62,23 +95,17 @@ export async function fetchGitHubFile(
   filePath: string,
   token?: string,
 ): Promise<GitHubFileContent | null> {
-  // Try raw.githubusercontent.com first (no auth needed for public repos)
-  const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${filePath}`;
-
   const headers: Record<string, string> = {};
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  // GitHub API requires User-Agent
+  headers['User-Agent'] = 'SkillSpace-Registry';
 
+  // Try the Contents API first (gives us the SHA)
   try {
-    const res = await fetch(rawUrl, { headers });
-    if (!res.ok) {
-      // Try GitHub API as fallback
-      const apiUrl = `${GITHUB_API}/repos/${owner}/${repo}/contents/${filePath}?ref=${branch}`;
-      const apiRes = await fetch(apiUrl, { headers });
+    const apiUrl = `${GITHUB_API}/repos/${owner}/${repo}/contents/${filePath}?ref=${branch}`;
+    const apiRes = await fetch(apiUrl, { headers });
 
-      if (!apiRes.ok) return null;
-
+    if (apiRes.ok) {
       const data = await apiRes.json();
       if (data.encoding === 'base64') {
         return {
@@ -87,8 +114,16 @@ export async function fetchGitHubFile(
           size: data.size,
         };
       }
-      return null;
     }
+  } catch {
+    // Fall through to raw URL
+  }
+
+  // Fallback: raw.githubusercontent.com (public repos, no SHA)
+  try {
+    const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${filePath}`;
+    const res = await fetch(rawUrl, { headers });
+    if (!res.ok) return null;
 
     const content = await res.text();
     return { content, sha: '', size: content.length };
@@ -98,38 +133,54 @@ export async function fetchGitHubFile(
 }
 
 /**
- * Verify that a GitHub repo contains a valid skill.yaml.
+ * Fetch a package manifest from GitHub and parse it as YAML.
+ * Returns the raw content, parsed object, commit SHA, and file size.
  */
-export async function verifyGitHubRepo(
-  url: string,
+export async function fetchPackageFromGitHub(
+  input: string,
   token?: string,
-): Promise<{ valid: boolean; manifest?: Record<string, unknown>; error?: string }> {
-  const info = parseGitHubUrl(url);
-  if (!info) {
-    return { valid: false, error: 'Invalid GitHub URL format' };
+): Promise<GitHubPackageManifest | null> {
+  const info = parseGitHubUrl(input);
+  if (!info) return null;
+
+  const file = await fetchGitHubFile(info.owner, info.repo, info.branch, info.path, token);
+  if (!file) return null;
+
+  let parsed: Record<string, unknown>;
+  try {
+    parsed = yaml.load(file.content) as Record<string, unknown>;
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+  } catch {
+    return null;
   }
 
-  // If no path specified, look for skill.yaml in the root
-  const skillPath = info.path || 'skill.yaml';
-  const file = await fetchGitHubFile(info.owner, info.repo, info.branch, skillPath, token);
+  return { raw: file.content, parsed, sha: file.sha, size: file.size };
+}
 
-  if (!file) {
-    return { valid: false, error: `Could not find ${skillPath} in ${info.owner}/${info.repo}` };
-  }
+/**
+ * Get the latest commit SHA for a file via the GitHub API.
+ */
+export async function getFileCommitSha(
+  owner: string,
+  repo: string,
+  branch: string,
+  filePath: string,
+  token?: string,
+): Promise<string | null> {
+  const headers: Record<string, string> = { 'User-Agent': 'SkillSpace-Registry' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
 
   try {
-    // Basic YAML parsing (check for required fields)
-    const lines = file.content.split('\n');
-    const hasName = lines.some(l => l.startsWith('name:'));
-    const hasVersion = lines.some(l => l.startsWith('version:'));
-    const hasSchemaVersion = lines.some(l => l.includes('schemaVersion:') || l.includes('schema_version:'));
+    const url = `${GITHUB_API}/repos/${owner}/${repo}/commits?path=${filePath}&sha=${branch}&per_page=1`;
+    const res = await fetch(url, { headers });
+    if (!res.ok) return null;
 
-    if (!hasName || !hasVersion) {
-      return { valid: false, error: 'skill.yaml is missing required fields (name, version)' };
+    const data = await res.json();
+    if (Array.isArray(data) && data.length > 0 && data[0].sha) {
+      return data[0].sha as string;
     }
-
-    return { valid: true, manifest: { sha: file.sha, size: file.size } };
+    return null;
   } catch {
-    return { valid: false, error: 'Failed to parse skill.yaml' };
+    return null;
   }
 }

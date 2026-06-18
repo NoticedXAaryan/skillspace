@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { adapterRegistry, OllamaAdapter, OpenAIAdapter, ClaudeAdapter, GeminiAdapter } from '../src/index.js';
+import {
+  adapterRegistry,
+  OllamaAdapter,
+  OpenAIAdapter,
+  ClaudeAdapter,
+  GeminiAdapter,
+} from '../src/index.js';
 import type { Skill } from '@skillspace/schema';
 
 // ---------------------------------------------------------------------------

@@ -1,7 +1,15 @@
 steps:
   # Build the container image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/skillspace-registry', '-f', 'apps/registry/Dockerfile', '.']
+    args:
+      [
+        'build',
+        '-t',
+        'gcr.io/$PROJECT_ID/skillspace-registry',
+        '-f',
+        'apps/registry/Dockerfile',
+        '.',
+      ]
 
   # Push the container image to Container Registry
   - name: 'gcr.io/cloud-builders/docker'

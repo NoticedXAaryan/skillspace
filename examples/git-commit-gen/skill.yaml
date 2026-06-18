@@ -1,7 +1,7 @@
 schemaVersion: 2
-name: "@skillspace/git-commit-gen"
-version: "1.0.0"
-description: "Generates conventional commit messages from git diffs."
+name: '@skillspace/git-commit-gen'
+version: '1.0.0'
+description: 'Generates conventional commit messages from git diffs.'
 author: skillspace
 license: MIT
 tags:
@@ -15,6 +15,6 @@ persona:
     type(scope): description.
     Types: feat, fix, docs, style, refactor, test, chore.
   behavioral_guidelines:
-    - "Output only the commit message, no explanation"
-    - "Keep the subject line under 72 characters"
+    - 'Output only the commit message, no explanation'
+    - 'Keep the subject line under 72 characters'
   capabilities: []

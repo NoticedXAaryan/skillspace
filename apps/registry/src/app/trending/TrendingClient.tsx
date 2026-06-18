@@ -33,7 +33,7 @@ export default function TrendingClient({ data }: { data: TrendingData }) {
     displayed: true,
   }));
 
-  const podiumRankings = rankings.slice(0, 3).map(r => ({
+  const podiumRankings = rankings.slice(0, 3).map((r) => ({
     userId: r.userId,
     userName: r.userName,
     rank: r.rank,
@@ -51,12 +51,12 @@ export default function TrendingClient({ data }: { data: TrendingData }) {
   const getDates = (tf: string) => {
     const to = new Date(now);
     const from = new Date(now);
-    if (tf === 'today') from.setHours(0,0,0,0);
+    if (tf === 'today') from.setHours(0, 0, 0, 0);
     if (tf === 'week') from.setDate(now.getDate() - 7);
     if (tf === 'month') from.setMonth(now.getMonth() - 1);
     if (tf === 'allTime') from.setFullYear(2023, 0, 1);
     return { fromDate: from, toDate: to };
-  }
+  };
 
   const { fromDate, toDate } = getDates(timeframe);
 
@@ -65,17 +65,15 @@ export default function TrendingClient({ data }: { data: TrendingData }) {
       {/* Background Gradients */}
       <div className="absolute top-0 left-1/4 w-[800px] h-[400px] bg-cyan-500/10 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-[600px] h-[500px] bg-emerald-500/5 blur-[120px] rounded-full pointer-events-none" />
-      
+
       <div className="max-w-4xl mx-auto relative z-10">
         <div className="mb-10 text-center flex flex-col items-center">
           <div className="inline-flex items-center justify-center p-3 bg-cyan-500/10 rounded-2xl mb-4 border border-cyan-500/20">
             <Flame className="w-8 h-8 text-cyan-500" />
           </div>
-          <h1 className="text-4xl font-bold text-white mb-4">
-            Trending Capabilities
-          </h1>
+          <h1 className="text-4xl font-bold text-white mb-4">Trending Capabilities</h1>
           <p className="text-neutral-400 text-lg max-w-xl">
-            Discover the most downloaded and highest-rated AI skills in the ecosystem right now.
+            Trending packages are ranked by recent downloads and community stars. Discover the most popular AI skills in the ecosystem right now.
           </p>
         </div>
 

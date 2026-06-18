@@ -22,18 +22,21 @@ function getVersion(): string {
 export function outro(durationMs: number, hints: string[] = []): void {
   const secs = (durationMs / 1000).toFixed(1) + 's';
   const version = getVersion();
-  
+
   console.log();
   console.log('  ' + divider(50, false));
   console.log();
   console.log(
-    '    ' + c.textFaint('Done in ' + secs) +
-    '   ' + c.textFaint(CHARS.DOT) + '   ' +
-    c.textFaint('skillspace v' + version)
+    '    ' +
+      c.textFaint('Done in ' + secs) +
+      '   ' +
+      c.textFaint(CHARS.DOT) +
+      '   ' +
+      c.textFaint('skillspace v' + version),
   );
   if (hints.length) {
     console.log();
-    hints.forEach(h => console.log('    ' + c.brand(CHARS.ARROW) + '  ' + c.info(h)));
+    hints.forEach((h) => console.log('    ' + c.brand(CHARS.ARROW) + '  ' + c.info(h)));
   }
   console.log();
   console.log('  ' + divider(50, false));

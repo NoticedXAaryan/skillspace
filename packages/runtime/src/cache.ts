@@ -58,7 +58,9 @@ export class SkillCache {
    */
   isInstalled(name: string, version: string): boolean {
     const dir = this.getPackageDir(name, version);
-    return fs.existsSync(path.join(dir, 'skill.yaml')) || fs.existsSync(path.join(dir, 'agent.yaml'));
+    return (
+      fs.existsSync(path.join(dir, 'skill.yaml')) || fs.existsSync(path.join(dir, 'agent.yaml'))
+    );
   }
 
   /**
@@ -77,9 +79,7 @@ export class SkillCache {
     const result = validateSkill(parsed);
 
     if (!result.success) {
-      throw new Error(
-        `Invalid skill.yaml for ${name}@${version}: ${result.errors.message}`,
-      );
+      throw new Error(`Invalid skill.yaml for ${name}@${version}: ${result.errors.message}`);
     }
 
     return result.data;
@@ -150,7 +150,7 @@ export class SkillCache {
   loadAgent(name: string, version: string): Agent {
     const pkgDir = this.getPackageDir(name, version);
     let agentYamlPath = path.join(pkgDir, 'agent.yaml');
-    
+
     if (!fs.existsSync(agentYamlPath)) {
       agentYamlPath = path.join(pkgDir, 'skill.yaml');
     }
@@ -161,14 +161,12 @@ export class SkillCache {
 
     const raw = fs.readFileSync(agentYamlPath, 'utf-8');
     const parsed = YAML.parse(raw);
-    
+
     // We parse it using validateAgent to ensure it conforms to Agent schema
     const result = validateAgent(parsed);
 
     if (!result.success) {
-      throw new Error(
-        `Invalid agent manifest for ${name}@${version}: ${result.errors.message}`,
-      );
+      throw new Error(`Invalid agent manifest for ${name}@${version}: ${result.errors.message}`);
     }
 
     return result.data;

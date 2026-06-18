@@ -11,7 +11,7 @@ export class WorkflowResolver {
   constructor() {
     this.globalDir = path.join(getSkillspacePath(), 'workflows');
     this.cacheDir = path.join(getSkillspacePath(), 'cache', 'workflows');
-    
+
     if (!fs.existsSync(this.globalDir)) {
       fs.mkdirSync(this.globalDir, { recursive: true });
     }
@@ -29,19 +29,23 @@ export class WorkflowResolver {
    */
   async resolve(name: string): Promise<Workflow> {
     const rawYaml = await this.fetchRawYaml(name);
-    
+
     // Parse YAML
     let data;
     try {
       data = parseYaml(rawYaml);
     } catch (err) {
-      throw new Error(`Failed to parse workflow YAML for "${name}": ${err instanceof Error ? err.message : String(err)}`);
+      throw new Error(
+        `Failed to parse workflow YAML for "${name}": ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
 
     // Validate against Schema
     const result = WorkflowSchema.safeParse(data);
     if (!result.success) {
-      const errorMsg = result.error.errors.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ');
+      const errorMsg = result.error.errors
+        .map((e: any) => `${e.path.join('.')}: ${e.message}`)
+        .join(', ');
       throw new Error(`Invalid workflow definition for "${name}": ${errorMsg}`);
     }
 
@@ -58,7 +62,13 @@ export class WorkflowResolver {
     if (name.startsWith('github:')) {
       return this.fetchGithub(name);
     }
-    if (name.startsWith('./') || name.startsWith('../') || name.startsWith('/') || name.endsWith('.yaml') || name.endsWith('.yml')) {
+    if (
+      name.startsWith('./') ||
+      name.startsWith('../') ||
+      name.startsWith('/') ||
+      name.endsWith('.yaml') ||
+      name.endsWith('.yml')
+    ) {
       const target = path.resolve(cwd, name);
       if (fs.existsSync(target)) {
         return fs.readFileSync(target, 'utf-8');
@@ -100,13 +110,16 @@ export class WorkflowResolver {
     // github:org/repo/workflow@v1
     const match = shorthand.match(/^github:([^\/]+)\/([^\/]+)\/(.+)@(.+)$/);
     if (!match) {
-      throw new Error(`Invalid GitHub shorthand format. Expected github:org/repo/path/to/workflow@version`);
+      throw new Error(
+        `Invalid GitHub shorthand format. Expected github:org/repo/path/to/workflow@version`,
+      );
     }
     const [_, org, repo, filePath, version] = match;
     // append .yaml if missing
-    const finalPath = filePath.endsWith('.yaml') || filePath.endsWith('.yml') ? filePath : `${filePath}.yaml`;
+    const finalPath =
+      filePath.endsWith('.yaml') || filePath.endsWith('.yml') ? filePath : `${filePath}.yaml`;
     const url = `https://raw.githubusercontent.com/${org}/${repo}/${version}/${finalPath}`;
-    
+
     return this.fetchRemote(url, shorthand);
   }
 
@@ -114,11 +127,12 @@ export class WorkflowResolver {
     // Basic TTL cache lookup
     const safeKey = cacheKey.replace(/[^a-zA-Z0-9_-]/g, '_');
     const cachedPath = path.join(this.cacheDir, `${safeKey}.yaml`);
-    
+
     if (fs.existsSync(cachedPath)) {
       const stats = fs.statSync(cachedPath);
       const ageMs = Date.now() - stats.mtimeMs;
-      if (ageMs < 1000 * 60 * 60) { // 1 hour TTL
+      if (ageMs < 1000 * 60 * 60) {
+        // 1 hour TTL
         return fs.readFileSync(cachedPath, 'utf-8');
       }
     }

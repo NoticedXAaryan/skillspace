@@ -11,7 +11,14 @@ interface EmptyStateProps {
   icon?: React.ReactNode;
 }
 
-export default function EmptyState({ title, description, actionText, actionHref, onAction, icon }: EmptyStateProps) {
+export default function EmptyState({
+  title,
+  description,
+  actionText,
+  actionHref,
+  onAction,
+  icon,
+}: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center animate-in fade-in zoom-in-95">
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">

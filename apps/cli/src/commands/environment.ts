@@ -2,7 +2,15 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { Command } from 'commander';
 import { stringify, parse } from 'yaml';
-import { readLockFile, getSkillspacePath, setGlobalEnv, setPackageEnv, deleteGlobalEnv, deletePackageEnv, loadEnvStore } from '@skillspace/runtime';
+import {
+  readLockFile,
+  getSkillspacePath,
+  setGlobalEnv,
+  setPackageEnv,
+  deleteGlobalEnv,
+  deletePackageEnv,
+  loadEnvStore,
+} from '@skillspace/runtime';
 import { intro } from '../ui/states/intro.js';
 import { successStandard } from '../ui/states/success.js';
 import { errorInline, errorOperational } from '../ui/states/error.js';
@@ -17,7 +25,10 @@ export const envCommand = new Command('env')
 envCommand
   .command('set <key> [value]')
   .description('Set an environment variable securely')
-  .option('-s, --scope <pkg>', 'Scope the variable to a specific package (e.g. notic/database-agent)')
+  .option(
+    '-s, --scope <pkg>',
+    'Scope the variable to a specific package (e.g. notic/database-agent)',
+  )
   .action(async (key, val, options) => {
     let value = val;
     if (!value) {
@@ -53,17 +64,20 @@ envCommand
   .action(() => {
     const store = loadEnvStore();
     const globalCount = Object.keys(store.global || {}).length;
-    const pkgCount = Object.keys(store.packages || {}).reduce((acc, pkg) => acc + Object.keys(store.packages[pkg]).length, 0);
+    const pkgCount = Object.keys(store.packages || {}).reduce(
+      (acc, pkg) => acc + Object.keys(store.packages[pkg]).length,
+      0,
+    );
 
     const rows = [];
     rows.push([c.textFaint('Scope'), c.textFaint('Key'), c.textFaint('Value (Masked)')]);
-    
+
     if (globalCount > 0) {
       for (const key of Object.keys(store.global)) {
         rows.push(['Global', c.brand(key), '********']);
       }
     }
-    
+
     if (pkgCount > 0) {
       for (const [pkg, vars] of Object.entries(store.packages)) {
         for (const key of Object.keys(vars)) {
@@ -76,11 +90,13 @@ envCommand
       rows.push(['-', 'No variables configured', '-']);
     }
 
-    const boxLines = rows.map(r => r.join(' | '));
-    console.log(box(boxLines, {
-      title: 'Environment Variables',
-      colorFn: c.successDim
-    }));
+    const boxLines = rows.map((r) => r.join(' | '));
+    console.log(
+      box(boxLines, {
+        title: 'Environment Variables',
+        colorFn: c.successDim,
+      }),
+    );
   });
 
 envCommand
@@ -110,7 +126,7 @@ envCommand
   .action((options) => {
     try {
       const lockData = readLockFile(getSkillspacePath());
-      
+
       const envYaml = {
         name: 'skillspace-environment',
         version: '1.0.0',
@@ -134,7 +150,7 @@ envCommand
       successStandard('Environment snapshot exported', { Path: outPath });
     } catch (err) {
       errorOperational('Export failed', {
-        message: err instanceof Error ? err.message : String(err)
+        message: err instanceof Error ? err.message : String(err),
       });
       process.exit(1);
     }
@@ -160,7 +176,7 @@ envCommand
       }
 
       console.log(c.textFaint(`📦 Importing snapshot from ${file}...`));
-      
+
       for (const [name, version] of Object.entries(envYaml.dependencies)) {
         console.log(`  - Installing ${name}@${version}`);
       }
@@ -168,7 +184,7 @@ envCommand
       successStandard('Snapshot imported successfully');
     } catch (err) {
       errorOperational('Import failed', {
-        message: err instanceof Error ? err.message : String(err)
+        message: err instanceof Error ? err.message : String(err),
       });
       process.exit(1);
     }

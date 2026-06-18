@@ -56,7 +56,7 @@ describe('AgentResolver', () => {
     const agentFiles = new Map<string, Buffer>();
     agentFiles.set('agent.yaml', Buffer.from(agentYaml));
     await mockInstallPackage(cache, '@test/test-agent', '1.0.0', agentFiles);
-    
+
     // Install a newer version of the agent
     const agentYamlV2 = YAML.stringify({
       schemaVersion: 2,

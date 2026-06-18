@@ -84,11 +84,7 @@ export {
 } from './model-resolver.js';
 
 // v2 REPL Executor
-export {
-  startPersonaREPL,
-  composeSystemPrompt,
-  type REPLOptions,
-} from './repl-executor.js';
+export { startPersonaREPL, composeSystemPrompt, type REPLOptions } from './repl-executor.js';
 
 // v2 Agent Orchestrator
 export {

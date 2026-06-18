@@ -1,7 +1,7 @@
 schemaVersion: 2
-name: "@skillspace/security-review"
-version: "2.1.0"
-description: "Analyze code for security vulnerabilities using OWASP Top 10"
+name: '@skillspace/security-review'
+version: '2.1.0'
+description: 'Analyze code for security vulnerabilities using OWASP Top 10'
 author: skillspace
 license: MIT
 tags:
@@ -32,6 +32,6 @@ persona:
 
     If no vulnerabilities are found, say so explicitly.
   behavioral_guidelines:
-    - "Respond in JSON format with structured vulnerability findings"
+    - 'Respond in JSON format with structured vulnerability findings'
   capabilities:
     - filesystem.read

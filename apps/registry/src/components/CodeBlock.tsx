@@ -3,7 +3,13 @@ import CodeBlockClient from './CodeBlockClient';
 
 let highlighter: any = null;
 
-export default async function CodeBlock({ children, className }: { children: any; className?: string }) {
+export default async function CodeBlock({
+  children,
+  className,
+}: {
+  children: any;
+  className?: string;
+}) {
   if (!highlighter) {
     highlighter = await createHighlighter({
       themes: ['github-dark'],
@@ -13,7 +19,7 @@ export default async function CodeBlock({ children, className }: { children: any
 
   // Extract language from className (e.g. "language-typescript")
   const language = className ? className.replace(/language-/, '') : 'text';
-  
+
   // React elements passed from MDX often have the code inside children.props.children
   let rawCode = '';
   if (typeof children === 'string') {

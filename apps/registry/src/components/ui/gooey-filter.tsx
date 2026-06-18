@@ -1,19 +1,15 @@
 export const GooeyFilter = ({
-  id = "goo-filter",
+  id = 'goo-filter',
   strength = 10,
 }: {
-  id?: string
-  strength?: number
+  id?: string;
+  strength?: number;
 }) => {
   return (
     <svg className="hidden absolute">
       <defs>
         <filter id={id}>
-          <feGaussianBlur
-            in="SourceGraphic"
-            stdDeviation={strength}
-            result="blur"
-          />
+          <feGaussianBlur in="SourceGraphic" stdDeviation={strength} result="blur" />
           <feColorMatrix
             in="blur"
             type="matrix"
@@ -24,5 +20,5 @@ export const GooeyFilter = ({
         </filter>
       </defs>
     </svg>
-  )
-}
+  );
+};

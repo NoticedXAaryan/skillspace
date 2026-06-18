@@ -1,14 +1,19 @@
-import * as readline from 'readline'
-import type { Skill } from '@skillspace/schema'
-import { resolveModel, assertApiKey, readUserConfig, type ResolvedModel } from './model-resolver.js'
-import { scanPersona } from './firewall/persona-firewall.js'
-import { getApiKey, getBaseUrl } from './config.js'
+import * as readline from 'readline';
+import type { Skill } from '@skillspace/schema';
+import {
+  resolveModel,
+  assertApiKey,
+  readUserConfig,
+  type ResolvedModel,
+} from './model-resolver.js';
+import { scanPersona } from './firewall/persona-firewall.js';
+import { getApiKey, getBaseUrl } from './config.js';
 
 export interface REPLOptions {
   /** Overrides all other model preferences when provided. Format: "provider/model-id" */
-  modelOverride?: string
+  modelOverride?: string;
   /** Enable streaming output (default: true) */
-  stream?: boolean
+  stream?: boolean;
 }
 
 /**
@@ -23,90 +28,94 @@ export interface REPLOptions {
  *   6. Open readline REPL loop until "exit" or Ctrl+C
  */
 export async function startPersonaREPL(skill: Skill, options: REPLOptions = {}): Promise<void> {
+  // --- Step 0: Enforce Org Allowlist ---
+  const { AllowlistEnforcer } = await import('./permissions.js');
+  AllowlistEnforcer.check(skill.name);
+
   // --- Step 1: Security scan ---
-  const scan = scanPersona(skill.persona)
+  const scan = scanPersona(skill.persona);
 
   if (scan.status === 'BLOCKED') {
-    console.error('\n⛔  This skill was blocked by the SkillSpace security scanner.')
-    console.error('    It contains patterns associated with prompt injection attacks.\n')
-    scan.findings.forEach(f => {
-      console.error(`    [${f.severity.toUpperCase()}] ${f.rule}: ${f.description}`)
-      console.error(`    Matched: "${f.match}"\n`)
-    })
-    console.error('    If you believe this is a false positive, review the skill source')
-    console.error(`    and file an issue at: https://github.com/skillspace/skillspace\n`)
-    process.exit(1)
+    console.error('\n⛔  This skill was blocked by the SkillSpace security scanner.');
+    console.error('    It contains patterns associated with prompt injection attacks.\n');
+    scan.findings.forEach((f) => {
+      console.error(`    [${f.severity.toUpperCase()}] ${f.rule}: ${f.description}`);
+      console.error(`    Matched: "${f.match}"\n`);
+    });
+    console.error('    If you believe this is a false positive, review the skill source');
+    console.error(`    and file an issue at: https://github.com/skillspace/skillspace\n`);
+    process.exit(1);
   }
 
   if (scan.status === 'WARNING') {
-    console.warn('\n⚠️   Security warnings found in this skill. Review before proceeding:\n')
-    scan.findings.forEach(f => {
-      console.warn(`    [${f.severity.toUpperCase()}] ${f.rule}: ${f.description}`)
-    })
-    console.warn('')
+    console.warn('\n⚠️   Security warnings found in this skill. Review before proceeding:\n');
+    scan.findings.forEach((f) => {
+      console.warn(`    [${f.severity.toUpperCase()}] ${f.rule}: ${f.description}`);
+    });
+    console.warn('');
     // Do not block warnings — legitimate personas can trigger pattern matches.
     // (A pirate persona saying "you are now a pirate" is fine.)
   }
 
   // --- Step 2 & 3: Resolve and validate model ---
-  const userConfig = readUserConfig()
-  const model = resolveModel(options.modelOverride, skill.persona.preferred_model, userConfig)
-  assertApiKey(model)
+  const userConfig = readUserConfig();
+  const model = resolveModel(options.modelOverride, skill.persona.preferred_model, userConfig);
+  assertApiKey(model);
 
   // --- Step 4: Build system prompt ---
-  const systemPrompt = composeSystemPrompt(skill)
+  const systemPrompt = composeSystemPrompt(skill);
 
   // --- Step 5: Print header ---
-  console.log(`\n🎭  Persona:  ${skill.name} v${skill.version}`)
-  console.log(`🤖  Model:    ${model.provider}/${model.modelId}`)
-  console.log(`    Type "exit" or press Ctrl+C to end the session.\n`)
+  console.log(`\n🎭  Persona:  ${skill.name} v${skill.version}`);
+  console.log(`🤖  Model:    ${model.provider}/${model.modelId}`);
+  console.log(`    Type "exit" or press Ctrl+C to end the session.\n`);
 
   if (skill.persona.greeting) {
-    console.log(`${skill.persona.greeting}\n`)
+    console.log(`${skill.persona.greeting}\n`);
   }
 
   // --- Step 6: REPL loop ---
-  const messages: Array<{ role: 'user' | 'assistant'; content: string }> = []
+  const messages: Array<{ role: 'user' | 'assistant'; content: string }> = [];
 
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
     terminal: true,
-  })
+  });
 
-  const prompt = () => rl.question('\nYou: ', handleInput)
+  const prompt = () => rl.question('\nYou: ', handleInput);
 
   async function handleInput(input: string): Promise<void> {
-    const userInput = input.trim()
+    const userInput = input.trim();
 
     if (!userInput) {
-      prompt()
-      return
+      prompt();
+      return;
     }
 
     if (userInput.toLowerCase() === 'exit' || userInput.toLowerCase() === 'quit') {
-      console.log('\n👋  Session ended.\n')
-      rl.close()
-      process.exit(0)
+      console.log('\n👋  Session ended.\n');
+      rl.close();
+      process.exit(0);
     }
 
-    messages.push({ role: 'user', content: userInput })
+    messages.push({ role: 'user', content: userInput });
 
     try {
-      process.stdout.write('\nAssistant: ')
+      process.stdout.write('\nAssistant: ');
 
-      const response = await callModel(model, systemPrompt, messages)
+      const response = await callModel(model, systemPrompt, messages);
 
-      messages.push({ role: 'assistant', content: response })
-      process.stdout.write('\n')
+      messages.push({ role: 'assistant', content: response });
+      process.stdout.write('\n');
     } catch (err) {
-      console.error(`\n❌  Error: ${(err as Error).message}`)
+      console.error(`\n❌  Error: ${(err as Error).message}`);
     }
 
-    prompt()
+    prompt();
   }
 
-  prompt()
+  prompt();
 }
 
 /**
@@ -119,20 +128,20 @@ export async function startPersonaREPL(skill: Skill, options: REPLOptions = {}):
  *   - Gemini: systemInstruction.parts[0].text
  */
 export function composeSystemPrompt(skill: Pick<Skill, 'persona'>): string {
-  const lines: string[] = [skill.persona.system_prompt]
+  const lines: string[] = [skill.persona.system_prompt];
 
   if (skill.persona.tone) {
-    lines.push(`\nTone: ${skill.persona.tone}`)
+    lines.push(`\nTone: ${skill.persona.tone}`);
   }
 
   if (skill.persona.behavioral_guidelines.length > 0) {
-    lines.push('\nBehavioral Guidelines (follow these strictly):')
+    lines.push('\nBehavioral Guidelines (follow these strictly):');
     skill.persona.behavioral_guidelines.forEach((g, i) => {
-      lines.push(`${i + 1}. ${g}`)
-    })
+      lines.push(`${i + 1}. ${g}`);
+    });
   }
 
-  return lines.join('\n')
+  return lines.join('\n');
 }
 
 // ---------------------------------------------------------------------------
@@ -151,19 +160,19 @@ async function callModel(
   systemPrompt: string,
   messages: Array<{ role: 'user' | 'assistant'; content: string }>,
 ): Promise<string> {
-  const apiKey = getApiKey(model.provider) ?? process.env[model.apiKeyEnv] ?? ''
+  const apiKey = getApiKey(model.provider) ?? process.env[model.apiKeyEnv] ?? '';
 
   switch (model.provider) {
     case 'anthropic':
-      return callAnthropic(apiKey, model.modelId, systemPrompt, messages)
+      return callAnthropic(apiKey, model.modelId, systemPrompt, messages);
     case 'openai':
-      return callOpenAI(apiKey, model.modelId, systemPrompt, messages)
+      return callOpenAI(apiKey, model.modelId, systemPrompt, messages);
     case 'google':
-      return callGemini(apiKey, model.modelId, systemPrompt, messages)
+      return callGemini(apiKey, model.modelId, systemPrompt, messages);
     case 'ollama':
-      return callOllama(model.modelId, systemPrompt, messages)
+      return callOllama(model.modelId, systemPrompt, messages);
     default:
-      throw new Error(`Unsupported provider: ${model.provider}`)
+      throw new Error(`Unsupported provider: ${model.provider}`);
   }
 }
 
@@ -173,7 +182,7 @@ async function callAnthropic(
   systemPrompt: string,
   messages: Array<{ role: string; content: string }>,
 ): Promise<string> {
-  const baseUrl = getBaseUrl('anthropic') || 'https://api.anthropic.com'
+  const baseUrl = getBaseUrl('anthropic') || 'https://api.anthropic.com';
   const response = await fetch(`${baseUrl}/v1/messages`, {
     method: 'POST',
     headers: {
@@ -185,22 +194,22 @@ async function callAnthropic(
       model: modelId,
       max_tokens: 4096,
       system: systemPrompt,
-      messages: messages.map(m => ({ role: m.role, content: m.content })),
+      messages: messages.map((m) => ({ role: m.role, content: m.content })),
     }),
-  })
+  });
 
   if (!response.ok) {
-    const errorText = await response.text()
-    throw new Error(`Anthropic API error (${response.status}): ${errorText}`)
+    const errorText = await response.text();
+    throw new Error(`Anthropic API error (${response.status}): ${errorText}`);
   }
 
-  const data = await response.json() as {
-    content: Array<{ type: string; text: string }>
-  }
+  const data = (await response.json()) as {
+    content: Array<{ type: string; text: string }>;
+  };
   return data.content
-    .filter(block => block.type === 'text')
-    .map(block => block.text)
-    .join('')
+    .filter((block) => block.type === 'text')
+    .map((block) => block.text)
+    .join('');
 }
 
 async function callOpenAI(
@@ -209,31 +218,31 @@ async function callOpenAI(
   systemPrompt: string,
   messages: Array<{ role: string; content: string }>,
 ): Promise<string> {
-  const baseUrl = getBaseUrl('openai') || 'https://api.openai.com'
+  const baseUrl = getBaseUrl('openai') || 'https://api.openai.com';
   const response = await fetch(`${baseUrl}/v1/chat/completions`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       model: modelId,
       messages: [
         { role: 'system', content: systemPrompt },
-        ...messages.map(m => ({ role: m.role, content: m.content })),
+        ...messages.map((m) => ({ role: m.role, content: m.content })),
       ],
     }),
-  })
+  });
 
   if (!response.ok) {
-    const errorText = await response.text()
-    throw new Error(`OpenAI API error (${response.status}): ${errorText}`)
+    const errorText = await response.text();
+    throw new Error(`OpenAI API error (${response.status}): ${errorText}`);
   }
 
-  const data = await response.json() as {
-    choices: Array<{ message: { content: string } }>
-  }
-  return data.choices[0]?.message?.content ?? ''
+  const data = (await response.json()) as {
+    choices: Array<{ message: { content: string } }>;
+  };
+  return data.choices[0]?.message?.content ?? '';
 }
 
 async function callGemini(
@@ -242,7 +251,8 @@ async function callGemini(
   systemPrompt: string,
   messages: Array<{ role: string; content: string }>,
 ): Promise<string> {
-  const baseUrl = getBaseUrl('gemini') || getBaseUrl('google') || 'https://generativelanguage.googleapis.com'
+  const baseUrl =
+    getBaseUrl('gemini') || getBaseUrl('google') || 'https://generativelanguage.googleapis.com';
   const response = await fetch(
     `${baseUrl}/v1beta/models/${modelId}:generateContent?key=${apiKey}`,
     {
@@ -252,25 +262,23 @@ async function callGemini(
         systemInstruction: {
           parts: [{ text: systemPrompt }],
         },
-        contents: messages.map(m => ({
+        contents: messages.map((m) => ({
           role: m.role === 'assistant' ? 'model' : 'user',
           parts: [{ text: m.content }],
         })),
       }),
     },
-  )
+  );
 
   if (!response.ok) {
-    const errorText = await response.text()
-    throw new Error(`Gemini API error (${response.status}): ${errorText}`)
+    const errorText = await response.text();
+    throw new Error(`Gemini API error (${response.status}): ${errorText}`);
   }
 
-  const data = await response.json() as {
-    candidates: Array<{ content: { parts: Array<{ text: string }> } }>
-  }
-  return data.candidates?.[0]?.content?.parts
-    ?.map(p => p.text)
-    .join('') ?? ''
+  const data = (await response.json()) as {
+    candidates: Array<{ content: { parts: Array<{ text: string }> } }>;
+  };
+  return data.candidates?.[0]?.content?.parts?.map((p) => p.text).join('') ?? '';
 }
 
 async function callOllama(
@@ -278,7 +286,7 @@ async function callOllama(
   systemPrompt: string,
   messages: Array<{ role: string; content: string }>,
 ): Promise<string> {
-  const baseUrl = getBaseUrl('ollama') || 'http://localhost:11434'
+  const baseUrl = getBaseUrl('ollama') || 'http://localhost:11434';
   const response = await fetch(`${baseUrl}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -287,18 +295,18 @@ async function callOllama(
       stream: false,
       messages: [
         { role: 'system', content: systemPrompt },
-        ...messages.map(m => ({ role: m.role, content: m.content })),
+        ...messages.map((m) => ({ role: m.role, content: m.content })),
       ],
     }),
-  })
+  });
 
   if (!response.ok) {
-    const errorText = await response.text()
-    throw new Error(`Ollama API error (${response.status}): ${errorText}`)
+    const errorText = await response.text();
+    throw new Error(`Ollama API error (${response.status}): ${errorText}`);
   }
 
-  const data = await response.json() as {
-    message: { content: string }
-  }
-  return data.message?.content ?? ''
+  const data = (await response.json()) as {
+    message: { content: string };
+  };
+  return data.message?.content ?? '';
 }

@@ -72,7 +72,10 @@ function parseYamlSimple(content: string): Record<string, any> {
     }
 
     if (value.startsWith('[') && value.endsWith(']')) {
-      result[key] = value.slice(1, -1).split(',').map(s => s.trim().replace(/^["']|["']$/g, ''));
+      result[key] = value
+        .slice(1, -1)
+        .split(',')
+        .map((s) => s.trim().replace(/^["']|["']$/g, ''));
       continue;
     }
 
@@ -113,7 +116,7 @@ async function main() {
     console.log('Created default user: skillspace');
   }
 
-  const dirs = fs.readdirSync(EXAMPLES_DIR).filter(d => {
+  const dirs = fs.readdirSync(EXAMPLES_DIR).filter((d) => {
     const skillPath = path.join(EXAMPLES_DIR, d, 'skill.yaml');
     return fs.existsSync(skillPath);
   });
@@ -146,6 +149,8 @@ async function main() {
         description: data.description || `A skill for ${dir}`,
         tags: JSON.stringify(data.tags || []),
         downloads: Math.floor(Math.random() * 1000) + 100,
+        verified: true,
+        githubUrl: `https://github.com/skillspace/skillspace/tree/main/examples/${dir}`,
       },
     });
 

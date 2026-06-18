@@ -1,6 +1,15 @@
 'use client';
 
-import { Clock, CheckCircle2, XCircle, Cpu, Zap, ArrowRight, Activity, Terminal } from 'lucide-react';
+import {
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Cpu,
+  Zap,
+  ArrowRight,
+  Activity,
+  Terminal,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
@@ -33,7 +42,11 @@ function formatDuration(ms: number): string {
   return `${(ms / 1000).toFixed(1)}s`;
 }
 
-export default function ActivityFeedClient({ executions: initialExecutions }: { executions: Execution[] }) {
+export default function ActivityFeedClient({
+  executions: initialExecutions,
+}: {
+  executions: Execution[];
+}) {
   const searchParams = useSearchParams();
   const projectId = searchParams.get('projectId');
   const [liveLog, setLiveLog] = useState<string>('');
@@ -47,7 +60,7 @@ export default function ActivityFeedClient({ executions: initialExecutions }: { 
     const eventSource = new EventSource(`/api/stream/execution?projectId=${projectId}`);
 
     eventSource.addEventListener('connected', () => setIsLive(true));
-    
+
     eventSource.addEventListener('start', (e) => {
       const data = JSON.parse(e.data);
       setCurrentTask(data.packageName);
@@ -81,8 +94,12 @@ export default function ActivityFeedClient({ executions: initialExecutions }: { 
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            Activity 
-            {isLive && <span className="flex items-center gap-1 text-xs font-medium bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full"><Activity className="w-3 h-3 animate-pulse" /> Live Link Active</span>}
+            Activity
+            {isLive && (
+              <span className="flex items-center gap-1 text-xs font-medium bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">
+                <Activity className="w-3 h-3 animate-pulse" /> Live Link Active
+              </span>
+            )}
           </h1>
           <p className="text-neutral-400 mt-1">Recent skill execution sessions from your CLI.</p>
         </div>
@@ -94,7 +111,10 @@ export default function ActivityFeedClient({ executions: initialExecutions }: { 
             <Terminal className="w-4 h-4 text-cyan-400" />
             Live Execution: {currentTask}
           </div>
-          <div ref={terminalRef} className="p-4 h-48 overflow-y-auto font-mono text-sm text-neutral-300 whitespace-pre-wrap">
+          <div
+            ref={terminalRef}
+            className="p-4 h-48 overflow-y-auto font-mono text-sm text-neutral-300 whitespace-pre-wrap"
+          >
             {liveLog}
           </div>
         </div>
@@ -105,7 +125,11 @@ export default function ActivityFeedClient({ executions: initialExecutions }: { 
           <Clock className="w-10 h-10 text-neutral-600 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-white mb-2">No activity yet</h3>
           <p className="text-sm text-neutral-400 mb-4 max-w-sm mx-auto">
-            Run skills via the CLI to see execution activity here. Link your project with <code className="text-cyan-400 text-xs bg-white/5 px-1.5 py-0.5 rounded">skillspace link</code> for session tracking.
+            Run skills via the CLI to see execution activity here. Link your project with{' '}
+            <code className="text-cyan-400 text-xs bg-white/5 px-1.5 py-0.5 rounded">
+              skillspace link
+            </code>{' '}
+            for session tracking.
           </p>
           <a
             href="/dashboard/playground"
@@ -122,11 +146,13 @@ export default function ActivityFeedClient({ executions: initialExecutions }: { 
               className="flex items-center gap-4 p-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/[0.07] transition-colors"
             >
               {/* Status icon */}
-              <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                exec.status === 'success'
-                  ? 'bg-green-500/10 text-green-400'
-                  : 'bg-red-500/10 text-red-400'
-              }`}>
+              <div
+                className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                  exec.status === 'success'
+                    ? 'bg-green-500/10 text-green-400'
+                    : 'bg-red-500/10 text-red-400'
+                }`}
+              >
                 {exec.status === 'success' ? (
                   <CheckCircle2 className="w-4 h-4" />
                 ) : (
@@ -163,12 +189,10 @@ export default function ActivityFeedClient({ executions: initialExecutions }: { 
                     <Zap className="w-3 h-3" />
                     <span>{formatDuration(exec.durationMs)}</span>
                   </div>
-                  {exec.tokensUsed > 0 && (
-                    <span>{exec.tokensUsed.toLocaleString()} tokens</span>
-                  )}
+                  {exec.tokensUsed > 0 && <span>{exec.tokensUsed.toLocaleString()} tokens</span>}
                   <span className="text-neutral-600">{timeAgo(exec.createdAt)}</span>
                 </div>
-                
+
                 {/* Re-run Button */}
                 {projectId && (
                   <button
@@ -179,12 +203,12 @@ export default function ActivityFeedClient({ executions: initialExecutions }: { 
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({
                             projectId,
-                            command: `skillspace run ${exec.package.name}`
-                          })
+                            command: `skillspace run ${exec.package.name}`,
+                          }),
                         });
                         if (res.ok) alert('Sent command to local CLI!');
                         else alert('Failed to send command.');
-                      } catch(e) {
+                      } catch (e) {
                         alert('Error connecting to local CLI.');
                       }
                     }}

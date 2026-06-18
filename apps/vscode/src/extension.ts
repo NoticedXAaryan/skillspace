@@ -4,7 +4,7 @@ import {
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
-  TransportKind
+  TransportKind,
 } from 'vscode-languageclient/node';
 
 let client: LanguageClient;
@@ -12,7 +12,7 @@ let client: LanguageClient;
 export function activate(context: ExtensionContext) {
   // The server is implemented in packages/lsp
   const serverModule = context.asAbsolutePath(
-    path.join('..', '..', 'packages', 'lsp', 'dist', 'server.js')
+    path.join('..', '..', 'packages', 'lsp', 'dist', 'server.js'),
   );
 
   // If the extension is launched in debug mode then the debug server options are used
@@ -22,8 +22,8 @@ export function activate(context: ExtensionContext) {
     debug: {
       module: serverModule,
       transport: TransportKind.ipc,
-      options: { execArgv: ['--nolazy', '--inspect=6009'] }
-    }
+      options: { execArgv: ['--nolazy', '--inspect=6009'] },
+    },
   };
 
   // Options to control the language client
@@ -31,12 +31,12 @@ export function activate(context: ExtensionContext) {
     // Register the server for plain text documents
     documentSelector: [
       { scheme: 'file', language: 'yaml', pattern: '**/skill.yaml' },
-      { scheme: 'file', language: 'yaml', pattern: '**/agent.yaml' }
+      { scheme: 'file', language: 'yaml', pattern: '**/agent.yaml' },
     ],
     synchronize: {
       // Notify the server about file changes to '.clientrc files contained in the workspace
-      fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
-    }
+      fileEvents: workspace.createFileSystemWatcher('**/.clientrc'),
+    },
   };
 
   // Create the language client and start the client.
@@ -44,7 +44,7 @@ export function activate(context: ExtensionContext) {
     'skillspaceLanguageServer',
     'SkillSpace Language Server',
     serverOptions,
-    clientOptions
+    clientOptions,
   );
 
   // Start the client. This will also launch the server

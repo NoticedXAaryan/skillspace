@@ -14,9 +14,9 @@ export default function TwoFactorPage() {
   async function handleEnable2FA() {
     setLoading(true);
     const { data, error } = await authClient.twoFactor.enable({
-      password: "user-password-here", // Typically needs re-auth or similar, omitted for brevity
+      password: 'user-password-here', // Typically needs re-auth or similar, omitted for brevity
     });
-    
+
     if (data?.totpURI) {
       setQrCode(data.totpURI); // Render with QRCode react component
     }
@@ -27,8 +27,10 @@ export default function TwoFactorPage() {
     <main className="container mx-auto px-4 py-12">
       <div className="max-w-xl mx-auto rounded-xl border border-border bg-card p-8 shadow-sm">
         <h1 className="text-2xl font-bold mb-4">Set up Two-Factor Authentication</h1>
-        <p className="text-muted-foreground mb-6">Enhance your account security by enabling two-factor authentication.</p>
-        
+        <p className="text-muted-foreground mb-6">
+          Enhance your account security by enabling two-factor authentication.
+        </p>
+
         {qrCode ? (
           <div className="text-center">
             <div className="bg-white p-4 inline-block mb-4 rounded-md">

@@ -15,9 +15,9 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
       where: { slug },
       include: {
         members: {
-          include: { user: { select: { id: true, username: true, email: true } } }
-        }
-      }
+          include: { user: { select: { id: true, username: true, email: true } } },
+        },
+      },
     });
 
     if (!org) {
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
     }
 
     // Must be a member to list members
-    const isMember = org.members.some(m => m.userId === user.userId);
+    const isMember = org.members.some((m) => m.userId === user.userId);
     if (!isMember) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ sl
 
     const org = await prisma.organization.findUnique({
       where: { slug },
-      include: { members: true }
+      include: { members: true },
     });
 
     if (!org) {
@@ -63,13 +63,13 @@ export async function POST(request: NextRequest, context: { params: Promise<{ sl
     }
 
     // Must be admin to add members
-    const currentMember = org.members.find(m => m.userId === user.userId);
+    const currentMember = org.members.find((m) => m.userId === user.userId);
     if (!currentMember || currentMember.role !== 'admin') {
       return NextResponse.json({ error: 'Forbidden. Admin access required.' }, { status: 403 });
     }
 
     const targetUser = await prisma.user.findUnique({
-      where: { username }
+      where: { username },
     });
 
     if (!targetUser) {
@@ -81,8 +81,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ sl
       data: {
         organizationId: org.id,
         userId: targetUser.id,
-        role: role || 'member'
-      }
+        role: role || 'member',
+      },
     });
 
     return NextResponse.json({ member });

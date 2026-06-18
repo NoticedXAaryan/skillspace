@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React, { useRef } from "react";
-import Link from "next/link";
+import React, { useRef } from 'react';
+import Link from 'next/link';
 import {
   ArrowRight,
   ChevronRight,
@@ -15,18 +15,18 @@ import {
   Cpu,
   Globe,
   GitBranch,
-} from "lucide-react";
-import { useGSAP } from "@gsap/react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+} from 'lucide-react';
+import { useGSAP } from '@gsap/react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import PackageCard from "@/components/PackageCard";
-import { AnimatedTerminal } from "@/components/ui/animated-terminal";
-import { HeroHighlight, Highlight } from "@/components/ui/hero-highlight";
-import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
-import { TypewriterEffect } from "@/components/ui/typewriter-effect";
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import PackageCard from '@/components/PackageCard';
+import { AnimatedTerminal } from '@/components/ui/animated-terminal';
+import { HeroHighlight, Highlight } from '@/components/ui/hero-highlight';
+import { BentoGrid, BentoGridItem } from '@/components/ui/bento-grid';
+import { TypewriterEffect } from '@/components/ui/typewriter-effect';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -51,48 +51,50 @@ export default function LandingPageClient({
     () => {
       // Hero Animations
       const tl = gsap.timeline();
-      tl.from(".hero-badge", { opacity: 0, y: 20, duration: 0.6, ease: "power3.out" })
-        .from(".hero-title", { opacity: 0, y: 20, duration: 0.6, ease: "power3.out" }, "-=0.4")
-        .from(".hero-desc", { opacity: 0, y: 20, duration: 0.6, ease: "power3.out" }, "-=0.4")
-        .from(".hero-actions", { opacity: 0, y: 20, duration: 0.6, ease: "power3.out" }, "-=0.4")
-        .from(".hero-stats", { opacity: 0, y: 20, duration: 0.6, ease: "power3.out" }, "-=0.4")
-        .from(".hero-terminal", { opacity: 0, x: 20, duration: 0.8, ease: "power3.out" }, "-=0.6");
+      tl.from('.hero-badge', { opacity: 0, y: 20, duration: 0.6, ease: 'power3.out' })
+        .from('.hero-title', { opacity: 0, y: 20, duration: 0.6, ease: 'power3.out' }, '-=0.4')
+        .from('.hero-desc', { opacity: 0, y: 20, duration: 0.6, ease: 'power3.out' }, '-=0.4')
+        .from('.hero-actions', { opacity: 0, y: 20, duration: 0.6, ease: 'power3.out' }, '-=0.4')
+        .from('.hero-stats', { opacity: 0, y: 20, duration: 0.6, ease: 'power3.out' }, '-=0.4')
+        .from('.hero-terminal', { opacity: 0, x: 20, duration: 0.8, ease: 'power3.out' }, '-=0.6');
 
       // Scroll Animations for sections
-      gsap.utils.toArray<HTMLElement>(".fade-up-section").forEach((section) => {
-        gsap.fromTo(section,
+      gsap.utils.toArray<HTMLElement>('.fade-up-section').forEach((section) => {
+        gsap.fromTo(
+          section,
           { opacity: 0, y: 40 },
           {
             scrollTrigger: {
               trigger: section,
-              start: "top 85%",
+              start: 'top 85%',
             },
             opacity: 1,
             y: 0,
             duration: 0.8,
-            ease: "power3.out",
-          }
+            ease: 'power3.out',
+          },
         );
       });
 
       // Bento Grid Stagger
-      gsap.fromTo(".bento-item", 
+      gsap.fromTo(
+        '.bento-item',
         { opacity: 0, scale: 0.95, y: 20 },
         {
           scrollTrigger: {
-            trigger: ".bento-container",
-            start: "top 90%",
+            trigger: '.bento-container',
+            start: 'top 90%',
           },
           opacity: 1,
           scale: 1,
           y: 0,
           stagger: 0.1,
           duration: 0.6,
-          ease: "back.out(1.2)",
-        }
+          ease: 'back.out(1.2)',
+        },
       );
     },
-    { scope: container }
+    { scope: container },
   );
 
   return (
@@ -118,23 +120,23 @@ export default function LandingPageClient({
               </h1>
 
               <div className="hero-desc mb-8">
-                <TypewriterEffect 
+                <TypewriterEffect
                   className="text-left text-lg md:text-xl text-neutral-400 font-normal leading-relaxed"
                   words={[
-                    { text: "Install," },
-                    { text: "share," },
-                    { text: "and" },
-                    { text: "version" },
-                    { text: "AI" },
-                    { text: "skills" },
-                    { text: "across" },
-                    { text: "any" },
-                    { text: "model." },
-                    { text: "One", className: "text-blue-400" },
-                    { text: "command", className: "text-blue-400" },
-                    { text: "to" },
-                    { text: "install." },
-                  ]} 
+                    { text: 'Install,' },
+                    { text: 'share,' },
+                    { text: 'and' },
+                    { text: 'version' },
+                    { text: 'AI' },
+                    { text: 'skills' },
+                    { text: 'across' },
+                    { text: 'any' },
+                    { text: 'model.' },
+                    { text: 'One', className: 'text-blue-400' },
+                    { text: 'command', className: 'text-blue-400' },
+                    { text: 'to' },
+                    { text: 'install.' },
+                  ]}
                 />
               </div>
 
@@ -223,9 +225,7 @@ export default function LandingPageClient({
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">
                 Three commands to ship
               </h2>
-              <p className="text-lg text-neutral-400">
-                From discovery to execution in seconds.
-              </p>
+              <p className="text-lg text-neutral-400">From discovery to execution in seconds.</p>
             </div>
             <Link
               href="/docs"
@@ -238,22 +238,22 @@ export default function LandingPageClient({
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {
-                step: "01",
-                title: "Install",
-                desc: "Browse the registry and install capabilities with a single command.",
-                code: "skillspace install @skillspace/code-reviewer",
+                step: '01',
+                title: 'Install',
+                desc: 'Browse the registry and install capabilities with a single command.',
+                code: 'skillspace install @skillspace/code-reviewer',
               },
               {
-                step: "02",
-                title: "Run",
-                desc: "Execute any installed skill against your code, text, or data.",
-                code: "skillspace run code-reviewer --input ./src",
+                step: '02',
+                title: 'Run',
+                desc: 'Execute any installed skill against your code, text, or data.',
+                code: 'skillspace run code-reviewer --input ./src',
               },
               {
-                step: "03",
-                title: "Share",
-                desc: "Package and publish your own capabilities for others to use.",
-                code: "skillspace publish",
+                step: '03',
+                title: 'Share',
+                desc: 'Package and publish your own capabilities for others to use.',
+                code: 'skillspace publish',
               },
             ].map((item) => (
               <div key={item.step} className="group">
@@ -267,9 +267,7 @@ export default function LandingPageClient({
                       {item.title}
                     </h3>
                   </div>
-                  <p className="text-neutral-400 text-base mb-8 leading-relaxed">
-                    {item.desc}
-                  </p>
+                  <p className="text-neutral-400 text-base mb-8 leading-relaxed">{item.desc}</p>
                   <code className="block text-sm font-mono bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-neutral-300 group-hover:border-white/20 transition-colors shadow-inner">
                     <span className="text-blue-400">$</span> {item.code}
                   </code>
@@ -300,28 +298,36 @@ export default function LandingPageClient({
               className="bento-item md:col-span-2"
               title="Global Registry"
               description="Discover and install community-published skills for any task. From code review to log analysis, find the exact capability you need."
-              header={<div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-neutral-900 to-neutral-800 border border-white/5" />}
+              header={
+                <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-neutral-900 to-neutral-800 border border-white/5" />
+              }
               icon={<Globe className="h-6 w-6 text-blue-400" />}
             />
             <BentoGridItem
               className="bento-item md:col-span-1"
               title="Version Control"
               description="Lock files and semantic versioning ensure your AI agents behave consistently across every deployment."
-              header={<div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-neutral-900 to-neutral-800 border border-white/5" />}
+              header={
+                <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-neutral-900 to-neutral-800 border border-white/5" />
+              }
               icon={<GitBranch className="h-6 w-6 text-emerald-400" />}
             />
             <BentoGridItem
               className="bento-item md:col-span-1"
               title="Secure Sandbox"
               description="Skills run in isolated environments with strict permission boundaries. No unauthorized network or file access."
-              header={<div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-neutral-900 to-neutral-800 border border-white/5" />}
+              header={
+                <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-neutral-900 to-neutral-800 border border-white/5" />
+              }
               icon={<ShieldCheck className="h-6 w-6 text-rose-400" />}
             />
             <BentoGridItem
               className="bento-item md:col-span-2"
               title="CLI Native workflow"
               description="Feels exactly like npm, pip, or cargo. Integrate directly into your CI/CD pipelines and developer environments."
-              header={<div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-neutral-900 to-neutral-800 border border-white/5" />}
+              header={
+                <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-neutral-900 to-neutral-800 border border-white/5" />
+              }
               icon={<Terminal className="h-6 w-6 text-amber-400" />}
             />
           </BentoGrid>
@@ -336,12 +342,12 @@ export default function LandingPageClient({
           <div className="flex items-end justify-between mb-12">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-                {packages.length > 0 ? "Trending packages" : "Registry"}
+                {packages.length > 0 ? 'Trending packages' : 'Registry'}
               </h2>
               <p className="text-lg text-neutral-400 mt-2">
                 {packages.length > 0
-                  ? "Discover what the community is building."
-                  : "Be the first to publish a package."}
+                  ? 'Discover what the community is building.'
+                  : 'Be the first to publish a package.'}
               </p>
             </div>
             {packages.length > 0 && (
@@ -370,7 +376,10 @@ export default function LandingPageClient({
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {packages.map((pkg, i) => (
-                <div key={pkg.name} className="hover:-translate-y-1 transition-transform duration-300">
+                <div
+                  key={pkg.name}
+                  className="hover:-translate-y-1 transition-transform duration-300"
+                >
                   <PackageCard pkg={{ ...(pkg as any), isNew: i < 2 }} index={i} />
                 </div>
               ))}
@@ -389,8 +398,8 @@ export default function LandingPageClient({
             Start building with <Highlight>SkillSpace</Highlight>
           </h2>
           <p className="text-xl text-neutral-400 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Join the open-source community building the future of AI capability management.
-            Install your first skill in under 30 seconds.
+            Join the open-source community building the future of AI capability management. Install
+            your first skill in under 30 seconds.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-5 mb-12">

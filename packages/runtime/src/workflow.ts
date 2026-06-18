@@ -27,12 +27,12 @@ export class WorkflowEngine {
    */
   public preflightValidation(workflow: Workflow): void {
     const definedStepIds = new Set<string>();
-    
+
     for (let i = 0; i < workflow.steps.length; i++) {
       const step = workflow.steps[i];
       if (step.id) definedStepIds.add(step.id);
       else definedStepIds.add(i.toString());
-      
+
       if ('parallel' in step) {
         step.parallel.forEach((p: any, idx: number) => {
           if (p.id) definedStepIds.add(p.id);
@@ -44,14 +44,16 @@ export class WorkflowEngine {
     const validateExpression = (expr: string) => {
       // Just check if it compiles without throwing
       jexl.compile(expr);
-      
+
       // Simple string-based extraction for MVP pre-flight missing steps
       const matches = expr.match(/steps\.([^.]+)\./g);
       if (matches) {
         for (const match of matches) {
           const stepId = match.split('.')[1];
           if (!definedStepIds.has(stepId)) {
-            throw new Error(`Compile Error: Reference to undefined step "${stepId}" in expression: "${expr}"`);
+            throw new Error(
+              `Compile Error: Reference to undefined step "${stepId}" in expression: "${expr}"`,
+            );
           }
         }
       }
@@ -129,7 +131,10 @@ export class WorkflowEngine {
         if (step.on_failure === 'continue') {
           console.warn(`[Workflow] Step "${stepId}" failed but continuing: ${err}`);
         } else {
-          throw new ExecutionError(`Workflow failed at step "${stepId}": ${err instanceof Error ? err.message : String(err)}`, 'WORKFLOW_ERROR');
+          throw new ExecutionError(
+            `Workflow failed at step "${stepId}": ${err instanceof Error ? err.message : String(err)}`,
+            'WORKFLOW_ERROR',
+          );
         }
       }
     }
@@ -150,7 +155,9 @@ export class WorkflowEngine {
         }
       }
     } else {
-      const lastStepId = options.workflow.steps[options.workflow.steps.length - 1]?.id || (options.workflow.steps.length - 1).toString();
+      const lastStepId =
+        options.workflow.steps[options.workflow.steps.length - 1]?.id ||
+        (options.workflow.steps.length - 1).toString();
       if (context.steps[lastStepId]) {
         outputs['result'] = context.steps[lastStepId]!.output;
       }
@@ -169,7 +176,9 @@ export class WorkflowEngine {
           return;
         }
       } catch (err) {
-        throw new Error(`Failed to evaluate condition "${step.condition}": ${err instanceof Error ? err.message : String(err)}`);
+        throw new Error(
+          `Failed to evaluate condition "${step.condition}": ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
     }
 

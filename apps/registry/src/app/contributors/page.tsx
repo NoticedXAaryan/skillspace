@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { HeroSection } from '@/components/ui/hero-odyssey';
 import EmptyState from '@/components/EmptyState';
 
-
 export const metadata = {
   title: 'Contributors — SkillSpace',
   description: 'Top contributors to the SkillSpace ecosystem.',
@@ -16,30 +15,30 @@ export default async function ContributorsPage() {
     take: 10,
     orderBy: {
       packages: {
-        _count: 'desc'
-      }
+        _count: 'desc',
+      },
     },
     include: {
       _count: {
-        select: { packages: true, followers: true }
-      }
-    }
+        select: { packages: true, followers: true },
+      },
+    },
   });
 
-  const displayUsers = topUsers.map(u => ({
+  const displayUsers = topUsers.map((u) => ({
     username: u.username,
     bio: u.bio,
     packages: u._count.packages,
-    followers: u._count.followers
+    followers: u._count.followers,
   }));
 
   return (
     <main className="min-h-screen bg-black pb-24">
-      <HeroSection 
+      <HeroSection
         title="Contributor Leaderboard"
         subtitle="Recognizing the developers building the open AI ecosystem."
         align="center"
-        badge={{ text: "Community" }}
+        badge={{ text: 'Community' }}
       />
 
       <div className="container mx-auto px-6 max-w-6xl relative z-10 -mt-4">
@@ -60,7 +59,10 @@ export default async function ContributorsPage() {
           ) : (
             <div className="flex flex-col gap-3">
               {displayUsers.map((user, index) => (
-                <div key={user.username} className="flex items-center gap-4 bg-neutral-950/50 hover:bg-neutral-900/80 border border-white/5 hover:border-cyan-500/30 rounded-xl p-4 transition-all duration-300">
+                <div
+                  key={user.username}
+                  className="flex items-center gap-4 bg-neutral-950/50 hover:bg-neutral-900/80 border border-white/5 hover:border-cyan-500/30 rounded-xl p-4 transition-all duration-300"
+                >
                   <div className="w-8 text-center font-mono font-bold text-neutral-500 text-lg">
                     {index + 1}
                   </div>
@@ -68,10 +70,15 @@ export default async function ContributorsPage() {
                     {user.username?.[0]?.toUpperCase() || '?'}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <Link href={`/profile/${user.username || ''}`} className="text-base font-bold text-white hover:text-cyan-400 transition-colors truncate block">
+                    <Link
+                      href={`/profile/${user.username || ''}`}
+                      className="text-base font-bold text-white hover:text-cyan-400 transition-colors truncate block"
+                    >
                       @{user.username || 'unknown'}
                     </Link>
-                    <p className="text-sm text-neutral-500 truncate">{user.bio || 'Open source contributor'}</p>
+                    <p className="text-sm text-neutral-500 truncate">
+                      {user.bio || 'Open source contributor'}
+                    </p>
                   </div>
                   <div className="flex items-center gap-4 shrink-0">
                     <div className="flex items-center gap-1.5 text-sm font-mono text-neutral-400">

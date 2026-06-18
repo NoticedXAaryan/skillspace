@@ -29,7 +29,9 @@ export default async function ActivityPage() {
   });
 
   return (
-    <Suspense fallback={<div className="p-10 text-center text-neutral-400">Loading activity...</div>}>
+    <Suspense
+      fallback={<div className="p-10 text-center text-neutral-400">Loading activity...</div>}
+    >
       <ActivityFeedClient executions={executions} />
     </Suspense>
   );

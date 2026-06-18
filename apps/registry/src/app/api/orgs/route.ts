@@ -17,21 +17,27 @@ export async function POST(request: NextRequest) {
     }
 
     if (!/^[a-z0-9-]+$/.test(slug)) {
-      return NextResponse.json({ error: 'Invalid slug format. Use lowercase letters, numbers, and hyphens.' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Invalid slug format. Use lowercase letters, numbers, and hyphens.' },
+        { status: 400 },
+      );
     }
 
     // Check if slug is taken by another org
     const existingOrg = await prisma.organization.findUnique({
-      where: { slug }
+      where: { slug },
     });
 
     if (existingOrg) {
-      return NextResponse.json({ error: 'Slug is already taken by an organization' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Slug is already taken by an organization' },
+        { status: 400 },
+      );
     }
 
     // Check if slug is taken by a user
     const existingUser = await prisma.user.findUnique({
-      where: { username: slug }
+      where: { username: slug },
     });
 
     if (existingUser) {
@@ -46,10 +52,10 @@ export async function POST(request: NextRequest) {
         members: {
           create: {
             userId: user.userId,
-            role: 'admin'
-          }
-        }
-      }
+            role: 'admin',
+          },
+        },
+      },
     });
 
     return NextResponse.json({ org });
@@ -69,17 +75,17 @@ export async function GET(request: NextRequest) {
     // List orgs the user is a member of
     const members = await prisma.orgMember.findMany({
       where: { userId: user.userId },
-      include: { 
+      include: {
         organization: {
           include: {
             packages: { include: { versions: { orderBy: { publishedAt: 'desc' }, take: 1 } } },
-            members: { include: { user: { select: { id: true, username: true, email: true } } } }
-          }
-        } 
-      }
+            members: { include: { user: { select: { id: true, username: true, email: true } } } },
+          },
+        },
+      },
     });
 
-    const orgs = members.map(m => m.organization);
+    const orgs = members.map((m) => m.organization);
 
     return NextResponse.json({ orgs });
   } catch (error) {

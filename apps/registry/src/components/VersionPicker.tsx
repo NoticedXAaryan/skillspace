@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
-import { ChevronDown, Check } from "lucide-react";
+import { useRouter } from 'next/navigation';
+import { useState, useRef, useEffect } from 'react';
+import { ChevronDown, Check } from 'lucide-react';
 
 interface Version {
   version: string;
@@ -26,8 +26,8 @@ export default function VersionPicker({ pkgName, currentVersion, versions }: Ver
         setIsOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleSelect = (version: string) => {
@@ -39,8 +39,8 @@ export default function VersionPicker({ pkgName, currentVersion, versions }: Ver
 
   return (
     <div className="versionPickerContainer" ref={dropdownRef}>
-      <button 
-        className="versionPickerBtn" 
+      <button
+        className="versionPickerBtn"
         onClick={() => setIsOpen(!isOpen)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}

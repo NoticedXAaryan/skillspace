@@ -26,17 +26,17 @@ export async function POST(request: NextRequest) {
       where: {
         organizationId_userId: {
           organizationId: invite.orgId,
-          userId: user.userId
-        }
+          userId: user.userId,
+        },
       },
       update: {
-        role: invite.role
+        role: invite.role,
       },
       create: {
         organizationId: invite.orgId,
         userId: user.userId,
-        role: invite.role
-      }
+        role: invite.role,
+      },
     });
 
     await consumeInvite(token);

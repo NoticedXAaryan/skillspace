@@ -26,7 +26,7 @@ export default function KeysClient({ settings }: KeysClientProps) {
   const [showKeys, setShowKeys] = useState<Record<string, boolean>>({});
 
   const toggleShow = (key: string) => {
-    setShowKeys(prev => ({ ...prev, [key]: !prev[key] }));
+    setShowKeys((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const handleSave = async () => {
@@ -60,7 +60,9 @@ export default function KeysClient({ settings }: KeysClientProps) {
     <div className="p-6 md:p-10 max-w-3xl mx-auto">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white">API Keys</h1>
-        <p className="text-neutral-400 mt-1">Configure keys for AI model providers. Used by the playground and CLI to execute skills.</p>
+        <p className="text-neutral-400 mt-1">
+          Configure keys for AI model providers. Used by the playground and CLI to execute skills.
+        </p>
       </div>
 
       {/* Status Banner */}
@@ -69,7 +71,9 @@ export default function KeysClient({ settings }: KeysClientProps) {
           <AlertCircle className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
           <div>
             <p className="text-sm font-medium text-amber-300">No API keys configured</p>
-            <p className="text-xs text-amber-400/70 mt-1">Add at least one provider key to use the playground and CLI execution features.</p>
+            <p className="text-xs text-amber-400/70 mt-1">
+              Add at least one provider key to use the playground and CLI execution features.
+            </p>
           </div>
         </div>
       )}
@@ -83,7 +87,9 @@ export default function KeysClient({ settings }: KeysClientProps) {
               <Key className="w-4 h-4 text-green-400" />
               <label className="text-sm font-medium text-white">OpenAI</label>
               {settings.openaiKey && !openaiKey && (
-                <span className="text-xs text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full">Configured</span>
+                <span className="text-xs text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full">
+                  Configured
+                </span>
               )}
             </div>
           </div>
@@ -111,7 +117,9 @@ export default function KeysClient({ settings }: KeysClientProps) {
               <Key className="w-4 h-4 text-orange-400" />
               <label className="text-sm font-medium text-white">Anthropic</label>
               {settings.anthropicKey && !anthropicKey && (
-                <span className="text-xs text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full">Configured</span>
+                <span className="text-xs text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full">
+                  Configured
+                </span>
               )}
             </div>
           </div>
@@ -139,7 +147,9 @@ export default function KeysClient({ settings }: KeysClientProps) {
               <Key className="w-4 h-4 text-blue-400" />
               <label className="text-sm font-medium text-white">Google AI</label>
               {settings.googleKey && !googleKey && (
-                <span className="text-xs text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full">Configured</span>
+                <span className="text-xs text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full">
+                  Configured
+                </span>
               )}
             </div>
           </div>
@@ -168,7 +178,9 @@ export default function KeysClient({ settings }: KeysClientProps) {
             <Cpu className="w-4 h-4 text-purple-400" />
             <label className="text-sm font-medium text-white">Ollama (Local)</label>
             {settings.ollamaUrl && (
-              <span className="text-xs text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full">Configured</span>
+              <span className="text-xs text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full">
+                Configured
+              </span>
             )}
           </div>
           <Input

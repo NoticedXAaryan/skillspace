@@ -19,14 +19,14 @@ It is critical to note that SkillSpace is not designed to make models inherently
 
 ## 2. The Solution at a Glance
 
-SkillSpace is the universal runtime and registry for AI capabilities. It allows developers to install, share, version, and execute AI skills, agents, and workflows using the exact same paradigms they use to manage traditional software packages. 
+SkillSpace is the universal runtime and registry for AI capabilities. It allows developers to install, share, version, and execute AI skills, agents, and workflows using the exact same paradigms they use to manage traditional software packages.
 
 The system relies on a few core capabilities:
 
-*   **Universal Packaging:** Capabilities are encapsulated into `.skillpkg` files containing a declarative manifest (`skill.yaml`), optional knowledge bases, evaluation tests, and model-specific adapters.
-*   **Single-Command Installation:** Using the CLI, a developer can run `skillspace install security-review`. This fetches the package, installs it into a local registry cache (`~/.skillspace/registry/`), and automatically updates the `skillspace.lock` file ensuring deterministic reproducibility across teams.
-*   **Cross-Model Execution:** The SkillSpace Runtime (SSR) dynamically transforms the universally defined prompts into the exact API payload required by the target model. Thus, a single command like `skillspace run security-review --model claude` or `skillspace run security-review --model openai` executes the same logic seamlessly against different endpoints.
-*   **Strict Security & Sandboxing:** Capabilities must declare their permissions upfront in `skill.yaml` (e.g., `filesystem.read`, `network.fetch`). The execution engine enforces these requests strictly, throwing exceptions (`PermissionDeniedError`) if a skill overreaches.
+- **Universal Packaging:** Capabilities are encapsulated into `.skillpkg` files containing a declarative manifest (`skill.yaml`), optional knowledge bases, evaluation tests, and model-specific adapters.
+- **Single-Command Installation:** Using the CLI, a developer can run `skillspace install security-review`. This fetches the package, installs it into a local registry cache (`~/.skillspace/registry/`), and automatically updates the `skillspace.lock` file ensuring deterministic reproducibility across teams.
+- **Cross-Model Execution:** The SkillSpace Runtime (SSR) dynamically transforms the universally defined prompts into the exact API payload required by the target model. Thus, a single command like `skillspace run security-review --model claude` or `skillspace run security-review --model openai` executes the same logic seamlessly against different endpoints.
+- **Strict Security & Sandboxing:** Capabilities must declare their permissions upfront in `skill.yaml` (e.g., `filesystem.read`, `network.fetch`). The execution engine enforces these requests strictly, throwing exceptions (`PermissionDeniedError`) if a skill overreaches.
 
 ---
 
@@ -46,17 +46,17 @@ The architecture of SkillSpace is defined by a few opinionated, unyielding desig
 
 SkillSpace leverages a modern, TypeScript-first ecosystem to ensure type safety from the database layer all the way to the CLI interface.
 
-| Technology / Library | Role in the Project |
-| :------------------- | :--------------------------------------------------------------------------------------------------------- |
-| **Node.js / Bun** | The execution environment for the CLI. Bun provides ultra-fast binary bundling and execution speeds. |
-| **TypeScript** | The primary language used across the entire repository, providing comprehensive type checking and autocompletion. |
-| **Next.js (App Router)**| Powers both the Registry REST API and the Web Dashboard for package discovery and analytics. |
-| **Prisma** | The Object-Relational Mapper (ORM) used by the Next.js backend to interface with the database safely. |
-| **PostgreSQL** | The primary relational database used to store users, organizations, package metadata, and execution logs. |
-| **Turborepo** | The build system used to orchestrate tasks across the monorepo, caching outputs to speed up CI/CD. |
-| **Zod** | Used universally for schema declaration and runtime data validation. |
-| **Commander.js** | The framework powering the interactive, strictly-typed Command Line Interface in `apps/cli`. |
-| **Jest** | The testing framework utilized for both unit testing schemas/adapters and running End-to-End CLI workflows. |
+| Technology / Library     | Role in the Project                                                                                               |
+| :----------------------- | :---------------------------------------------------------------------------------------------------------------- |
+| **Node.js / Bun**        | The execution environment for the CLI. Bun provides ultra-fast binary bundling and execution speeds.              |
+| **TypeScript**           | The primary language used across the entire repository, providing comprehensive type checking and autocompletion. |
+| **Next.js (App Router)** | Powers both the Registry REST API and the Web Dashboard for package discovery and analytics.                      |
+| **Prisma**               | The Object-Relational Mapper (ORM) used by the Next.js backend to interface with the database safely.             |
+| **PostgreSQL**           | The primary relational database used to store users, organizations, package metadata, and execution logs.         |
+| **Turborepo**            | The build system used to orchestrate tasks across the monorepo, caching outputs to speed up CI/CD.                |
+| **Zod**                  | Used universally for schema declaration and runtime data validation.                                              |
+| **Commander.js**         | The framework powering the interactive, strictly-typed Command Line Interface in `apps/cli`.                      |
+| **Jest**                 | The testing framework utilized for both unit testing schemas/adapters and running End-to-End CLI workflows.       |
 
 ---
 
@@ -71,7 +71,7 @@ graph TD
         SSR[SkillSpace Runtime]
         Cache[Local Cache ~/.skillspace]
         Lock[skillspace.lock]
-        
+
         CLI -->|Invokes run/install| SSR
         SSR -->|Reads/Writes| Cache
         CLI -->|Generates| Lock
@@ -125,11 +125,11 @@ skillspace/
 
 To work effectively within the SkillSpace codebase, you must understand its specific domain language.
 
-*   **Capability:** A generic term for anything executable by the SkillSpace Runtime. This includes Skills, Agents, Workflows, and MCP configurations.
-*   **Skill:** The fundamental unit of execution. A declarative, versioned package defining a system prompt, a user template, configuration boundaries, and specific output schemas.
-*   **Skill Package (`.skillpkg`):** The compiled, tar-gzipped distribution format of a capability, containing the `skill.yaml`, optional adapters, testing data, and knowledge files.
-*   **SkillSpace Runtime (SSR):** The core deterministic execution engine located in `packages/runtime`. It is entirely decoupled from the CLI and can be embedded via the SDK.
-*   **Model Adapter Layer (MAL):** The subsystem within the SSR responsible for translating agnostic `skill.yaml` instructions into the bespoke JSON payloads required by specific model providers (e.g., Anthropic Messages API, OpenAI Chat Completions).
-*   **Local Registry Cache:** The directory (`~/.skillspace/registry/`) where downloaded packages are stored, mapped by `name@version`, ensuring offline availability and high-speed execution.
-*   **Permission Enforcer:** The security guardrail component that inspects a skill's declared permissions (e.g., `filesystem.write`) against the operations requested at runtime, throwing exceptions if boundaries are crossed.
-*   **MCP (Model Context Protocol):** A standardized protocol for models to interact with local or remote tools. SkillSpace manages and routes these connections as a first-class citizen.
+- **Capability:** A generic term for anything executable by the SkillSpace Runtime. This includes Skills, Agents, Workflows, and MCP configurations.
+- **Skill:** The fundamental unit of execution. A declarative, versioned package defining a system prompt, a user template, configuration boundaries, and specific output schemas.
+- **Skill Package (`.skillpkg`):** The compiled, tar-gzipped distribution format of a capability, containing the `skill.yaml`, optional adapters, testing data, and knowledge files.
+- **SkillSpace Runtime (SSR):** The core deterministic execution engine located in `packages/runtime`. It is entirely decoupled from the CLI and can be embedded via the SDK.
+- **Model Adapter Layer (MAL):** The subsystem within the SSR responsible for translating agnostic `skill.yaml` instructions into the bespoke JSON payloads required by specific model providers (e.g., Anthropic Messages API, OpenAI Chat Completions).
+- **Local Registry Cache:** The directory (`~/.skillspace/registry/`) where downloaded packages are stored, mapped by `name@version`, ensuring offline availability and high-speed execution.
+- **Permission Enforcer:** The security guardrail component that inspects a skill's declared permissions (e.g., `filesystem.write`) against the operations requested at runtime, throwing exceptions if boundaries are crossed.
+- **MCP (Model Context Protocol):** A standardized protocol for models to interact with local or remote tools. SkillSpace manages and routes these connections as a first-class citizen.

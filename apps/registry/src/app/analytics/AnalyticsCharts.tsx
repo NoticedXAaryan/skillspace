@@ -1,6 +1,16 @@
 'use client';
 
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from 'recharts';
 
 interface ChartData {
   name: string;
@@ -24,11 +34,31 @@ export function ExecutionBarChart({ data }: { data: ChartData[] }) {
     <div className="mt-4 h-[250px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data}>
-          <XAxis dataKey="name" stroke="currentColor" className="text-muted-foreground" fontSize={12} tickLine={false} axisLine={false} />
-          <YAxis stroke="currentColor" className="text-muted-foreground" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => value >= 1000 ? `${(value / 1000).toFixed(1)}k` : `${value}`} />
-          <Tooltip 
+          <XAxis
+            dataKey="name"
+            stroke="currentColor"
+            className="text-muted-foreground"
+            fontSize={12}
+            tickLine={false}
+            axisLine={false}
+          />
+          <YAxis
+            stroke="currentColor"
+            className="text-muted-foreground"
+            fontSize={12}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(value) =>
+              value >= 1000 ? `${(value / 1000).toFixed(1)}k` : `${value}`
+            }
+          />
+          <Tooltip
             cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
-            contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius)' }}
+            contentStyle={{
+              background: 'hsl(var(--card))',
+              border: '1px solid hsl(var(--border))',
+              borderRadius: 'var(--radius)',
+            }}
             itemStyle={{ color: 'hsl(var(--foreground))' }}
           />
           <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
@@ -67,10 +97,17 @@ export function TypePieChart({ data }: { data: TypeData[] }) {
               <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
           </Pie>
-          <Tooltip 
-            contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius)' }}
+          <Tooltip
+            contentStyle={{
+              background: 'hsl(var(--card))',
+              border: '1px solid hsl(var(--border))',
+              borderRadius: 'var(--radius)',
+            }}
             itemStyle={{ color: 'hsl(var(--foreground))' }}
-            formatter={(value) => [`${Math.round((Number(value) / total) * 100)}% (${value})`, 'Count']}
+            formatter={(value) => [
+              `${Math.round((Number(value) / total) * 100)}% (${value})`,
+              'Count',
+            ]}
           />
         </PieChart>
       </ResponsiveContainer>

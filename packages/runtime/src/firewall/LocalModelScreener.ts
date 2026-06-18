@@ -42,10 +42,10 @@ ${JSON.stringify(input)}
           stream: false,
           format: 'json',
           options: {
-            temperature: 0.0
-          }
+            temperature: 0.0,
+          },
         }),
-        signal: controller.signal
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -57,7 +57,7 @@ ${JSON.stringify(input)}
       try {
         output = typeof data.response === 'string' ? JSON.parse(data.response) : data.response;
       } catch (e) {
-        output = { safe: true, confidence: 1.0, reason: "Parse error fallback" };
+        output = { safe: true, confidence: 1.0, reason: 'Parse error fallback' };
       }
 
       if (!output.safe) {
@@ -68,20 +68,21 @@ ${JSON.stringify(input)}
           modelId: modelName,
           durationMs: 0,
           status: 'error',
-          errorMessage: `Firewall blocked: ${output.reason}`
+          errorMessage: `Firewall blocked: ${output.reason}`,
         });
       }
 
       return {
         safe: Boolean(output.safe),
         confidence: Number(output.confidence) || 1.0,
-        reason: output.reason
+        reason: output.reason,
       };
-
     } catch (e) {
       const isTimeout = e instanceof Error && e.name === 'AbortError';
-      console.warn(`[Firewall] Screener failed (${isTimeout ? 'Timeout' : (e as Error).message}). Failing open.`);
-      
+      console.warn(
+        `[Firewall] Screener failed (${isTimeout ? 'Timeout' : (e as Error).message}). Failing open.`,
+      );
+
       // Fail open
       return { safe: true, confidence: 1.0 };
     } finally {

@@ -10,41 +10,65 @@ export function registerSearchCommand(program: Command): void {
     .command('search <query>')
     .description('Search for skills in the registry')
     .option('-t, --type <type>', 'Filter by type (skill, agent, workflow)')
+    .option('--json', 'Output result as JSON (for scripting)')
     .action(async (query: string, opts) => {
-      const loader = createLoader(`Searching for "${query}"...`);
+      const loader = opts.json ? null : createLoader(`Searching for "${query}"...`);
       try {
         const client = new RegistryClient();
         const result = await client.search(query, opts.type);
 
         if (result.error) {
-          loader.fail('Search failed');
+          loader?.fail('Search failed');
+          if (opts.json) {
+            console.log(JSON.stringify({ success: false, error: result.error.message }));
+            process.exit(1);
+          }
           errorOperational('Search Error', { message: result.error.message });
           process.exit(1);
         }
 
         const packages = result.data;
-        if (!packages || packages.length === 0) {
-          loader.succeed(`No packages found for "${query}"`);
+        if (opts.json) {
+          console.log(JSON.stringify({
+            success: true,
+            query,
+            total: result.meta?.total || (packages ? packages.length : 0),
+            results: packages || []
+          }));
           return;
         }
 
-        loader.succeed(`Found ${result.meta?.total || packages.length} packages`);
+        if (!packages || packages.length === 0) {
+          loader?.succeed(`No packages found for "${query}"`);
+          return;
+        }
+
+        loader?.succeed(`Found ${result.meta?.total || packages.length} packages`);
 
         const rows = packages.map((pkg: any) => {
           const verified = pkg.verified ? c.success(' ✓') : '';
           const line1 = `${c.brand(pkg.name)}${verified} | v${pkg.latestVersion || '?'} by ${c.text(pkg.author)} | ↓${pkg.downloads}`;
           const line2 = `  ${c.textMuted(pkg.description)}`;
-          const line3 = pkg.tags?.length > 0 ? `  ${c.textFaint('Tags:')} ${pkg.tags.join(', ')}` : '';
+          const line3 =
+            pkg.tags?.length > 0 ? `  ${c.textFaint('Tags:')} ${pkg.tags.join(', ')}` : '';
           return [line1, line2, line3].filter(Boolean).join('\n');
         });
 
-        console.log(box(rows, {
-          title: 'Search Results',
-          colorFn: c.brand
-        }));
+        console.log(
+          box(rows, {
+            title: 'Search Results',
+            colorFn: c.brand,
+          }),
+        );
       } catch (err) {
-        loader.fail('Search failed');
-        errorOperational('Search Error', { message: err instanceof Error ? err.message : String(err) });
+        loader?.fail('Search failed');
+        if (opts.json) {
+          console.log(JSON.stringify({ success: false, error: err instanceof Error ? err.message : String(err) }));
+          process.exit(1);
+        }
+        errorOperational('Search Error', {
+          message: err instanceof Error ? err.message : String(err),
+        });
         process.exit(1);
       }
     });

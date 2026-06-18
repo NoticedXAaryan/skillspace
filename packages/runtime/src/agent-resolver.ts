@@ -25,7 +25,6 @@ export class AgentNotFoundError extends Error {
 export class AgentResolver {
   private cache: SkillCache;
 
-
   constructor(cache?: SkillCache) {
     this.cache = cache ?? new SkillCache();
   }
@@ -34,7 +33,13 @@ export class AgentResolver {
    * Resolve an agent by name and optional version range.
    */
   resolve(name: string, versionRange?: string): Agent {
-    if (name.endsWith('.yaml') || name.startsWith('./') || name.startsWith('.\\') || name.startsWith('/') || name.match(/^[a-zA-Z]:\\/)) {
+    if (
+      name.endsWith('.yaml') ||
+      name.startsWith('./') ||
+      name.startsWith('.\\') ||
+      name.startsWith('/') ||
+      name.match(/^[a-zA-Z]:\\/)
+    ) {
       if (fs.existsSync(name)) {
         const content = fs.readFileSync(name, 'utf-8');
         const parsed = YAML.parse(content);
@@ -61,9 +66,7 @@ export class AgentResolver {
       return this.cache.loadAgent(name, range);
     }
 
-    const matching = versions
-      .filter((v) => semver.satisfies(v, range))
-      .sort(semver.rcompare);
+    const matching = versions.filter((v) => semver.satisfies(v, range)).sort(semver.rcompare);
 
     if (matching.length === 0) {
       throw new Error(`No version of agent "${name}" matching "${range}" is installed.`);
@@ -93,7 +96,7 @@ export class AgentResolver {
           const versions = this.cache.getInstalledVersions(skillName);
           if (versions.length > 0) {
             const resolved = skillVersion
-              ? versions.find(v => v === skillVersion) ?? versions.sort(semver.rcompare)[0]
+              ? (versions.find((v) => v === skillVersion) ?? versions.sort(semver.rcompare)[0])
               : versions.sort(semver.rcompare)[0];
             const skill = this.cache.loadSkill(skillName, resolved);
             resolvedSkills.push(skill);
@@ -120,4 +123,3 @@ export class AgentResolver {
     return { agent, skills: resolvedSkills };
   }
 }
-

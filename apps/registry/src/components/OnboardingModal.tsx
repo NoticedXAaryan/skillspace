@@ -24,7 +24,7 @@ export default function OnboardingModal() {
 
   const handleNext = () => {
     if (step < ONBOARDING_STEPS) {
-      setStep(prev => prev + 1);
+      setStep((prev) => prev + 1);
     } else {
       finishOnboarding();
     }
@@ -33,21 +33,21 @@ export default function OnboardingModal() {
   const finishOnboarding = () => {
     localStorage.setItem('skillspace_onboarding_completed', 'true');
     setOpen(false);
-    
+
     const token = localStorage.getItem('skillspace_token');
     if (token) {
       fetch('/api/onboarding', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ walkthroughCompleted: true })
+        body: JSON.stringify({ walkthroughCompleted: true }),
       }).catch(() => {});
     }
   };
 
-  const TerminalStep = ({ prompt, output }: { prompt: string, output: React.ReactNode }) => (
+  const TerminalStep = ({ prompt, output }: { prompt: string; output: React.ReactNode }) => (
     <div className="mt-6 overflow-hidden rounded-lg border shadow-sm">
       <div className="flex h-8 items-center gap-1.5 border-b bg-muted px-4">
         <div className="h-3 w-3 rounded-full bg-red-500" />
@@ -85,27 +85,47 @@ export default function OnboardingModal() {
           <div className="flex flex-col items-center text-center">
             <h2 className="text-2xl font-bold tracking-tight">What is a Skill?</h2>
             <div className="my-8 flex w-full flex-wrap items-center justify-center gap-2">
-              <div className="rounded-md border bg-muted px-3 py-1.5 text-sm font-medium">Prompt</div>
+              <div className="rounded-md border bg-muted px-3 py-1.5 text-sm font-medium">
+                Prompt
+              </div>
               <div className="text-muted-foreground">+</div>
-              <div className="rounded-md border bg-muted px-3 py-1.5 text-sm font-medium">Workflow</div>
+              <div className="rounded-md border bg-muted px-3 py-1.5 text-sm font-medium">
+                Workflow
+              </div>
               <div className="text-muted-foreground">+</div>
-              <div className="rounded-md border bg-muted px-3 py-1.5 text-sm font-medium">Logic</div>
+              <div className="rounded-md border bg-muted px-3 py-1.5 text-sm font-medium">
+                Logic
+              </div>
               <div className="text-muted-foreground">+</div>
-              <div className="rounded-md border bg-muted px-3 py-1.5 text-sm font-medium">Version</div>
+              <div className="rounded-md border bg-muted px-3 py-1.5 text-sm font-medium">
+                Version
+              </div>
               <div className="font-bold text-foreground">=</div>
-              <div className="rounded-md border border-primary bg-primary/10 px-4 py-2 font-bold text-primary shadow-sm">Skill</div>
+              <div className="rounded-md border border-primary bg-primary/10 px-4 py-2 font-bold text-primary shadow-sm">
+                Skill
+              </div>
             </div>
-            <p className="text-muted-foreground">A completely reproducible, versioned block of AI logic.</p>
+            <p className="text-muted-foreground">
+              A completely reproducible, versioned block of AI logic.
+            </p>
           </div>
         );
       case 3:
         return (
           <div className="flex flex-col text-center">
             <h2 className="text-2xl font-bold tracking-tight">Install A Skill</h2>
-            <p className="mt-2 text-muted-foreground">Bring powerful AI into your codebase instantly.</p>
-            <TerminalStep 
+            <p className="mt-2 text-muted-foreground">
+              Bring powerful AI into your codebase instantly.
+            </p>
+            <TerminalStep
               prompt="skillspace install summarizer"
-              output={<>[+] Resolved summarizer@1.0.0<br/>[+] Installed successfully in 0.4s</>}
+              output={
+                <>
+                  [+] Resolved summarizer@1.0.0
+                  <br />
+                  [+] Installed successfully in 0.4s
+                </>
+              }
             />
           </div>
         );
@@ -114,9 +134,15 @@ export default function OnboardingModal() {
           <div className="flex flex-col text-center">
             <h2 className="text-2xl font-bold tracking-tight">Run A Skill</h2>
             <p className="mt-2 text-muted-foreground">Execute locally across any LLM safely.</p>
-            <TerminalStep 
+            <TerminalStep
               prompt="skillspace run summarizer 'Explain physics'"
-              output={<>&gt; Executing summarizer via Claude 3.5 Sonnet...<br/>&gt; Quantum physics is the study of matter...</>}
+              output={
+                <>
+                  &gt; Executing summarizer via Claude 3.5 Sonnet...
+                  <br />
+                  &gt; Quantum physics is the study of matter...
+                </>
+              }
             />
           </div>
         );
@@ -125,9 +151,17 @@ export default function OnboardingModal() {
           <div className="flex flex-col text-center">
             <h2 className="text-2xl font-bold tracking-tight">Publish A Skill</h2>
             <p className="mt-2 text-muted-foreground">Share your capabilities with the world.</p>
-            <TerminalStep 
+            <TerminalStep
               prompt="skillspace publish"
-              output={<>[+] Validating skill.yaml... OK<br/>[+] Uploading to registry... OK<br/>🚀 Published @yourname/myskill@1.0.0</>}
+              output={
+                <>
+                  [+] Validating skill.yaml... OK
+                  <br />
+                  [+] Uploading to registry... OK
+                  <br />
+                  🚀 Published @yourname/myskill@1.0.0
+                </>
+              }
             />
           </div>
         );
@@ -138,9 +172,35 @@ export default function OnboardingModal() {
             <h2 className="text-2xl font-bold tracking-tight">You're Ready!</h2>
             <p className="mt-2 text-muted-foreground">Where would you like to go next?</p>
             <div className="mt-8 flex w-full flex-col gap-3 sm:flex-row">
-              <Button variant="outline" className="flex-1" onClick={() => { router.push('/packages'); finishOnboarding(); }}>Explore Registry</Button>
-              <Button variant="outline" className="flex-1" onClick={() => { router.push('/docs'); finishOnboarding(); }}>Read Docs</Button>
-              <Button className="flex-1" onClick={() => { router.push('/create'); finishOnboarding(); }}>Create First Skill</Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  router.push('/packages');
+                  finishOnboarding();
+                }}
+              >
+                Explore Registry
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  router.push('/docs');
+                  finishOnboarding();
+                }}
+              >
+                Read Docs
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={() => {
+                  router.push('/create');
+                  finishOnboarding();
+                }}
+              >
+                Create First Skill
+              </Button>
             </div>
           </div>
         );
@@ -154,12 +214,12 @@ export default function OnboardingModal() {
       <DialogContent className="sm:max-w-md [&>button:last-child]:hidden">
         <div className="flex justify-center gap-2 pt-2 pb-6">
           {Array.from({ length: ONBOARDING_STEPS }).map((_, i) => (
-            <div 
-              key={i} 
+            <div
+              key={i}
               className={cn(
-                "h-1.5 w-8 rounded-full transition-colors", 
-                i + 1 <= step ? "bg-primary" : "bg-muted"
-              )} 
+                'h-1.5 w-8 rounded-full transition-colors',
+                i + 1 <= step ? 'bg-primary' : 'bg-muted',
+              )}
             />
           ))}
         </div>
@@ -181,11 +241,17 @@ export default function OnboardingModal() {
         {step !== ONBOARDING_STEPS && (
           <div className="mt-6 flex items-center justify-between">
             {step > 1 ? (
-              <Button variant="ghost" onClick={() => setStep(prev => prev - 1)}>Back</Button>
+              <Button variant="ghost" onClick={() => setStep((prev) => prev - 1)}>
+                Back
+              </Button>
             ) : (
-              <Button variant="ghost" onClick={finishOnboarding}>Skip</Button>
+              <Button variant="ghost" onClick={finishOnboarding}>
+                Skip
+              </Button>
             )}
-            <Button onClick={handleNext}>Next <ChevronRight className="ml-2 h-4 w-4" /></Button>
+            <Button onClick={handleNext}>
+              Next <ChevronRight className="ml-2 h-4 w-4" />
+            </Button>
           </div>
         )}
       </DialogContent>

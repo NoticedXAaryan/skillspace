@@ -8,25 +8,35 @@ export function registerListCommand(program: Command): void {
     .command('list')
     .alias('ls')
     .description('List all locally installed skill packages')
-    .action(() => {
+    .option('--json', 'Output result as JSON (for scripting)')
+    .action((opts) => {
       const cache = new SkillCache();
       const installed = cache.listInstalled();
 
-      if (installed.length === 0) {
-        console.log(box(['No packages installed.', 'Run `skillspace install <package>` to install one.'], {
-          title: 'Installed Packages',
-          colorFn: c.border
-        }));
+      if (opts.json) {
+        console.log(JSON.stringify({ success: true, installed }));
         return;
       }
 
-      const rows = installed.map(pkg => 
-        `${c.brand(pkg.name)}@${c.textFaint(pkg.version)} | ${c.textMuted(pkg.path)}`
+      if (installed.length === 0) {
+        console.log(
+          box(['No packages installed.', 'Run `skillspace install <package>` to install one.'], {
+            title: 'Installed Packages',
+            colorFn: c.border,
+          }),
+        );
+        return;
+      }
+
+      const rows = installed.map(
+        (pkg) => `${c.brand(pkg.name)}@${c.textFaint(pkg.version)} | ${c.textMuted(pkg.path)}`,
       );
 
-      console.log(box(rows, {
-        title: `Installed Packages (${installed.length})`,
-        colorFn: c.successDim
-      }));
+      console.log(
+        box(rows, {
+          title: `Installed Packages (${installed.length})`,
+          colorFn: c.successDim,
+        }),
+      );
     });
 }

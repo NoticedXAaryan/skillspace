@@ -18,6 +18,8 @@ export function createLoader(message: string) {
       clearInterval(interval);
       process.stdout.write(`\r  ${c.error(CHARS.CROSS)}  ${c.text(msg)}\n`);
     },
-    update: (newMsg: string) => { message = newMsg; }
+    update: (newMsg: string) => {
+      message = newMsg;
+    },
   };
 }

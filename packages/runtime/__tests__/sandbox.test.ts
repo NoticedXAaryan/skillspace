@@ -36,7 +36,7 @@ describe('FileSystemSandbox', () => {
 
     expect(() => sandbox.readFileSync('../secret.txt')).toThrowError(SandboxError);
     expect(() => sandbox.readFileSync(secretFile)).toThrowError(SandboxError);
-    
+
     fs.unlinkSync(secretFile);
   });
 
@@ -60,27 +60,35 @@ describe('NetworkSandbox', () => {
 
   it('allows safe external domains', async () => {
     (global.fetch as Mock).mockResolvedValueOnce({ ok: true });
-    
+
     await NetworkSandbox.fetch('https://api.openai.com/v1/models');
-    
+
     expect(global.fetch).toHaveBeenCalledTimes(1);
     expect((global.fetch as Mock).mock.calls[0][0]).toBe('https://api.openai.com/v1/models');
   });
 
   it('blocks localhost and private IPs', async () => {
-    await expect(NetworkSandbox.fetch('http://localhost:3000/api/hack')).rejects.toThrowError(SandboxError);
+    await expect(NetworkSandbox.fetch('http://localhost:3000/api/hack')).rejects.toThrowError(
+      SandboxError,
+    );
     await expect(NetworkSandbox.fetch('http://127.0.0.1/admin')).rejects.toThrowError(SandboxError);
-    await expect(NetworkSandbox.fetch('http://169.254.169.254/latest/meta-data')).rejects.toThrowError(SandboxError);
-    await expect(NetworkSandbox.fetch('http://10.0.0.5/internal')).rejects.toThrowError(SandboxError);
-    await expect(NetworkSandbox.fetch('http://192.168.1.100/router')).rejects.toThrowError(SandboxError);
-    
+    await expect(
+      NetworkSandbox.fetch('http://169.254.169.254/latest/meta-data'),
+    ).rejects.toThrowError(SandboxError);
+    await expect(NetworkSandbox.fetch('http://10.0.0.5/internal')).rejects.toThrowError(
+      SandboxError,
+    );
+    await expect(NetworkSandbox.fetch('http://192.168.1.100/router')).rejects.toThrowError(
+      SandboxError,
+    );
+
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
   it('blocks non-HTTP protocols', async () => {
     await expect(NetworkSandbox.fetch('file:///etc/passwd')).rejects.toThrowError(SandboxError);
     await expect(NetworkSandbox.fetch('ftp://server.com')).rejects.toThrowError(SandboxError);
-    
+
     expect(global.fetch).not.toHaveBeenCalled();
   });
 });

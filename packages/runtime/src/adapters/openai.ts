@@ -51,18 +51,21 @@ export class OpenAIAdapter implements ModelAdapter {
         max_tokens: config.maxTokens,
         temperature: config.temperature,
         messages: messages,
-        tools: tools.length > 0 ? tools.map(t => ({
-          type: 'function',
-          function: {
-            name: t.name,
-            description: t.description,
-            parameters: {
-              type: 'object',
-              properties: t.parameters || {},
-              required: t.required || []
-            }
-          }
-        })) : undefined
+        tools:
+          tools.length > 0
+            ? tools.map((t) => ({
+                type: 'function',
+                function: {
+                  name: t.name,
+                  description: t.description,
+                  parameters: {
+                    type: 'object',
+                    properties: t.parameters || {},
+                    required: t.required || [],
+                  },
+                },
+              }))
+            : undefined,
       },
       stream: false,
     };
@@ -70,7 +73,13 @@ export class OpenAIAdapter implements ModelAdapter {
 
   parseResponse(raw: unknown): ExecutionResult {
     const response = raw as {
-      choices: Array<{ message: { role: string; content: string | null; tool_calls?: import('@skillspace/schema').ToolCall[] } }>;
+      choices: Array<{
+        message: {
+          role: string;
+          content: string | null;
+          tool_calls?: import('@skillspace/schema').ToolCall[];
+        };
+      }>;
       usage: { prompt_tokens: number; completion_tokens: number };
       model: string;
     };
@@ -79,11 +88,14 @@ export class OpenAIAdapter implements ModelAdapter {
 
     return {
       output: msg?.content ?? '',
-      message: msg && msg.role === 'assistant' ? {
-        role: 'assistant',
-        content: msg.content,
-        tool_calls: msg.tool_calls
-      } : undefined,
+      message:
+        msg && msg.role === 'assistant'
+          ? {
+              role: 'assistant',
+              content: msg.content,
+              tool_calls: msg.tool_calls,
+            }
+          : undefined,
       usage: {
         promptTokens: response.usage?.prompt_tokens ?? 0,
         completionTokens: response.usage?.completion_tokens ?? 0,

@@ -8,12 +8,18 @@ type RateLimitEntry = {
 const rateLimitCache = new Map<string, RateLimitEntry>();
 
 export function getClientIp(req: NextRequest): string {
-  return req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-    || req.headers.get('x-real-ip')
-    || '127.0.0.1';
+  return (
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    req.headers.get('x-real-ip') ||
+    '127.0.0.1'
+  );
 }
 
-export function checkRateLimit(req: NextRequest, limit: number, windowSecs: number): { success: boolean; limit: number; remaining: number } {
+export function checkRateLimit(
+  req: NextRequest,
+  limit: number,
+  windowSecs: number,
+): { success: boolean; limit: number; remaining: number } {
   const ip = getClientIp(req);
   const now = Date.now();
   const windowMs = windowSecs * 1000;
@@ -30,7 +36,7 @@ export function checkRateLimit(req: NextRequest, limit: number, windowSecs: numb
   return {
     success: entry.count <= limit,
     limit,
-    remaining: Math.max(0, limit - entry.count)
+    remaining: Math.max(0, limit - entry.count),
   };
 }
 

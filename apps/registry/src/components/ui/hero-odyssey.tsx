@@ -1,4 +1,4 @@
-"use client"
+'use client';
 import React, { useRef, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
@@ -34,11 +34,11 @@ const Lightning: React.FC<LightningProps> = ({
       canvas.height = canvas.clientHeight;
     };
     resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
+    window.addEventListener('resize', resizeCanvas);
 
-    const gl = canvas.getContext("webgl");
+    const gl = canvas.getContext('webgl');
     if (!gl) {
-      console.error("WebGL not supported");
+      console.error('WebGL not supported');
       return;
     }
 
@@ -135,7 +135,7 @@ const Lightning: React.FC<LightningProps> = ({
       gl.shaderSource(shader, source);
       gl.compileShader(shader);
       if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        console.error("Shader compile error:", gl.getShaderInfoLog(shader));
+        console.error('Shader compile error:', gl.getShaderInfoLog(shader));
         gl.deleteShader(shader);
         return null;
       }
@@ -152,7 +152,7 @@ const Lightning: React.FC<LightningProps> = ({
     gl.attachShader(program, fragmentShader);
     gl.linkProgram(program);
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      console.error("Program linking error:", gl.getProgramInfoLog(program));
+      console.error('Program linking error:', gl.getProgramInfoLog(program));
       return;
     }
     gl.useProgram(program);
@@ -162,17 +162,17 @@ const Lightning: React.FC<LightningProps> = ({
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
-    const aPosition = gl.getAttribLocation(program, "aPosition");
+    const aPosition = gl.getAttribLocation(program, 'aPosition');
     gl.enableVertexAttribArray(aPosition);
     gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
 
-    const iResolutionLocation = gl.getUniformLocation(program, "iResolution");
-    const iTimeLocation = gl.getUniformLocation(program, "iTime");
-    const uHueLocation = gl.getUniformLocation(program, "uHue");
-    const uXOffsetLocation = gl.getUniformLocation(program, "uXOffset");
-    const uSpeedLocation = gl.getUniformLocation(program, "uSpeed");
-    const uIntensityLocation = gl.getUniformLocation(program, "uIntensity");
-    const uSizeLocation = gl.getUniformLocation(program, "uSize");
+    const iResolutionLocation = gl.getUniformLocation(program, 'iResolution');
+    const iTimeLocation = gl.getUniformLocation(program, 'iTime');
+    const uHueLocation = gl.getUniformLocation(program, 'uHue');
+    const uXOffsetLocation = gl.getUniformLocation(program, 'uXOffset');
+    const uSpeedLocation = gl.getUniformLocation(program, 'uSpeed');
+    const uIntensityLocation = gl.getUniformLocation(program, 'uIntensity');
+    const uSizeLocation = gl.getUniformLocation(program, 'uSize');
 
     const startTime = performance.now();
     let animationFrameId: number;
@@ -194,12 +194,18 @@ const Lightning: React.FC<LightningProps> = ({
     render();
 
     return () => {
-      window.removeEventListener("resize", resizeCanvas);
+      window.removeEventListener('resize', resizeCanvas);
       cancelAnimationFrame(animationFrameId);
     };
   }, [hue, xOffset, speed, intensity, size]);
 
-  return <canvas ref={canvasRef} className="w-full h-full relative" style={{ willChange: 'transform', contain: 'strict' }} />;
+  return (
+    <canvas
+      ref={canvasRef}
+      className="w-full h-full relative"
+      style={{ willChange: 'transform', contain: 'strict' }}
+    />
+  );
 };
 
 interface HeroSectionProps {
@@ -211,31 +217,32 @@ interface HeroSectionProps {
   cta?: React.ReactNode;
 }
 
-export const HeroSection: React.FC<HeroSectionProps> = ({ 
-  title, 
-  subtitle, 
-  align = 'center', 
-  badge, 
+export const HeroSection: React.FC<HeroSectionProps> = ({
+  title,
+  subtitle,
+  align = 'center',
+  badge,
   installCmd: propInstallCmd,
-  cta
+  cta,
 }) => {
   const [copied, setCopied] = useState(false);
   const isHomePage = !title;
-  
-  const defaultTitle = "The registry for AI skills.";
+
+  const defaultTitle = 'The registry for AI skills.';
   const defaultSubtitle = (
     <>
       Install, run, and publish reusable AI capabilities —<br className="hidden md:block" />
       the same way you&apos;d manage any other dependency.
     </>
   );
-  const defaultBadge = { text: "v0.1.0 · Open Source · MIT License" };
-  const defaultInstallCmd = "npx skillspace install @core/summary";
+  const defaultBadge = { text: 'v0.1.0 · Open Source · MIT License' };
+  const defaultInstallCmd = 'npx skillspace install @core/summary';
 
   const displayTitle = title || defaultTitle;
   const displaySubtitle = subtitle || defaultSubtitle;
   const displayBadge = badge || (isHomePage ? defaultBadge : undefined);
-  const installCmd = propInstallCmd !== undefined ? propInstallCmd : (isHomePage ? defaultInstallCmd : undefined);
+  const installCmd =
+    propInstallCmd !== undefined ? propInstallCmd : isHomePage ? defaultInstallCmd : undefined;
 
   const handleCopy = () => {
     if (!installCmd) return;
@@ -244,40 +251,43 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const containerVariants: import("framer-motion").Variants = {
+  const containerVariants: import('framer-motion').Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
         staggerChildren: 0.1,
-        delayChildren: 0.1
-      }
-    }
+        delayChildren: 0.1,
+      },
+    },
   };
 
-  const itemVariants: import("framer-motion").Variants = {
+  const itemVariants: import('framer-motion').Variants = {
     hidden: { y: 15, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
       transition: {
         duration: 0.4,
-        ease: "easeOut"
-      }
-    }
+        ease: 'easeOut',
+      },
+    },
   };
 
   return (
-    <div className={`relative w-full bg-black text-white overflow-hidden border-b border-white/10 mt-0 ${isHomePage ? 'h-[80vh] min-h-[600px]' : 'py-24'}`}>
-      <div className={`relative z-20 w-full h-full px-4 sm:px-6 lg:px-8 py-6 flex flex-col justify-center ${align === 'center' ? 'items-center' : 'items-start'}`}>
-        
+    <div
+      className={`relative w-full bg-black text-white overflow-hidden border-b border-white/10 mt-0 ${isHomePage ? 'h-[80vh] min-h-[600px]' : 'py-24'}`}
+    >
+      <div
+        className={`relative z-20 w-full h-full px-4 sm:px-6 lg:px-8 py-6 flex flex-col justify-center ${align === 'center' ? 'items-center' : 'items-start'}`}
+      >
         {/* Main hero content */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
           className={`relative z-30 flex flex-col ${align === 'center' ? 'items-center text-center mx-auto' : 'items-start text-left'} max-w-4xl pointer-events-auto`}
-        >            
+        >
           {displayBadge && (
             <motion.div
               variants={itemVariants}
@@ -292,7 +302,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   <span>{displayBadge.text}</span>
                 </>
               ) : (
-                <span className="text-cyan-400 font-bold uppercase tracking-widest">{displayBadge.text}</span>
+                <span className="text-cyan-400 font-bold uppercase tracking-widest">
+                  {displayBadge.text}
+                </span>
               )}
             </motion.div>
           )}
@@ -312,7 +324,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           </motion.p>
 
           {(installCmd || cta || isHomePage) && (
-            <motion.div variants={itemVariants} className={`flex flex-col sm:flex-row gap-4 z-40 ${align === 'center' ? 'items-center' : 'items-start'}`}>
+            <motion.div
+              variants={itemVariants}
+              className={`flex flex-col sm:flex-row gap-4 z-40 ${align === 'center' ? 'items-center' : 'items-start'}`}
+            >
               {installCmd && (
                 <div className="relative flex items-center group">
                   <div className="flex items-center bg-neutral-900 border border-white/10 rounded-md pl-4 pr-12 py-3 font-mono text-sm text-cyan-400 shadow-xl transition-colors hover:border-cyan-500/30">
@@ -324,19 +339,25 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     aria-label="Copy install command"
                     className="absolute right-2 p-1.5 text-neutral-400 hover:text-white transition-colors rounded-md hover:bg-white/10"
                   >
-                    {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+                    {copied ? (
+                      <Check className="w-4 h-4 text-green-400" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
               )}
-              
-              {cta ? cta : (isHomePage ? (
-                <Link 
+
+              {cta ? (
+                cta
+              ) : isHomePage ? (
+                <Link
                   href="/packages"
                   className="flex items-center px-6 py-3 text-neutral-300 font-medium rounded-md hover:text-white transition-colors"
                 >
                   Browse Registry <span className="ml-2">→</span>
                 </Link>
-              ) : null)}
+              ) : null}
             </motion.div>
           )}
         </motion.div>
@@ -354,13 +375,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         <div className="absolute top-[55%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-gradient-to-b from-cyan-500/10 to-transparent blur-[100px]"></div>
 
         <div className="absolute top-0 w-[100%] left-1/2 transform -translate-x-1/2 h-full hidden md:block">
-          <Lightning
-            hue={195}
-            xOffset={0}
-            speed={1.2}
-            intensity={0.5}
-            size={2}
-          />
+          <Lightning hue={195} xOffset={0} speed={1.2} intensity={0.5} size={2} />
         </div>
 
         {/* Mobile static fallback */}

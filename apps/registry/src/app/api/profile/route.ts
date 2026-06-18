@@ -15,15 +15,15 @@ export async function GET(req: NextRequest) {
       include: {
         packages: {
           include: {
-            versions: { orderBy: { publishedAt: 'desc' }, take: 1 }
-          }
+            versions: { orderBy: { publishedAt: 'desc' }, take: 1 },
+          },
         },
         orgMemberships: {
           include: {
-            organization: true
-          }
-        }
-      }
+            organization: true,
+          },
+        },
+      },
     });
 
     if (!fullUser) {

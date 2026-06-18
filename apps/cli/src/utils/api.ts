@@ -5,16 +5,13 @@ import * as crypto from 'crypto';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
- * Generates a lightweight anonymous device footprint 
+ * Generates a lightweight anonymous device footprint
  * based on hardware architecture and hostname to track CLI installations.
  */
 function getDeviceFootprint(): string {
-  const data = [
-    os.platform(),
-    os.arch(),
-    os.hostname(),
-    os.cpus()[0]?.model || 'unknown_cpu',
-  ].join('|');
+  const data = [os.platform(), os.arch(), os.hostname(), os.cpus()[0]?.model || 'unknown_cpu'].join(
+    '|',
+  );
   return crypto.createHash('sha256').update(data).digest('hex').substring(0, 16);
 }
 
@@ -31,9 +28,9 @@ export class RegistryClient {
   }
 
   private getHeaders(auth = false): Record<string, string> {
-    const headers: Record<string, string> = { 
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'X-Device-Footprint': this.deviceFootprint 
+      'X-Device-Footprint': this.deviceFootprint,
     };
     if (auth) {
       const token = loadCredentials();
@@ -47,7 +44,9 @@ export class RegistryClient {
       return await fetch(url, init);
     } catch (err: any) {
       if (err.cause?.code === 'ECONNREFUSED' || err.message.includes('fetch failed')) {
-        throw new Error(`Could not connect to the registry at ${this.baseUrl}. Is your internet down or the server offline?`);
+        throw new Error(
+          `Could not connect to the registry at ${this.baseUrl}. Is your internet down or the server offline?`,
+        );
       }
       throw err;
     }
@@ -60,12 +59,12 @@ export class RegistryClient {
       headers: this.getHeaders(),
       body: JSON.stringify({ name: username, email, password }),
     });
-    
+
     if (!res.ok) {
       const text = await res.text();
       return { error: { message: text || res.statusText } };
     }
-    
+
     // Better-auth returns the token in the response JSON natively if configured,
     // or we can extract it from the response body.
     const data: any = await res.json();
@@ -84,7 +83,7 @@ export class RegistryClient {
       const text = await res.text();
       return { error: { message: text || res.statusText } };
     }
-    
+
     const data: any = await res.json();
     return { data: { token: data.token, user: data.user } };
   }
@@ -93,15 +92,15 @@ export class RegistryClient {
     const res = await this.safeFetch(`${this.baseUrl}/api/profile`, {
       headers: this.getHeaders(true),
     });
-    
+
     if (!res.ok) {
       return { error: { message: 'Unauthorized' } };
     }
-    
+
     const data: any = await res.json();
     const user = data.data || data;
     if (!user || !user.email) return { error: { message: 'Invalid session' } };
-    
+
     return { data: { username: user.username, email: user.email, plan: user.plan || 'Free' } };
   }
 
@@ -137,13 +136,28 @@ export class RegistryClient {
     return { buffer, checksum };
   }
 
+  async publishFromGitHub(opts: {
+    githubUrl: string;
+    name?: string;
+    version?: string;
+    description?: string;
+    isPrivate?: boolean;
+  }): Promise<any> {
+    const res = await this.safeFetch(`${this.baseUrl}/api/packages/github`, {
+      method: 'POST',
+      headers: this.getHeaders(true),
+      body: JSON.stringify(opts),
+    });
+    return res.json();
+  }
+
   async publish(file: Buffer, metadata: Record<string, unknown>): Promise<any> {
     const headers = this.getHeaders(true);
     delete headers['Content-Type']; // Let fetch set the boundary
 
     const formData = new FormData();
     formData.append('metadata', JSON.stringify(metadata));
-    
+
     // We append the file buffer as a Blob
     formData.append('file', new Blob([file], { type: 'application/gzip' }), 'package.tar.gz');
 
@@ -165,11 +179,14 @@ export class RegistryClient {
   }
 
   async createOrgInvite(slug: string, role: string = 'member'): Promise<any> {
-    const res = await this.safeFetch(`${this.baseUrl}/api/orgs/${encodeURIComponent(slug)}/invites`, {
-      method: 'POST',
-      headers: this.getHeaders(true),
-      body: JSON.stringify({ role }),
-    });
+    const res = await this.safeFetch(
+      `${this.baseUrl}/api/orgs/${encodeURIComponent(slug)}/invites`,
+      {
+        method: 'POST',
+        headers: this.getHeaders(true),
+        body: JSON.stringify({ role }),
+      },
+    );
     return res.json();
   }
 

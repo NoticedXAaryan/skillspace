@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { Terminal, Copy, CheckCircle2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { Terminal, Copy, CheckCircle2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export const AnimatedTerminal = ({
   command,
@@ -14,15 +14,15 @@ export const AnimatedTerminal = ({
   output?: string;
   className?: string;
 }) => {
-  const [displayedCommand, setDisplayedCommand] = useState("");
+  const [displayedCommand, setDisplayedCommand] = useState('');
   const [showOutput, setShowOutput] = useState(false);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     let i = 0;
     setShowOutput(false);
-    setDisplayedCommand("");
-    
+    setDisplayedCommand('');
+
     const interval = setInterval(() => {
       if (i <= command.length) {
         setDisplayedCommand(command.slice(0, i));
@@ -43,7 +43,12 @@ export const AnimatedTerminal = ({
   };
 
   return (
-    <div className={cn("w-full max-w-2xl rounded-xl border border-neutral-800 bg-black/80 backdrop-blur-md overflow-hidden shadow-2xl", className)}>
+    <div
+      className={cn(
+        'w-full max-w-2xl rounded-xl border border-neutral-800 bg-black/80 backdrop-blur-md overflow-hidden shadow-2xl',
+        className,
+      )}
+    >
       {/* Mac OS Window Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-800 bg-neutral-900/50">
         <div className="flex items-center gap-2">
@@ -54,12 +59,16 @@ export const AnimatedTerminal = ({
         <div className="flex items-center gap-2 text-xs font-mono text-neutral-500">
           <Terminal className="w-3 h-3" /> bash
         </div>
-        <button 
+        <button
           onClick={handleCopy}
           className="text-neutral-500 hover:text-white transition-colors"
           title="Copy command"
         >
-          {copied ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+          {copied ? (
+            <CheckCircle2 className="w-4 h-4 text-green-500" />
+          ) : (
+            <Copy className="w-4 h-4" />
+          )}
         </button>
       </div>
 
@@ -79,7 +88,7 @@ export const AnimatedTerminal = ({
           </span>
         </div>
         {showOutput && output && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             className="mt-3 text-neutral-500 whitespace-pre-wrap pl-5"
@@ -88,7 +97,7 @@ export const AnimatedTerminal = ({
           </motion.div>
         )}
         {showOutput && !output && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="mt-2 flex items-start gap-3 text-neutral-300"

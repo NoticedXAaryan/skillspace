@@ -34,14 +34,18 @@ export default function AnimatedTerminal() {
           <div className="h-3 w-3 rounded-full bg-neutral-700" />
         </div>
         <div className="text-xs font-mono text-neutral-500">bash</div>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-400 hover:bg-white/10 hover:text-white" onClick={handleCopy}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-neutral-400 hover:bg-white/10 hover:text-white"
+          onClick={handleCopy}
+        >
           {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
         </Button>
       </div>
-      
+
       <div className="flex-1 p-6 font-mono text-sm sm:text-base overflow-y-auto">
         <div className="flex flex-col gap-1 text-neutral-300">
-          
           {/* Step 0: Type first command */}
           <div className="flex gap-3">
             <span className="text-blue-400">$</span>
@@ -50,10 +54,20 @@ export default function AnimatedTerminal() {
 
           {/* Step 1: Output 1 */}
           {step >= 1 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col text-neutral-400 ml-5 mb-4">
-              <span className="text-green-400">✓ <span className="text-neutral-400">Resolved @core/summary@1.2.0</span></span>
-              <span className="text-green-400">✓ <span className="text-neutral-400">Downloaded (12 KB)</span></span>
-              <span className="text-green-400">✓ <span className="text-neutral-400">Ready</span></span>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex flex-col text-neutral-400 ml-5 mb-4"
+            >
+              <span className="text-green-400">
+                ✓ <span className="text-neutral-400">Resolved @core/summary@1.2.0</span>
+              </span>
+              <span className="text-green-400">
+                ✓ <span className="text-neutral-400">Downloaded (12 KB)</span>
+              </span>
+              <span className="text-green-400">
+                ✓ <span className="text-neutral-400">Ready</span>
+              </span>
             </motion.div>
           )}
 
@@ -67,25 +81,43 @@ export default function AnimatedTerminal() {
 
           {/* Step 3: Loading */}
           {step >= 3 && step < 4 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="ml-5 text-yellow-400/80 mb-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="ml-5 text-yellow-400/80 mb-4"
+            >
               ⠸ Running @core/summary@1.2.0...
             </motion.div>
           )}
 
           {/* Step 4: Output */}
           {step >= 4 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="ml-5 flex flex-col text-neutral-400 mt-2">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="ml-5 flex flex-col text-neutral-400 mt-2"
+            >
               <span className="text-neutral-500 mb-1">Output:</span>
-              <span className="text-white">{"{"}</span>
-              <span className="ml-4"><span className="text-blue-300">"summary"</span>: <span className="text-green-300">"Q3 revenue grew 14% YoY..."</span>,</span>
-              <span className="ml-4"><span className="text-blue-300">"tokens_used"</span>: <span className="text-yellow-300">312</span></span>
-              <span className="text-white">{"}"}</span>
+              <span className="text-white">{'{'}</span>
+              <span className="ml-4">
+                <span className="text-blue-300">"summary"</span>:{' '}
+                <span className="text-green-300">"Q3 revenue grew 14% YoY..."</span>,
+              </span>
+              <span className="ml-4">
+                <span className="text-blue-300">"tokens_used"</span>:{' '}
+                <span className="text-yellow-300">312</span>
+              </span>
+              <span className="text-white">{'}'}</span>
             </motion.div>
           )}
 
           {/* Cursor */}
           {step >= 5 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3 mt-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex gap-3 mt-4"
+            >
               <span className="text-blue-400">$</span>
               <motion.div
                 animate={{ opacity: [1, 0] }}
@@ -94,7 +126,6 @@ export default function AnimatedTerminal() {
               />
             </motion.div>
           )}
-
         </div>
       </div>
     </div>

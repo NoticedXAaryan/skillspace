@@ -28,8 +28,8 @@ export function PackageTypeBadge({ type, className = '' }: PackageTypeProps) {
   }
 
   return (
-    <Badge 
-      variant="outline" 
+    <Badge
+      variant="outline"
       className={`font-mono text-[10px] tracking-wider ${variantClass} ${className}`}
     >
       {label}

@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { AlertCircle } from 'lucide-react';
 
 export default function Error({
   error,
@@ -16,21 +17,21 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center' }}>
-      <h2 style={{ fontSize: 'var(--text-2xl)', marginBottom: 'var(--space-4)', color: 'var(--error)' }}>Something went wrong!</h2>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-8)', maxWidth: '500px' }}>
+    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6 p-8 text-center bg-black text-white">
+      <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-2">
+        <AlertCircle className="w-8 h-8 text-red-500" />
+      </div>
+      <h2 className="text-2xl font-bold tracking-tight">Something went wrong!</h2>
+      <p className="text-neutral-400 max-w-md">
         {error.message || 'An unexpected error occurred while loading this page.'}
       </p>
-      <div style={{ display: 'flex', gap: 'var(--space-4)' }}>
-        <button
-          className="btn btnPrimary"
+      <div className="flex gap-4">
+        <Button
           onClick={() => reset()}
+          className="bg-cyan-500 hover:bg-cyan-400 text-black font-semibold px-8"
         >
           Try again
-        </button>
-        <Link href="/" className="btn btnSecondary">
-          Go Home
-        </Link>
+        </Button>
       </div>
     </div>
   );

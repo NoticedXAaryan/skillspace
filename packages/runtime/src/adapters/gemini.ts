@@ -16,8 +16,7 @@ export class GeminiAdapter implements ModelAdapter {
     const userTemplate = skill.instructions?.user_template ?? '{{input}}';
     const userMessage = userTemplate.replace('{{input}}', input);
     const modelId = config.modelId;
-    const baseUrl =
-      config.baseUrl || 'https://generativelanguage.googleapis.com/v1beta';
+    const baseUrl = config.baseUrl || 'https://generativelanguage.googleapis.com/v1beta';
 
     return {
       url: `${baseUrl}/models/${modelId}:generateContent`,
@@ -56,10 +55,7 @@ export class GeminiAdapter implements ModelAdapter {
       modelVersion?: string;
     };
 
-    const text =
-      response.candidates?.[0]?.content?.parts
-        ?.map((p) => p.text)
-        .join('') ?? '';
+    const text = response.candidates?.[0]?.content?.parts?.map((p) => p.text).join('') ?? '';
 
     return {
       output: text,

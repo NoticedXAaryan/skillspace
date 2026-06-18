@@ -36,8 +36,11 @@ export class McpRegistry {
 
     if (serverRef.transport === 'http') {
       const allowlistStr = process.env.MCP_HTTP_ALLOWLIST || '';
-      const allowlist = allowlistStr.split(',').map(s => s.trim()).filter(Boolean);
-      
+      const allowlist = allowlistStr
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+
       if (!serverRef.url || !allowlist.includes(serverRef.url)) {
         throw new McpAllowlistError(`HTTP URL not in allowlist: ${serverRef.url}`);
       }
@@ -68,11 +71,11 @@ export class McpRegistry {
 
     const client = new Client(
       { name: 'skillspace-mcp-registry', version: '1.0.0' },
-      { capabilities: {} }
+      { capabilities: {} },
     );
 
     await client.connect(transport);
-    
+
     const connection: McpConnection = { client, serverName: serverRef.name };
     this.connections.set(serverRef.name, connection);
     return connection;
@@ -98,14 +101,16 @@ export class McpRegistry {
       modelId: serverName,
       durationMs: 0,
       status: 'success',
-      errorMessage: `Calling MCP Tool: ${toolName}`
+      errorMessage: `Calling MCP Tool: ${toolName}`,
     });
 
     try {
       // 10 second timeout
       const result = await Promise.race([
         connection.client.callTool({ name: toolName, arguments: args as any }),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('MCP Tool call timed out')), 10000))
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('MCP Tool call timed out')), 10000),
+        ),
       ]);
 
       TelemetryClient.sendEventSafe({
@@ -114,7 +119,7 @@ export class McpRegistry {
         modelId: serverName,
         durationMs: Date.now() - startTime,
         status: 'success',
-        errorMessage: `Completed MCP Tool: ${toolName}`
+        errorMessage: `Completed MCP Tool: ${toolName}`,
       });
 
       return result;
@@ -125,7 +130,7 @@ export class McpRegistry {
         modelId: serverName,
         durationMs: Date.now() - startTime,
         status: 'error',
-        errorMessage: `Failed MCP Tool: ${toolName} - ${(e as Error).message}`
+        errorMessage: `Failed MCP Tool: ${toolName} - ${(e as Error).message}`,
       });
       throw e;
     }

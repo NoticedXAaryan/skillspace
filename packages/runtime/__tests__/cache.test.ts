@@ -46,7 +46,7 @@ describe('SkillCache', () => {
     expect(fs.existsSync(pkgDir)).toBe(true);
     expect(fs.existsSync(path.join(pkgDir, 'skill.yaml'))).toBe(true);
     expect(fs.existsSync(path.join(pkgDir, 'README.md'))).toBe(true);
-    
+
     // Check isInstalled
     expect(cache.isInstalled('@test/test-skill', '1.0.0')).toBe(true);
     expect(cache.isInstalled('@test/test-skill', '2.0.0')).toBe(false);
@@ -58,15 +58,15 @@ describe('SkillCache', () => {
     const files = new Map<string, Buffer>();
     files.set('skill.yaml', Buffer.from(sampleSkillYaml));
     const fakeBuffer = Buffer.from('fake tarball');
-    
+
     // Should succeed if no checksum is provided
     await expect(
-      cache.preparePackageDir('@test/test-skill', '1.0.0', fakeBuffer)
+      cache.preparePackageDir('@test/test-skill', '1.0.0', fakeBuffer),
     ).resolves.not.toThrow();
 
     // Should fail with invalid checksum
     await expect(
-      cache.preparePackageDir('@test/test-skill', '1.0.1', fakeBuffer, 'sha256:invalid')
+      cache.preparePackageDir('@test/test-skill', '1.0.1', fakeBuffer, 'sha256:invalid'),
     ).rejects.toThrow(/Checksum mismatch/);
   });
 
@@ -110,19 +110,19 @@ describe('SkillCache', () => {
 
     const installed = cache.listInstalled();
     expect(installed).toHaveLength(2);
-    expect(installed.map(p => p.version)).toContain('1.0.0');
-    expect(installed.map(p => p.version)).toContain('2.0.0');
+    expect(installed.map((p) => p.version)).toContain('1.0.0');
+    expect(installed.map((p) => p.version)).toContain('2.0.0');
 
     const versions = cache.getInstalledVersions('@test/test-skill');
     expect(versions).toEqual(expect.arrayContaining(['1.0.0', '2.0.0']));
   });
-  
+
   it('gets readme', async () => {
     const files = new Map<string, Buffer>();
     files.set('skill.yaml', Buffer.from(sampleSkillYaml));
     files.set('README.md', Buffer.from('# Hello Readme'));
     await mockInstallPackage(cache, '@test/test-skill', '1.0.0', files);
-    
+
     expect(cache.getReadme('@test/test-skill', '1.0.0')).toBe('# Hello Readme');
     expect(cache.getReadme('@test/test-skill', '2.0.0')).toBeNull();
   });

@@ -1,6 +1,6 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
-export const SCHEMA_VERSION = 2 as const
+export const SCHEMA_VERSION = 2 as const;
 
 /**
  * PersonaSchema — the behavioral blueprint for a Skill.
@@ -52,9 +52,9 @@ export const PersonaSchema = z.object({
    * embeds this Persona via packages/runtime/src/permissions.ts.
    */
   capabilities: z.array(z.string()).default([]),
-})
+});
 
-export type Persona = z.infer<typeof PersonaSchema>
+export type Persona = z.infer<typeof PersonaSchema>;
 
 /**
  * A Persona reference inside an Agent can be either:
@@ -69,11 +69,13 @@ export const PersonaRefSchema = z.union([
      * The runtime will resolve and fetch this Skill at agent startup.
      * Examples: "@skillspace/java-expert", "@skillspace/pirate@1.2.0"
      */
-    ref: z.string().regex(
-      /^@[\w-]+\/[\w-]+(@[\d.]+)?$/,
-      'Ref must be scoped: @scope/name or @scope/name@version'
-    ),
+    ref: z
+      .string()
+      .regex(
+        /^@[\w-]+\/[\w-]+(@[\d.]+)?$/,
+        'Ref must be scoped: @scope/name or @scope/name@version',
+      ),
   }),
-])
+]);
 
-export type PersonaRef = z.infer<typeof PersonaRefSchema>
+export type PersonaRef = z.infer<typeof PersonaRefSchema>;

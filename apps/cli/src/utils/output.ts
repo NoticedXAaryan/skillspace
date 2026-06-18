@@ -45,10 +45,10 @@ export function infoMsg(msg: string): void {
 
 export function table(headers: string[], rows: string[][]): void {
   const t = new Table({
-    head: headers.map(h => brand.bold(h)),
+    head: headers.map((h) => brand.bold(h)),
     style: { head: [], border: ['dim'] },
   });
-  rows.forEach(row => t.push(row));
+  rows.forEach((row) => t.push(row));
   console.log(t.toString());
 }
 
