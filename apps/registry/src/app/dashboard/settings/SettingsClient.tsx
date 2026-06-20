@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Save, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -42,20 +43,20 @@ export default function SettingsClient({ user }: SettingsClientProps) {
       <div className="mb-8">
         <h2 className="text-lg font-semibold text-white mb-4">Quick Links</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <a
+          <Link
             href="/dashboard/keys"
             className="rounded-xl border border-white/10 bg-white/5 p-4 hover:border-cyan-500/30 transition-colors"
           >
             <p className="text-sm font-medium text-white">API Keys</p>
             <p className="text-xs text-neutral-400 mt-1">Configure model provider keys.</p>
-          </a>
-          <a
+          </Link>
+          <Link
             href="/profile/2fa"
             className="rounded-xl border border-white/10 bg-white/5 p-4 hover:border-cyan-500/30 transition-colors"
           >
             <p className="text-sm font-medium text-white">Two-Factor Auth</p>
             <p className="text-xs text-neutral-400 mt-1">Secure your account with 2FA.</p>
-          </a>
+          </Link>
         </div>
       </div>
     </div>
