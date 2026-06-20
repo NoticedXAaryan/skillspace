@@ -29,12 +29,14 @@ export function registerSearchCommand(program: Command): void {
 
         const packages = result.data;
         if (opts.json) {
-          console.log(JSON.stringify({
-            success: true,
-            query,
-            total: result.meta?.total || (packages ? packages.length : 0),
-            results: packages || []
-          }));
+          console.log(
+            JSON.stringify({
+              success: true,
+              query,
+              total: result.meta?.total || (packages ? packages.length : 0),
+              results: packages || [],
+            }),
+          );
           return;
         }
 
@@ -63,7 +65,12 @@ export function registerSearchCommand(program: Command): void {
       } catch (err) {
         loader?.fail('Search failed');
         if (opts.json) {
-          console.log(JSON.stringify({ success: false, error: err instanceof Error ? err.message : String(err) }));
+          console.log(
+            JSON.stringify({
+              success: false,
+              error: err instanceof Error ? err.message : String(err),
+            }),
+          );
           process.exit(1);
         }
         errorOperational('Search Error', {

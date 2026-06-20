@@ -1,3 +1,5 @@
+import { execSync } from 'node:child_process';
+import { Executor, SkillResolver, startPersonaREPL } from '@skillspace/runtime';
 import { SkillSchema, type Persona, type Skill } from '@skillspace/schema';
 
 export type DefineSkillInput = {
@@ -94,15 +96,12 @@ export class SkillSpaceClient {
 }
 
 // Re-export runtime classes for execution
-export { Executor } from '@skillspace/runtime';
-export { SkillResolver } from '@skillspace/runtime';
-export { startPersonaREPL } from '@skillspace/runtime';
+export { Executor, SkillResolver, startPersonaREPL };
 
 /**
  * Convenience method to resolve a package by name locally
  */
 export function resolvePackage(name: string): Skill {
-  const { SkillResolver } = require('@skillspace/runtime');
   return new SkillResolver().resolve(name) as Skill;
 }
 
@@ -110,7 +109,6 @@ export function resolvePackage(name: string): Skill {
  * Install a package by wrapping the skillspace CLI headless mode.
  */
 export function installPackage(name: string, version?: string): boolean {
-  const { execSync } = require('node:child_process');
   try {
     const cmd = `npx skillspace install ${name}${version ? ` -v ${version}` : ''} --yes --json`;
     const result = execSync(cmd, { encoding: 'utf-8', stdio: 'pipe' });
@@ -122,12 +120,12 @@ export function installPackage(name: string, version?: string): boolean {
 }
 
 /**
- * Run an agent against a given input
+ * Run an agent against a given input.
+ * `model` is a provider model id like "anthropic/claude-haiku-4-5".
  */
-export async function runAgent(name: string, input: string) {
-  const { Executor } = require('@skillspace/runtime');
+export async function runAgent(name: string, input: string, model: string) {
   const executor = new Executor();
-  return executor.run({ skill: name, input });
+  return executor.run({ skill: name, input, model });
 }
 
 export type { Persona, Skill };

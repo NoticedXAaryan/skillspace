@@ -74,7 +74,12 @@ export function registerInfoCommand(program: Command): void {
       } catch (err) {
         loader?.fail('Failed to fetch package');
         if (opts.json) {
-          console.log(JSON.stringify({ success: false, error: err instanceof Error ? err.message : String(err) }));
+          console.log(
+            JSON.stringify({
+              success: false,
+              error: err instanceof Error ? err.message : String(err),
+            }),
+          );
           process.exit(1);
         }
         errorOperational('Registry Error', {

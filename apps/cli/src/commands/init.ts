@@ -194,12 +194,14 @@ export function registerInitCommand(program: Command): void {
         ensureSkillspaceDir();
 
         if (opts.json) {
-          console.log(JSON.stringify({
-            success: true,
-            type: projectType,
-            path: targetDir,
-            manifest: manifestPath,
-          }));
+          console.log(
+            JSON.stringify({
+              success: true,
+              type: projectType,
+              path: targetDir,
+              manifest: manifestPath,
+            }),
+          );
           return;
         }
 

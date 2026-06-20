@@ -10,23 +10,27 @@ SkillSpace is designed to be easily self-hostable. We provide a `docker-compose.
 ## Quick Start
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/skillspace/skillspace.git
    cd skillspace
    ```
 
 2. Start the services using Docker Compose:
+
    ```bash
    docker-compose up -d
    ```
 
 3. Initialize the database schema:
+
    ```bash
    # From your host machine where you have Node.js and pnpm installed
    pnpm install
    pnpm --filter @skillspace/database db:push
    ```
-   *(Note: Alternatively, you can run the migration command directly inside a node container).*
+
+   _(Note: Alternatively, you can run the migration command directly inside a node container)._
 
 4. Access the Registry:
    Open your browser and navigate to `http://localhost:3000`.

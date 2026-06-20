@@ -65,11 +65,13 @@ export function registerPublishCommand(program: Command): void {
         }
 
         if (opts.json) {
-          console.log(JSON.stringify({
-            success: true,
-            package: result.data?.package || opts.github,
-            source: 'github'
-          }));
+          console.log(
+            JSON.stringify({
+              success: true,
+              package: result.data?.package || opts.github,
+              source: 'github',
+            }),
+          );
           return;
         }
 
@@ -104,7 +106,6 @@ export function registerPublishCommand(program: Command): void {
       const validation = isAgent ? validateAgentYaml(raw) : validateSkillYaml(raw);
 
       if (!validation.success) {
-        // @ts-ignore - type mismatch handle generically
         const issues = validation.errors?.issues || [];
         const cause = issues.map((i: any) => `${i.path.join('.')}: ${i.message}`).join('\n');
 
@@ -157,11 +158,13 @@ export function registerPublishCommand(program: Command): void {
       }
 
       if (opts.json) {
-        console.log(JSON.stringify({
-          success: true,
-          package: skill.name,
-          version: skill.version
-        }));
+        console.log(
+          JSON.stringify({
+            success: true,
+            package: skill.name,
+            version: skill.version,
+          }),
+        );
         return;
       }
 

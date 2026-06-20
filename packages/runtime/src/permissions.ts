@@ -51,7 +51,9 @@ export class PermissionEnforcer {
     if (!this.declared.has(required)) {
       throw new PermissionDeniedError(required, this.skillName);
     }
-    console.warn(`[Permission] Agent/Skill "${this.skillName}" is exercising declared permission: ${required}`);
+    console.warn(
+      `[Permission] Agent/Skill "${this.skillName}" is exercising declared permission: ${required}`,
+    );
   }
 
   /**

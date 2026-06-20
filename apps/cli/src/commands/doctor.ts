@@ -54,7 +54,9 @@ export const registerDoctorCommand = (program: Command) => {
       try {
         const me = await client.me();
         if (me) {
-          console.log(`  ${c.success('✓')} Logged in as ${me.user.name || me.user.email || me.user.username}`);
+          console.log(
+            `  ${c.success('✓')} Logged in as ${me.user.name || me.user.email || me.user.username}`,
+          );
         } else {
           console.log(`  ${c.warning('!')} Not logged in`);
         }
@@ -68,7 +70,7 @@ export const registerDoctorCommand = (program: Command) => {
         process.env.ANTHROPIC_API_KEY ||
         process.env.OPENAI_API_KEY ||
         process.env.GOOGLE_API_KEY ||
-        Object.keys(config.models || {}).some(k => config.models[k].api_key);
+        Object.keys(config.models || {}).some((k) => config.models[k].api_key);
 
       if (hasKey) {
         console.log(`  ${c.success('✓')} Model API keys configured`);
@@ -101,7 +103,9 @@ export const registerDoctorCommand = (program: Command) => {
       if (issues === 0) {
         console.log(`  ${c.success('All checks passed.')}`);
       } else {
-        console.log(`  ${c.error(`${issues} issue(s) found.`)} Run \`skillspace config\` or \`skillspace login\` to resolve.`);
+        console.log(
+          `  ${c.error(`${issues} issue(s) found.`)} Run \`skillspace config\` or \`skillspace login\` to resolve.`,
+        );
         process.exit(1);
       }
     });

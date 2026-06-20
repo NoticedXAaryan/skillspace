@@ -75,8 +75,14 @@ export default async function SearchPage({
     owner: { username: pkg.owner.username },
     _count: pkg._count,
     tags: parseTags(pkg.tags),
-    compatibleModels: pkg.versions[0]?.manifest ? inferModelCompatibility(yaml.load(pkg.versions[0].manifest as string) as Record<string, unknown>) : [],
+    compatibleModels: pkg.versions[0]?.manifest
+      ? inferModelCompatibility(
+          yaml.load(pkg.versions[0].manifest as string) as Record<string, unknown>,
+        )
+      : [],
   }));
 
-  return <SearchClient initialData={packages} initialQuery={q} initialType={type} initialSort={sort} />;
+  return (
+    <SearchClient initialData={packages} initialQuery={q} initialType={type} initialSort={sort} />
+  );
 }

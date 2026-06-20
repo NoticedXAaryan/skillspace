@@ -2,7 +2,15 @@
   "name": "@skillspace/config-eslint",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./eslint.config.mjs"
+  },
   "files": [
     "eslint.config.mjs"
-  ]
+  ],
+  "dependencies": {},
+  "peerDependencies": {
+    "eslint": ">=9.0.0"
+  }
 }

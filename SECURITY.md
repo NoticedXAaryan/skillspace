@@ -10,6 +10,7 @@ If you discover a security vulnerability in SkillSpace, please do not disclose i
 Instead, send an email to `security@skillspace.ai`. We will respond to your report within 48 hours.
 
 Please include:
+
 - A description of the vulnerability.
 - Steps to reproduce it.
 - Any potential impact.

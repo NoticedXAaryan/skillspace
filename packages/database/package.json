@@ -5,14 +5,18 @@
   "main": "src/index.ts",
   "scripts": {
     "db:generate": "prisma generate",
-    "db:push": "prisma db push"
+    "db:push": "prisma db push",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
     "@prisma/extension-accelerate": "^1.2.2"
   },
   "devDependencies": {
+    "@skillspace/config-eslint": "workspace:*",
+    "eslint": "^9.0.0",
     "prisma": "^6.19.3",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "typescript-eslint": "^8.20.0"
   }
 }

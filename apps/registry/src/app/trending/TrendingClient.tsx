@@ -73,7 +73,8 @@ export default function TrendingClient({ data }: { data: TrendingData }) {
           </div>
           <h1 className="text-4xl font-bold text-white mb-4">Trending Capabilities</h1>
           <p className="text-neutral-400 text-lg max-w-xl">
-            Trending packages are ranked by recent downloads and community stars. Discover the most popular AI skills in the ecosystem right now.
+            Trending packages are ranked by recent downloads and community stars. Discover the most
+            popular AI skills in the ecosystem right now.
           </p>
         </div>
 

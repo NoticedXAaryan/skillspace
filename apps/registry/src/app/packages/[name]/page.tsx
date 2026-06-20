@@ -185,7 +185,11 @@ export default async function PackagePage({ params }: { params: Promise<{ name: 
   const latestVersion = allVersions[0];
 
   const readme = latestVersion?.manifest ? extractReadme(latestVersion.manifest as string) : null;
-  const compatibleModels = latestVersion?.manifest ? inferModelCompatibility(yaml.load(latestVersion.manifest as string) as Record<string, unknown>) : [];
+  const compatibleModels = latestVersion?.manifest
+    ? inferModelCompatibility(
+        yaml.load(latestVersion.manifest as string) as Record<string, unknown>,
+      )
+    : [];
 
   // GitHub source link
   const githubSourceUrl = buildGitHubFileUrl(pkg, latestVersion?.githubCommit || null);
@@ -375,7 +379,8 @@ export default async function PackagePage({ params }: { params: Promise<{ name: 
                           >
                             v{v.version}
                           </Link>
-                          {allVersions.findIndex(ver => ver.version === v.version) < allVersions.length - 1 && (
+                          {allVersions.findIndex((ver) => ver.version === v.version) <
+                            allVersions.length - 1 && (
                             <Link
                               href={`/packages/${pkg.name}/${v.version}/diff`}
                               className="text-xs text-neutral-500 hover:text-blue-400 transition-colors"

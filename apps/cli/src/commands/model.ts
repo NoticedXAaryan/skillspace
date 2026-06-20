@@ -40,7 +40,7 @@ export function registerModelCommand(program: Command): void {
       }
 
       let key = opts.key;
-      let url = opts.url;
+      const url = opts.url;
 
       if (!opts.yes && !key && provider !== 'ollama') {
         intro('model add', `SkillSpace Model Setup: ${provider}`);

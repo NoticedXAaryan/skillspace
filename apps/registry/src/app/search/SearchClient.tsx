@@ -18,7 +18,7 @@ export default function SearchClient({
   initialSort: string;
 }) {
   const router = useRouter();
-  
+
   const [query, setQuery] = useState(initialQuery || '');
   const [type, setType] = useState(initialType || 'all');
   const [sort, setSort] = useState(initialSort || 'popular');
@@ -78,9 +78,7 @@ export default function SearchClient({
           </div>
 
           <div className="mb-6">
-            <label className="mb-2 block text-sm font-medium text-foreground">
-              Sort By
-            </label>
+            <label className="mb-2 block text-sm font-medium text-foreground">Sort By</label>
             <select
               className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               value={sort}

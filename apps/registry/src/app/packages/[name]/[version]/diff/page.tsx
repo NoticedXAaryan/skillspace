@@ -32,7 +32,7 @@ export default async function PackageVersionDiffPage({
   }
 
   const currentVersion = pkg.versions[currentVersionIndex];
-  
+
   // Previous version is the one immediately following the current in the desc ordered array
   const previousVersion = pkg.versions[currentVersionIndex + 1];
 
@@ -41,7 +41,8 @@ export default async function PackageVersionDiffPage({
       <main className="container mx-auto px-4 py-32 text-center">
         <h1 className="mb-4 text-4xl font-bold text-foreground">No Previous Version</h1>
         <p className="text-lg text-muted-foreground mb-8">
-          Version {version} is the first version of {name}. There is no prior version to diff against.
+          Version {version} is the first version of {name}. There is no prior version to diff
+          against.
         </p>
         <Link
           href={`/packages/${name}`}
@@ -59,14 +60,16 @@ export default async function PackageVersionDiffPage({
   // Very simple line comparison
   const prevLines = previousManifest.split('\n');
   const currLines = currentManifest.split('\n');
-  
+
   const diffResult = [];
-  let p = 0, c = 0;
-  
+  let p = 0,
+    c = 0;
+
   while (p < prevLines.length || c < currLines.length) {
     if (p < prevLines.length && c < currLines.length && prevLines[p] === currLines[c]) {
       diffResult.push({ added: false, removed: false, value: prevLines[p] + '\n' });
-      p++; c++;
+      p++;
+      c++;
     } else if (c < currLines.length && !prevLines.includes(currLines[c])) {
       diffResult.push({ added: true, removed: false, value: currLines[c] + '\n' });
       c++;
@@ -107,7 +110,8 @@ export default async function PackageVersionDiffPage({
         <div className="p-4 bg-white/5 border-b border-white/10 text-neutral-400 flex items-center justify-between">
           <span>{name}/skill.yaml</span>
           <span className="text-xs">
-            Showing changes from <span className="text-rose-400">v{previousVersion.version}</span> to <span className="text-emerald-400">v{currentVersion.version}</span>
+            Showing changes from <span className="text-rose-400">v{previousVersion.version}</span>{' '}
+            to <span className="text-emerald-400">v{currentVersion.version}</span>
           </span>
         </div>
         <div className="p-6 overflow-x-auto">
@@ -115,27 +119,39 @@ export default async function PackageVersionDiffPage({
             {diffResult.map((part, index) => {
               if (part.added) {
                 return (
-                  <div key={index} className="bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded -mx-2">
-                    {part.value.split('\n').map((line, i, arr) => 
-                      i < arr.length - 1 || line ? <div key={i}>+ {line}</div> : null
-                    )}
+                  <div
+                    key={index}
+                    className="bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded -mx-2"
+                  >
+                    {part.value
+                      .split('\n')
+                      .map((line, i, arr) =>
+                        i < arr.length - 1 || line ? <div key={i}>+ {line}</div> : null,
+                      )}
                   </div>
                 );
               }
               if (part.removed) {
                 return (
-                  <div key={index} className="bg-rose-500/10 text-rose-400 px-2 py-0.5 rounded -mx-2">
-                    {part.value.split('\n').map((line, i, arr) => 
-                      i < arr.length - 1 || line ? <div key={i}>- {line}</div> : null
-                    )}
+                  <div
+                    key={index}
+                    className="bg-rose-500/10 text-rose-400 px-2 py-0.5 rounded -mx-2"
+                  >
+                    {part.value
+                      .split('\n')
+                      .map((line, i, arr) =>
+                        i < arr.length - 1 || line ? <div key={i}>- {line}</div> : null,
+                      )}
                   </div>
                 );
               }
               return (
                 <div key={index} className="text-neutral-500 px-2 py-0.5 opacity-50">
-                  {part.value.split('\n').map((line, i, arr) => 
-                    i < arr.length - 1 || line ? <div key={i}>  {line}</div> : null
-                  )}
+                  {part.value
+                    .split('\n')
+                    .map((line, i, arr) =>
+                      i < arr.length - 1 || line ? <div key={i}> {line}</div> : null,
+                    )}
                 </div>
               );
             })}

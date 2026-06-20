@@ -268,9 +268,7 @@ export async function POST(req: NextRequest) {
         data: {
           description,
           tags: JSON.stringify(tags),
-          ...(githubUrl
-            ? { githubUrl, verified: true, verifiedBy: 'github' }
-            : {}),
+          ...(githubUrl ? { githubUrl, verified: true, verifiedBy: 'github' } : {}),
         },
       }),
       prisma.user.update({

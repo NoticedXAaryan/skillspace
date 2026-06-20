@@ -201,11 +201,13 @@ export function registerInstallCommand(program: Command): void {
         writeLockFile(cwd, lock);
 
         if (opts.json) {
-          console.log(JSON.stringify({
-            success: true,
-            package: pkgName,
-            installedCount
-          }));
+          console.log(
+            JSON.stringify({
+              success: true,
+              package: pkgName,
+              installedCount,
+            }),
+          );
           return;
         }
 

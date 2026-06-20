@@ -36,7 +36,11 @@ async function getFeaturedPackages() {
       ...pkg,
       tags: typeof pkg.tags === 'string' ? JSON.parse(pkg.tags || '[]') : pkg.tags,
       latestVersion: pkg.versions[0]?.version,
-      compatibleModels: pkg.versions[0]?.manifest ? inferModelCompatibility(yaml.load(pkg.versions[0].manifest as string) as Record<string, unknown>) : [],
+      compatibleModels: pkg.versions[0]?.manifest
+        ? inferModelCompatibility(
+            yaml.load(pkg.versions[0].manifest as string) as Record<string, unknown>,
+          )
+        : [],
     }));
   } catch {
     return [];
@@ -57,7 +61,11 @@ async function getRecentPackages() {
       ...pkg,
       tags: typeof pkg.tags === 'string' ? JSON.parse(pkg.tags || '[]') : pkg.tags,
       latestVersion: pkg.versions[0]?.version,
-      compatibleModels: pkg.versions[0]?.manifest ? inferModelCompatibility(yaml.load(pkg.versions[0].manifest as string) as Record<string, unknown>) : [],
+      compatibleModels: pkg.versions[0]?.manifest
+        ? inferModelCompatibility(
+            yaml.load(pkg.versions[0].manifest as string) as Record<string, unknown>,
+          )
+        : [],
     }));
   } catch {
     return [];
