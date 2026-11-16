@@ -1,6 +1,5 @@
 import { NotFoundContent, Illustration } from '@/components/ui/not-found';
 
-
 export default function NotFound() {
   return (
     <div className="min-h-screen bg-black text-white flex flex-col selection:bg-cyan-500/30">

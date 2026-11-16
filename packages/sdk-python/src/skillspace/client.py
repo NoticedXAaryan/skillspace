@@ -12,10 +12,10 @@ class SkillSpaceClient:
         """
         Initialize the SkillSpace client.
         :param api_key: API key. Defaults to SKILLSPACE_API_KEY env var.
-        :param base_url: Registry URL. Defaults to SKILLSPACE_REGISTRY_URL or https://registry.skillspace.ai
+        :param base_url: Registry URL. Defaults to SKILLSPACE_REGISTRY_URL or https://skillspace.aaaryan.space
         """
         self.api_key = api_key or os.environ.get("SKILLSPACE_API_KEY")
-        self.base_url = base_url or os.environ.get("SKILLSPACE_REGISTRY_URL", "https://registry.skillspace.ai")
+        self.base_url = base_url or os.environ.get("SKILLSPACE_REGISTRY_URL", "https://skillspace.aaaryan.space")
         
         headers = {
             "Content-Type": "application/json",

@@ -2,17 +2,16 @@
 
 ## Supported Versions
 
-Only the latest `master` branch and latest tagged release are officially supported with security updates.
+Only the latest `master` branch is maintained with security updates. There are no tagged releases yet.
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in SkillSpace, please do not disclose it publicly.
-Instead, send an email to `security@skillspace.ai`. We will respond to your report within 48 hours.
+Do not open a public GitHub issue for a security report.
 
-Please include:
+Use [private vulnerability reporting](https://github.com/NoticedXAaryan/skillspace/security/advisories/new) on this repository. Include:
 
 - A description of the vulnerability.
 - Steps to reproduce it.
 - Any potential impact.
 
-We take security seriously and will issue a patch as soon as possible.
+`security@skillspace.ai` does not resolve. Do not send reports there.
