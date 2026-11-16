@@ -1,7 +1,17 @@
 import { NextResponse } from 'next/server';
 
+/**
+ * Prisma `BigInt` fields (package version size) cannot be passed to
+ * `JSON.stringify` / `NextResponse.json`. Coerce them to numbers first.
+ */
+export function jsonSafe<T>(value: T): T {
+  return JSON.parse(
+    JSON.stringify(value, (_key, inner) => (typeof inner === 'bigint' ? Number(inner) : inner)),
+  ) as T;
+}
+
 export function success<T>(data: T, meta?: { page: number; limit: number; total: number }) {
-  return NextResponse.json({ data, ...(meta ? { meta } : {}) });
+  return NextResponse.json(jsonSafe({ data, ...(meta ? { meta } : {}) }));
 }
 
 export function error(code: string, message: string, status: number = 400, details?: unknown) {

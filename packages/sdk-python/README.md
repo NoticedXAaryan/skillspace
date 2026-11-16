@@ -1,44 +1,34 @@
 # SkillSpace Python SDK
 
-The official Python SDK for the [SkillSpace](https://skillspace.ai) platform. SkillSpace is a universal runtime and registry for agentic AI capabilities.
-
-## Installation
+Early Python client for [SkillSpace](https://skillspace.aaaryan.space). The package is not published to PyPI. Install it from this repository when you need it:
 
 ```bash
-pip install skillspace
+pip install -e packages/sdk-python
 ```
 
-## Quick Start
+## Quick start
 
 ```python
 from skillspace import SkillSpaceClient
 
-# The client automatically picks up SKILLSPACE_API_KEY from your environment
 with SkillSpaceClient() as client:
-    # Run a skill from the registry
-    result = client.run_skill(
-        package="sql-optimizer",
-        input_data="SELECT * FROM users WHERE age > 20",
-        model="openai/gpt-4o"
-    )
-
-    print(f"Optimized SQL:\n{result['output']}")
-    print(f"Tokens used: {result['usage']['total_tokens']}")
+    info = client.get_package_info("@skillspace/code-reviewer")
+    print(info)
 ```
+
+`get_package_info` calls `GET /api/packages/{name}` on the registry.
+
+`run_skill` posts to `/api/run`. That route is not implemented in the registry. Run a package locally with the `skillspace` CLI instead.
 
 ## Configuration
 
-You can configure the client using environment variables:
-
-- `SKILLSPACE_API_KEY`: Your authentication token (if querying a private registry).
-- `SKILLSPACE_REGISTRY_URL`: The base URL of the registry (defaults to `https://registry.skillspace.ai`).
-
-Alternatively, pass them directly to the client:
+- `SKILLSPACE_API_KEY`: bearer token for a private registry.
+- `SKILLSPACE_REGISTRY_URL`: registry origin. Defaults to `https://skillspace.aaaryan.space`.
 
 ```python
 client = SkillSpaceClient(
     api_key="your_token",
-    base_url="http://localhost:3000"
+    base_url="http://localhost:3000",
 )
 ```
 

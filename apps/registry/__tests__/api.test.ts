@@ -61,7 +61,7 @@ describe('Registry API', () => {
           verified: false,
           isPrivate: false,
           createdAt: new Date(),
-          versions: [{ version: '1.0.0', publishedAt: new Date() } as any],
+          versions: [{ version: '1.0.0', publishedAt: new Date(), size: 12n } as any],
         },
       ]);
       vi.mocked(prisma.package.count).mockResolvedValue(1);
@@ -74,6 +74,7 @@ describe('Registry API', () => {
       expect(json.data).toHaveLength(1);
       expect(json.data[0].name).toBe('test-skill');
       expect(json.data[0].latestVersion).toBe('1.0.0');
+      expect(json.data[0].versions[0].size).toBe(12);
       expect(json.meta.total).toBe(1);
     });
   });

@@ -32,16 +32,7 @@ async function getFeaturedPackages() {
         versions: { orderBy: { publishedAt: 'desc' }, take: 1 },
       },
     });
-    return packages.map((pkg) => ({
-      ...pkg,
-      tags: typeof pkg.tags === 'string' ? JSON.parse(pkg.tags || '[]') : pkg.tags,
-      latestVersion: pkg.versions[0]?.version,
-      compatibleModels: pkg.versions[0]?.manifest
-        ? inferModelCompatibility(
-            yaml.load(pkg.versions[0].manifest as string) as Record<string, unknown>,
-          )
-        : [],
-    }));
+    return packages.map((pkg) => toPackageCard(pkg));
   } catch {
     return [];
   }
@@ -57,19 +48,50 @@ async function getRecentPackages() {
         versions: { orderBy: { publishedAt: 'desc' }, take: 1 },
       },
     });
-    return packages.map((pkg) => ({
-      ...pkg,
-      tags: typeof pkg.tags === 'string' ? JSON.parse(pkg.tags || '[]') : pkg.tags,
-      latestVersion: pkg.versions[0]?.version,
-      compatibleModels: pkg.versions[0]?.manifest
-        ? inferModelCompatibility(
-            yaml.load(pkg.versions[0].manifest as string) as Record<string, unknown>,
-          )
-        : [],
-    }));
+    return packages.map((pkg) => toPackageCard(pkg));
   } catch {
     return [];
   }
+}
+
+function toPackageCard(pkg: {
+  name: string;
+  description: string;
+  downloads: number;
+  tags: string;
+  type: string;
+  owner: { username: string | null };
+  versions: { version: string; manifest: string }[];
+}) {
+  let tags: string[] = [];
+  try {
+    tags = JSON.parse(pkg.tags || '[]');
+  } catch {
+    tags = [];
+  }
+
+  const latest = pkg.versions[0];
+  let compatibleModels: string[] = [];
+  if (latest?.manifest) {
+    try {
+      compatibleModels = inferModelCompatibility(
+        yaml.load(latest.manifest) as Record<string, unknown>,
+      );
+    } catch {
+      compatibleModels = [];
+    }
+  }
+
+  return {
+    name: pkg.name,
+    description: pkg.description,
+    downloads: pkg.downloads,
+    type: pkg.type,
+    tags,
+    owner: { username: pkg.owner?.username ?? '' },
+    latestVersion: latest?.version,
+    compatibleModels,
+  };
 }
 
 export default async function HomePage() {

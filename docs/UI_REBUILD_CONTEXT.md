@@ -21,7 +21,7 @@ From `apps/registry/package.json`:
 - Next.js 15 App Router, React 19, TypeScript
 - Tailwind 3.4 + `tailwindcss-animate`
 - shadcn-style primitives via Radix: `@radix-ui/react-{accordion,dialog,
-  dropdown-menu,icons,label,navigation-menu,select,slot}`
+dropdown-menu,icons,label,navigation-menu,select,slot}`
 - `class-variance-authority`, `clsx`, `tailwind-merge` (→ `cn()` in
   `src/lib/utils.ts`)
 - `lucide-react` (icons), `cmdk` (command palette / combobox), `sonner` (toasts)
@@ -112,6 +112,7 @@ Prisma models (`packages/database/prisma/schema.prisma`):
   **PlaygroundSession**.
 
 API helpers (`src/lib/api-response.ts`):
+
 - `success(data, meta?)` → `{ data, meta:{page,limit,total}? }`
 - `error(code, message, status, details?)` → `{ error:{code,message,details} }`
 - `unauthorized`, `notFound`, `rateLimited`.
@@ -136,8 +137,8 @@ analytics, collections, organizations). Misc: `/terms`, `/privacy`, `/security`.
 
 ## 8. The "perfect dashboard" bar
 
-User quote: *"screams professionally built … no edge cases unhandled … perfect
-down to the minutest detail."* Concretely this means:
+User quote: _"screams professionally built … no edge cases unhandled … perfect
+down to the minutest detail."_ Concretely this means:
 
 - Server-rendered, auth-guarded, redirect-to-login when unauthenticated.
 - Full dashboard **shell** with persistent sidebar nav + top bar (consistent

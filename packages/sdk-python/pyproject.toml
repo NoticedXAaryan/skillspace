@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
 authors = [
-  { name = "SkillSpace Authors", email = "hello@skillspace.ai" }
+  { name = "SkillSpace" }
 ]
 dependencies = [
   "httpx>=0.24.0",
@@ -18,5 +18,5 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://skillspace.ai"
-Repository = "https://github.com/skillspace/skillspace"
+Homepage = "https://skillspace.aaaryan.space"
+Repository = "https://github.com/NoticedXAaryan/skillspace"

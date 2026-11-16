@@ -13,12 +13,12 @@ export default function TwoFactorPage() {
 
   async function handleEnable2FA() {
     setLoading(true);
-    const { data, error } = await authClient.twoFactor.enable({
+    const { data } = await authClient.twoFactor.enable({
       password: 'user-password-here', // Typically needs re-auth or similar, omitted for brevity
     });
 
-    if (data?.totpURI) {
-      setQrCode(data.totpURI); // Render with QRCode react component
+    if (data && 'totpURI' in data && data.totpURI) {
+      setQrCode(data.totpURI);
     }
     setLoading(false);
   }

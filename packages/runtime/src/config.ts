@@ -30,9 +30,11 @@ export interface SkillSpaceConfig {
   >;
 }
 
+const DEFAULT_REGISTRY_URL = 'https://skillspace.aaaryan.space';
+
 const DEFAULT_CONFIG: SkillSpaceConfig = {
-  registry_url: 'https://skillspace-registry.vercel.app',
-  registries: ['https://skillspace-registry.vercel.app'],
+  registry_url: DEFAULT_REGISTRY_URL,
+  registries: [DEFAULT_REGISTRY_URL],
   models: {},
 };
 
@@ -148,7 +150,7 @@ export function getRegistries(): string[] {
   if (config.registries && config.registries.length > 0) {
     return config.registries;
   }
-  return [config.registry_url || 'https://skillspace-registry.vercel.app'];
+  return [config.registry_url || 'https://skillspace.aaaryan.space'];
 }
 
 /**

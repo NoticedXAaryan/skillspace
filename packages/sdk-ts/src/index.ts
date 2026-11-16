@@ -57,7 +57,10 @@ export class SkillSpaceClient {
   private readonly fetchImpl: typeof fetch;
 
   constructor(config?: { baseUrl?: string; fetch?: typeof fetch }) {
-    this.baseUrl = (config?.baseUrl ?? 'https://registry.skillspace.ai/api/v1').replace(/\/$/, '');
+    this.baseUrl = (config?.baseUrl ?? 'https://skillspace.aaaryan.space/api/v1').replace(
+      /\/$/,
+      '',
+    );
     this.fetchImpl = config?.fetch ?? fetch;
   }
 

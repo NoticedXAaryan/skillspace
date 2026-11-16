@@ -91,26 +91,28 @@ export default function Footer() {
         </div>
 
         <div>
-          <h3 className="mb-6 text-sm font-semibold uppercase tracking-wider text-white">Legal</h3>
+          <h3 className="mb-6 text-sm font-semibold uppercase tracking-wider text-white">
+            Project
+          </h3>
           <div className="flex flex-col gap-4">
-            <Link
-              href="/terms"
+            <a
+              href="https://github.com/NoticedXAaryan/skillspace"
               className="text-sm text-neutral-400 hover:text-white transition-colors"
             >
-              Terms of Service
-            </Link>
-            <Link
-              href="/privacy"
-              className="text-sm text-neutral-400 hover:text-white transition-colors"
-            >
-              Privacy Policy
-            </Link>
-            <Link
-              href="/security"
+              GitHub
+            </a>
+            <a
+              href="https://github.com/NoticedXAaryan/skillspace/blob/master/SECURITY.md"
               className="text-sm text-neutral-400 hover:text-white transition-colors"
             >
               Security
-            </Link>
+            </a>
+            <a
+              href="https://github.com/NoticedXAaryan/skillspace/blob/master/LICENSE"
+              className="text-sm text-neutral-400 hover:text-white transition-colors"
+            >
+              MIT License
+            </a>
           </div>
         </div>
       </div>
@@ -119,10 +121,12 @@ export default function Footer() {
         <p className="text-sm text-neutral-500 mb-4 md:mb-0">
           &copy; {new Date().getFullYear()} SkillSpace. All rights reserved.
         </p>
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-sm text-neutral-500">All systems operational</span>
-        </div>
+        <a
+          href="https://skillspace.aaaryan.space"
+          className="text-sm text-neutral-500 hover:text-white transition-colors"
+        >
+          skillspace.aaaryan.space
+        </a>
       </div>
     </footer>
   );

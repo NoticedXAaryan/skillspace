@@ -12,6 +12,7 @@
 ## §1. What this engagement is
 
 Three packets, executed in sequence, each with a green checkpoint:
+
 1. **Packet 1 ✅ DONE** — `pnpm format:check` was RED on 17 files → CI failing.
    Fixed with `pnpm format`. Verified build (8 tasks) + test (13 tasks) green.
 2. **Packet 2 🔄 IN PROGRESS** — Lint is a no-op (`echo 'lint skipped'` in
@@ -30,6 +31,7 @@ Three packets, executed in sequence, each with a green checkpoint:
 ## §3. Packet 2 plan (the current focus)
 
 Approach: **ESLint flat config.**
+
 - Make `packages/config-eslint` a consumable workspace package exporting a
   reusable flat-config factory. ✅ done (function `skillSpaceBase(...overrides)`).
 - Library packages (schema, runtime, sdk, lsp, database, memory-mcp) + CLI =
@@ -41,14 +43,17 @@ Approach: **ESLint flat config.**
 ## §4. CURRENT BLOCKER — `Unexpected token '*'`
 
 **Symptom:** `pnpm --filter @skillspace/schema lint` (ESLint 9.39.4) fails:
+
 ```
 SyntaxError: Unexpected token '*'
     at compileSourceTextModule (node:internal/modules/esm/utils:346:16)
     at ModuleLoader.moduleStrategy ...
 ```
+
 Same error when importing `@skillspace/config-eslint` from Node directly.
 
 **Ruled out:**
+
 - My `eslint.config.mjs` source is syntactically valid (hex dump confirms no
   BOM, content parses; Node 22 supports the syntax).
 - `import tseslint from 'typescript-eslint'` loads fine from the
@@ -56,11 +61,11 @@ Same error when importing `@skillspace/config-eslint` from Node directly.
 - Not a CRLF/encoding issue in my file (bytes 0-2 = `696d70` = "imp").
 
 **ROOT CAUSE FOUND (2026-06-19):** `typescript-eslint` is NOT resolvable from
-consuming packages. pnpm's strict node_modules means `typescript-eslint` (a dep
+consuming packages. pnpm's strict node*modules means `typescript-eslint` (a dep
 of `@skillspace/config-eslint`) lives only in `config-eslint/node_modules`. When
 schema's config imports the shared factory, which top-level-imports
 `typescript-eslint`, Node tries to resolve `typescript-eslint` relative to the
-*schema importer* → `ERR_MODULE_NOT_FOUND`. The "Unexpected token '*'" was a
+\_schema importer* → `ERR_MODULE_NOT_FOUND`. The "Unexpected token '\*'" was a
 masking red herring.
 
 **FIX (chosen):** Each consuming package gets `typescript-eslint` + `eslint` as
@@ -74,6 +79,7 @@ consumers spread `...tseslint.configs.recommended` + call the builder.
 ## §5. Packet 3 plan (not started)
 
 SDK at `packages/sdk-ts/src/index.ts`:
+
 - Fix module system: `require(...)` in ESM-emitted code → top-level `import`.
 - Fix base URL: `registry.skillspace.ai/api/v1` → match CLI `skillspace-registry.vercel.app/api`.
 - Fix envelope: SDK wants `{success,data}`; canonical is `{data}`/`{error:{...}}`. Accept both.
